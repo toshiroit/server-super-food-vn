@@ -1,0 +1,15 @@
+# Logs
+*.log
+logs
+yarn-debug.log*
+
+# Module
+
+node_modules
+
+
+#env
+.env
+.env.local
+
+
