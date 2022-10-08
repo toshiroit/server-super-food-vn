@@ -23,8 +23,6 @@ export const registerAuthSchema = object({
     user_name: string({
       required_error: 'User name is required',
     })
-      .min(15, 'User name is too short - should be min 15 chars')
-      .trim()
       .max(35, 'User name is too short - should be max 35 chars')
       .trim(),
     password: string({
@@ -88,29 +86,16 @@ export const loginAuthPhone = object({
 export const loginAuthSchema = object({
   body: object({
     phone: string().optional(),
-    username: string().max(150, { message: 'Username login is too short - should is be max 150 chars' }).optional(),
     password: string().max(150, {
       message: 'Password is required',
     }),
     passwordConfirmation: string().max(150, {
       message: 'Confirmation is required',
     }),
-  })
-    .refine(
-      data => {
-        if (!data.phone && !data.username) return false;
-        if (!data.phone && data.username) return true;
-        if (data.phone && !data.username) return true;
-        if (data.phone && data.username) return true;
-      },
-      {
-        message: 'Phone and username is required',
-      }
-    )
-    .refine(data => data.password === data.passwordConfirmation, {
-      message: 'Password do not match ',
-      path: ['passwordConfirmation'],
-    }),
+  }).refine(data => data.password === data.passwordConfirmation, {
+    message: 'Password do not match ',
+    path: ['passwordConfirmation'],
+  }),
 });
 export const checkPhoneAuthSchema = object({
   body: object({

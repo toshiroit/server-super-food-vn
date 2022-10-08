@@ -12,6 +12,7 @@ import { User } from '../../types/user.type';
 import { getDataObjectFields } from '../../libs/get_fields_object';
 import { getDataObjectValues } from '../../libs/get_values_object';
 import twilio from 'twilio';
+import { Error } from '../../interfaces/error.interface';
 
 export class AuthModel extends Model {
   public static async sendCodeModel(
@@ -48,35 +49,43 @@ export class AuthModel extends Model {
 
   public static async authenticateModel(valueQuery: modelQuery, callback: CallbackHandler) {}
   public static loginUserModel = async (valueQuery: modelQuery, callback: CallbackHandler): Promise<any> => {
-    const data: LoginAuth = valueQuery.value as LoginAuth;
-    const dataLogin = [data.phone, data.username];
-
     let result: QueryResult<any> | null = null;
-    if (data.phone && data.username) {
-      result = await pool.query(SqlRoot.SQL_LOGIN_USER_FULL(), dataLogin);
-      console.log('RESULT : ', result.rows);
-    } else {
-      result = await pool.query(SqlRoot.SQL_LOGIN_USER('users'), dataLogin);
-    }
-
-    if (result.rows.length || result.rows.length > 0) {
+    result = await pool.query(SqlRoot.SQL_LOGIN_USER_FULL(), [valueQuery.value.phone]);
+    if (result.rows.length > 0 && result.rows.length) {
       const { password: hasPassword } = result.rows[0];
-      const isPassword = comparePassword(data.passwordConfirmation, hasPassword);
+      const isPassword = comparePassword(valueQuery.value.password, hasPassword.trim());
+      console.log(isPassword);
+      const error: Error = {
+        message: 'Tài khoản hoặc mật khẩu không chính xác ',
+        name: 'error login',
+        status: 401,
+      };
+
       if (isPassword) {
-        if (data.phone && data.username) {
-          return pool.query(SqlRoot.SQL_LOGIN_USER_FULL(), dataLogin, callback);
-        } else if (!data.phone && data.username) {
-          return pool.query(SqlRoot.SQL_GET_USER_USER_NAME(), [data.username], callback);
-        } else if (data.phone && !data.username) {
-          return pool.query(SqlRoot.SQL_GET_USER_PHONE(), [data.phone], callback);
-        } else {
-          return callback(null, null);
-        }
+        pool.query(SqlRoot.SQL_GET_USER_PHONE(), [valueQuery.value.phone], callback);
       } else {
-        return callback(null, null);
+        callback(null, null);
       }
     } else {
-      return callback(null, null);
+      const data = [
+        valueQuery.value.code_user,
+        valueQuery.value.hashPassword,
+        'ROLE-WIXO-USER',
+        valueQuery.value.phone,
+        new Date(Date.now()).toISOString(),
+        false,
+      ];
+      const valueQueryRegister: modelQuery = {
+        table: 'user_sp',
+        obj: {
+          condition: null,
+        },
+        field: null,
+        value: data,
+      };
+      this.registerUserModel(valueQueryRegister, (err, result) => {
+        callback(err, result);
+      });
     }
   };
 
@@ -88,9 +97,9 @@ export class AuthModel extends Model {
   public static async registerUserModel(valueQuery: modelQuery, callback: CallbackHandler) {
     const field = getDataObjectFields(valueQuery.value);
     const value = getDataObjectValues(valueQuery.value);
+    const data = valueQuery.value as [];
     try {
-      pool.query(SqlRoot.SQL_INSERT_DATA_PS(valueQuery.table, field, value), callback);
-      //console.log(SqlRoot.SQL_INSERT_DATA_PS(valueQuery.table, field, value));
+      pool.query(SqlRoot.SQL_REGISTER_USER_PS(), data, callback);
     } catch (error) {}
   }
   public static async verifyAuthMailerModel(valueQuery: modelQuery, callback: CallbackHandler) {

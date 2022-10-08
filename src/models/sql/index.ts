@@ -1,6 +1,6 @@
 class SqlRoot {
   public static SQL_GET_USER_PHONE = () => {
-    return `select * from users where phone=($1)`;
+    return `select * from user_sp where phone=($1)`;
   };
   public static SQL_GET_USER_USER_NAME = () => {
     return `select * from users where user_name=($1)`;
@@ -9,10 +9,7 @@ class SqlRoot {
     return `select * from users where phone=($1) OR user_name=($2)`;
   };
   public static SQL_LOGIN_USER_FULL = () => {
-    return `select * from users where phone=($1) AND user_name=($2)`;
-  };
-  public static SQL_LOGIN_USER = (table: string | null) => {
-    return `select * from users where phone=($1) OR user_name=($2)`;
+    return `select * from user_sp where phone=($1)`;
   };
 
   /**
@@ -36,6 +33,9 @@ class SqlRoot {
     return `insert into ${table} (${fields}) VALUES (${values})`;
   };
 
+  public static SQL_REGISTER_USER_PS = () => {
+    return `insert into user_sp (code_user,password,code_role,phone,"createdAt",status) VALUES ($1,$2,$3,$4,$5,$6)`;
+  };
   /**
    *
    * @param table table database

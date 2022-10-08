@@ -17,10 +17,8 @@ import { AuthenticateLogin, UserLogin } from '../../types/auth/auth.type';
 import signJWT from '../../functions/jwt/signJWT';
 import { jwtTokens, verifyJWT } from '../../utils/jwt/jwt-token';
 import pool from '../../database';
-const hasPassword = (password: string) => {
-  const salt = parseInt(config.salt as string, 10);
-  return bcrypt.hashSync(`${password}${config.pepper}`, salt);
-};
+import { makeId } from '../../libs/make_id';
+import { hasPassword } from '../../libs/hash_password';
 const generateAccessToken = (user: any) => {
   return jwt.sign(user, config.access_token_secret as string, {
     expiresIn: '30s',
@@ -29,6 +27,9 @@ const generateAccessToken = (user: any) => {
 const generateRefreshToken = (user: any) => {
   return jwt.sign(user, config.refresh_token_secret as string, { expiresIn: 60 * 60 * 24 });
 };
+
+const logoutAuth = async (req: Request, res: Response) => {};
+
 const getAllUsers = async (req: Request, res: Response) => {
   try {
     const valueQuery: modelQuery = {
@@ -54,11 +55,10 @@ const getAllUsers = async (req: Request, res: Response) => {
 };
 const getMe = async (req: Request, res: Response) => {
   try {
-    console.log(req.headers);
-    const { authorization } = req.headers;
-    const bearer = authorization?.split(' ')[0].toLowerCase();
-    const token = authorization?.split(' ')[1];
-    if (token && bearer === 'bearer') {
+    const { cookie } = req.headers;
+    const bearer = cookie?.split('=')[0].toLowerCase();
+    const token = cookie?.split('=')[1];
+    if (token && bearer === 'jwt') {
       const user = verifyJWT(token, config.refresh_token_secret as string) as JwtPayload;
       delete user.payload.password;
       delete user.payload.verification_code;
@@ -93,7 +93,6 @@ const VerifyTokenUser = async (req: Request<{}, {}, LoginAuth>, res: Response, n
     const authorization = req.headers.authorization;
     if (authorization) {
       const reqValueLogin: LoginAuth = {
-        username: req.body.username,
         phone: req.body.phone,
         password: req.body.password,
         passwordConfirmation: req.body.passwordConfirmation,
@@ -161,28 +160,30 @@ const SendCodePhone = async (req: Request<{}, {}, PhoneSendCodeAuth>, res: Respo
     });
   }
 };
-
 const loginUser = async (req: Request<{}, {}, LoginAuth>, res: Response) => {
-  res.setHeader('Set-Cookie', 'visited=true; Max-Age=3000; HttpOnly, Secure');
+  // res.setHeader('Set-Cookie', 'visited=true; Max-Age=3000; HttpOnly, Secure');
+  console.log('header', req.headers.cookie);
   try {
     const valueQuery: modelQuery = {
       table: 'users',
       value: {
-        username: req.body.username,
-        phone: req.body.phone,
+        code_user: makeId(14),
         password: req.body.password,
-        passwordConfirmation: req.body.passwordConfirmation,
+        role: 'ROLE-WIAO-ADMIN',
+        phone: req.body.phone,
+        hashPassword: hasPassword(req.body.password),
+        createdAt: new Date(Date.now()).toISOString(),
+        status: false,
       },
       field: null,
       obj: {
         condition: null,
       },
     };
-    // console.log(req.body);
-    await AuthModel.loginUserModel(valueQuery, (err: Error, result: QueryResult<any> | null) => {
+    await AuthModel.loginUserModel(valueQuery, (err, result) => {
       if (err) {
         res.status(401).json({
-          error: err,
+          error: err.message,
         });
       } else {
         if (result?.rows[0]) {
@@ -195,7 +196,7 @@ const loginUser = async (req: Request<{}, {}, LoginAuth>, res: Response) => {
             expires: new Date(Date.now() + 900000),
             httpOnly: true,
             path: '/',
-            maxAge: 60 * 60 * 24,
+            maxAge: 15000,
             sameSite: 'strict',
           });
           res.json({
@@ -203,10 +204,24 @@ const loginUser = async (req: Request<{}, {}, LoginAuth>, res: Response) => {
             data: result.rows[0],
           });
         } else {
-          res.status(401).json({
-            status: 'error',
-            message: 'Mật khẩu bạn đăng nhập chưa chính xác vui lòng kiểm tra lại ',
-          });
+          if (result?.command === 'INSERT') {
+            if (result.rowCount === 1) {
+              res.status(200).json({
+                status: 200,
+                message: 'Đăng kí tài khoản thành công ',
+              });
+            } else {
+              res.status(400).json({
+                status: 400,
+                message: 'Đăng kí tài khoản không thành công ',
+              });
+            }
+          } else if (result?.command) {
+          } else {
+            res.status(401).json({
+              message: 'Tài khoản hoặc mật khẩu không chính xác ',
+            });
+          }
         }
       }
     });
@@ -216,7 +231,17 @@ const loginUser = async (req: Request<{}, {}, LoginAuth>, res: Response) => {
     });
   }
 };
-
+/**
+ *
+ * @param req body none
+ * @param res
+ * @description logout user remove token server
+ */
+export const logoutUser = (req: Request, res: Response) => {
+  try {
+    res.clearCookie('jwt');
+  } catch (error) {}
+};
 /**
  *
  * @param req
@@ -249,32 +274,31 @@ const refreshToken = async (req: Request, res: Response) => {
 const registerUser = async (req: Request<{}, {}, RegisterAuth>, res: Response, next: NextFunction) => {
   try {
     const valueQuery: modelQuery = {
-      table: 'users',
+      table: 'user_sp',
       obj: {
         condition: null,
       },
       field: null,
-      value: {
-        email: req.body.email,
-        user_name: req.body.user_name,
-        first_name: req.body.first_name,
-        last_name: req.body.last_name,
-        password: hasPassword(req.body.password),
-        verification_code: '568168148124',
-        phone: req.body.phone,
-        verified: false,
-      },
+      value: [
+        makeId(14),
+        hasPassword('chanelnam2020'),
+        'ROLE-WIXO-USER',
+        req.body.phone,
+        new Date(Date.now()).toISOString(),
+        false,
+      ],
     };
-    await sendEmail({
-      from: 'test@example.com',
-      to: req.body.email,
-      subject: 'Please verify your account',
-      text: `Verification coe ${'568168148124'} , ${req.body.email}`,
-    });
-
     await AuthModel.registerUserModel(valueQuery, (err, result) => {
       if (err) {
-        res.status(400).json({ error: err });
+        if (err.code === '23505') {
+          res.status(400).json({
+            message: 'Số điện thoại đã được đăng kí ',
+          });
+        } else {
+          res.json({
+            error: err,
+          });
+        }
       } else {
         res.status(200).json({ data: result });
       }
@@ -317,7 +341,7 @@ const verifyAuthMailer = async (req: Request<VerifyAuth>, res: Response, next: N
 const checkPhoneAuth = async (req: Request<{}, {}, CheckPhoneAuth>, res: Response) => {
   try {
     const valueQuery: modelQuery = {
-      table: 'users',
+      table: 'user_sp',
       field: 'phone',
       value: [req.body.phone],
       condition: null,

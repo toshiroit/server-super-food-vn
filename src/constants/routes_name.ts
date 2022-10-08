@@ -13,6 +13,7 @@ export const ROUTES_NAME = {
     USER: '/getMe',
     GET_ALL_USERS: '/get-all-users',
     CHECK_PHONE: '/check-phone',
+    LOGOUT: '/logout',
   },
   USER: {
     ADD_USER: '/add-user',

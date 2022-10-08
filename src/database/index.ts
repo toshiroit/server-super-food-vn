@@ -6,6 +6,9 @@ const pool = new Pool({
   user: config.user_db,
   password: config.pass_db,
   port: config.port_DB as number | 5432 | undefined,
+  // ssl: {
+  //   rejectUnauthorized: false,
+  // },
   max: 4,
 });
 pool.on('error', (error: Error) => {

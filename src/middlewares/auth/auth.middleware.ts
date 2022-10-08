@@ -119,12 +119,12 @@ export const validateTokenAdminMiddleware = (req: Request, res: Response, next: 
 export const validateTokenMiddleware = (req: Request, res: Response, next: NextFunction) => {
   try {
     // Get Header Authorization
-    const authHeader = req.get('Authorization');
+    const authHeader = req.get('cookie');
 
     if (authHeader) {
-      const bearer = authHeader.split(' ')[0].toLowerCase();
-      const token = authHeader.split(' ')[1];
-      if (token && bearer === 'bearer') {
+      const bearer = authHeader.split('=')[0].toLowerCase();
+      const token = authHeader.split('=')[1];
+      if (token && bearer === 'jwt') {
         jwt.verify(token, config.refresh_token_secret as unknown as string, (err, decoded) => {
           if (err) {
             handleUnauthorizedError(next);
