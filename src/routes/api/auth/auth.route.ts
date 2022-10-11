@@ -1,4 +1,4 @@
-import { checkPhoneAuthSchema } from './../../../schemas/auth/auth.schema';
+import { checkPhoneAuthSchema, verifyCodePhoneAuth } from './../../../schemas/auth/auth.schema';
 import {
   validateCapChaMiddleware,
   sendCodeLimiter,
@@ -26,6 +26,7 @@ routes.post(ROUTES_NAME.AUTH.LOGIN, loginAccountLimiter, validateResource(loginA
 /**
  * Logout user
  */
+routes.post(ROUTES_NAME.AUTH.LOGOUT, AuthController.logoutUser);
 /**
  * Register user
  */
@@ -89,6 +90,12 @@ routes.post(
   sendCodeLimiter,
   validateResource(phoneAuthSendCode),
   AuthController.SendCodePhone
+);
+routes.post(
+  ROUTES_NAME.AUTH.CHECK_CODE,
+  sendCodeLimiter,
+  validateResource(verifyCodePhoneAuth),
+  AuthController.verifyCodeAuth
 );
 routes.post(
   `${ROUTES_NAME.AUTH.VERIFY_CODE}/:id/:verificationCode`,

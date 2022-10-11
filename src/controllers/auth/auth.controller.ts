@@ -1,4 +1,4 @@
-import { CheckPhoneAuth } from './../../types/auth/auth.type';
+import { CheckCodeAuth, CheckPhoneAuth } from './../../types/auth/auth.type';
 import { GetCAPTCHACode } from './../../libs/capcha_number';
 import jwt, { Jwt, JwtPayload } from 'jsonwebtoken';
 import { MESSAGE_VN } from './../../constants/message';
@@ -108,7 +108,7 @@ const VerifyTokenUser = async (req: Request<{}, {}, LoginAuth>, res: Response, n
     }
   } catch (error) {}
 };
-const SendCodePhone = async (req: Request<{}, {}, PhoneSendCodeAuth>, res: Response, next: NextFunction) => {
+const SendCodePhone = async (req: Request<{}, {}, PhoneSendCodeAuth>, res: Response) => {
   try {
     const data = {
       phone: req.body.phone,
@@ -121,36 +121,8 @@ const SendCodePhone = async (req: Request<{}, {}, PhoneSendCodeAuth>, res: Respo
           error: err,
         });
       } else {
-        const valueQuery: modelQuery = {
-          table: 'users',
-          field: 'phone',
-          value: [data.phone],
-          condition: null,
-          obj: {
-            condition: null,
-          },
-        };
-
-        AuthModel.checkPhone(valueQuery, (err, result2) => {
-          if (err) {
-            isPhone = false;
-          } else {
-            if (result2?.rows.length === 0) {
-              isPhone = false;
-            } else {
-              isPhone = true;
-            }
-            res.status(200).json({
-              data: {
-                status: 'success',
-                capCha: data.capCha,
-                isPhone: isPhone,
-                message: result?.message,
-                dateUpdate: result?.dateUpdated,
-                dateCreated: result?.dateCreated,
-              },
-            });
-          }
+        res.status(200).json({
+          message: 'Gửi mã thành công - vui lòng kiểm tra ',
         });
       }
     });
@@ -162,7 +134,6 @@ const SendCodePhone = async (req: Request<{}, {}, PhoneSendCodeAuth>, res: Respo
 };
 const loginUser = async (req: Request<{}, {}, LoginAuth>, res: Response) => {
   // res.setHeader('Set-Cookie', 'visited=true; Max-Age=3000; HttpOnly, Secure');
-  console.log('header', req.headers.cookie);
   try {
     const valueQuery: modelQuery = {
       table: 'users',
@@ -196,7 +167,7 @@ const loginUser = async (req: Request<{}, {}, LoginAuth>, res: Response) => {
             expires: new Date(Date.now() + 900000),
             httpOnly: true,
             path: '/',
-            maxAge: 15000,
+            maxAge: 24 * 60 * 60 * 1000,
             sameSite: 'strict',
           });
           res.json({
@@ -240,7 +211,14 @@ const loginUser = async (req: Request<{}, {}, LoginAuth>, res: Response) => {
 export const logoutUser = (req: Request, res: Response) => {
   try {
     res.clearCookie('jwt');
-  } catch (error) {}
+    res.json({
+      message: 'Đăng xuất thành công ',
+    });
+  } catch (error) {
+    res.json({
+      message: 'Đăng xuất thành công không thành công ',
+    });
+  }
 };
 /**
  *
@@ -357,13 +335,13 @@ const checkPhoneAuth = async (req: Request<{}, {}, CheckPhoneAuth>, res: Respons
       } else {
         if (result?.rows.length === 0) {
           res.status(200).json({
-            status: 203,
+            status: 200,
             data: result.rows.length,
             message: 'Phone not is register',
           });
         } else {
           res.status(200).json({
-            status: 203,
+            status: 200,
             data: result?.rows.length,
             message: 'Phone register',
           });
@@ -376,6 +354,11 @@ const checkPhoneAuth = async (req: Request<{}, {}, CheckPhoneAuth>, res: Respons
     });
   }
 };
+const verifyCodeAuth = async (req: Request<{}, {}, CheckCodeAuth>, res: Response) => {
+  res.json({
+    message: 'OK',
+  });
+};
 export {
   loginUser,
   loginPhone,
@@ -387,4 +370,5 @@ export {
   VerifyTokenUser,
   SendCodePhone,
   checkPhoneAuth,
+  verifyCodeAuth,
 };

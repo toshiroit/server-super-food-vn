@@ -10,3 +10,6 @@ export type AuthenticateLogin = {
 export type CheckPhoneAuth = {
   phone?: string | null;
 };
+export type CheckCodeAuth = {
+  code: string;
+};

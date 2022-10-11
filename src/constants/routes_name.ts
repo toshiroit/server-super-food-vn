@@ -2,6 +2,7 @@ export const ROUTES_NAME = {
   AUTH: {
     LOGIN: '/login',
     SEND_CODE: '/send-code',
+    CHECK_CODE: '/check-code',
     REGISTER: '/register',
     REST_PASSWORD: '/rest-password',
     VERIFY_USER: '/verify-user',

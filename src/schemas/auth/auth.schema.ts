@@ -64,7 +64,19 @@ export const phoneAuthSendCode = object({
     message: 'Phone is required',
   }),
 });
-
+export const verifyCodePhoneAuth = object({
+  body: object({
+    code: string({
+      required_error: 'Không được bỏ trống ',
+    })
+      .min(6, {
+        message: 'Tổi thiểu 6 số ',
+      })
+      .max(6, {
+        message: 'Tối đa được 6 số ',
+      }),
+  }),
+});
 export const loginAuthPhone = object({
   body: object({
     phone: string({
