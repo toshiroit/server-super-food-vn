@@ -1,6 +1,6 @@
 class SqlRoot {
   public static SQL_GET_USER_PHONE = () => {
-    return `select * from user_sp where phone=($1)`;
+    return `SELECT * FROM user_sp,user_detail_sp where user_sp.code_user_detail=user_detail_sp.code_user_detail and user_sp.phone=($1)`;
   };
   public static SQL_GET_USER_USER_NAME = () => {
     return `select * from users where user_name=($1)`;
@@ -9,7 +9,7 @@ class SqlRoot {
     return `select * from users where phone=($1) OR user_name=($2)`;
   };
   public static SQL_LOGIN_USER_FULL = () => {
-    return `select * from user_sp where phone=($1)`;
+    return `SELECT * FROM user_sp,user_detail_sp where user_sp.code_user_detail=user_detail_sp.code_user_detail and user_sp.phone=($1)`;
   };
 
   /**
@@ -89,5 +89,33 @@ class SqlRoot {
   public static SQL_GET_ONE_USER_VERIFY_MAILER_CODE = () => {
     return `SELECT * FROM users where id=($1) AND verification_code=($2)`;
   };
+
+
+  public static SQL_GET_PRODUCT_BY_NAME_OR_CODE = () => {
+    return `select * from product_sp p join product_detail_sp pd on 
+            p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
+            on pg.code_product_guide=pd.code_product_guide where p.code_product=($1) OR name like ($2)`
+  }
+  public static SQL_GET_PRODUCT_ALL = () => {
+    return `select * from product_sp p join product_detail_sp pd on 
+            p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
+            on pg.code_product_guide=pd.code_product_guide`
+  }
+
+  public static SQL_GET_COMMENT_ALL_BY_PRODUCT = () => {
+    return `
+        select cm.*,mess.*,u.avatar,u.code_user,ud.full_name from comment_sp cm 
+          join message_sp mess on mess.code_message = cm.code_message 
+          join product_sp p on p.code_product = cm.code_product 
+          join user_sp u on u.code_user = cm.code_user
+          join user_detail_sp ud on ud.code_user_detail = u.code_user_detail
+          where p.code_product=($1)
+      `
+  }
+
+  public static SQL_GET_USER_TEST = () => {
+    return `select * from user_sp`
+  }
+
 }
 export default SqlRoot;

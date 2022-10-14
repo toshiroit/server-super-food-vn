@@ -24,6 +24,14 @@ const {
   ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_SECRET,
   REFRESH_TOKEN,
+  FIREBASE_API_KEY,
+  FIREBASE_AUTH_DOMAIN,
+  FIREBASE_DATABASE_URL,
+  FIREBASE_PROJECT_ID,
+  FIREBASE_STORAGE_BUCKET,
+  FIREBASE_MESSAING_SENDER_ID,
+  FIREBASE_APP_ID,
+  FIREBASE_MEASUREMENT_ID
 } = process.env;
 export default {
   port: PORT,
@@ -49,4 +57,12 @@ export default {
   twilio_phone: TWILIO_PHONE,
   access_token_secret: ACCESS_TOKEN_SECRET,
   refresh_token_secret: REFRESH_TOKEN_SECRET as string,
+  firebase_apiKey: FIREBASE_API_KEY as string,
+  firebase_authDomain: FIREBASE_AUTH_DOMAIN as string,
+  firebase_databaseURL: FIREBASE_DATABASE_URL as string,
+  firebase_projectId: FIREBASE_PROJECT_ID as string,
+  firebase_storageBucket: FIREBASE_STORAGE_BUCKET as string,
+  firebase_messagingSenderId: FIREBASE_MESSAING_SENDER_ID as string,
+  firebase_appId: FIREBASE_APP_ID,
+  firebase_measurementId: FIREBASE_MEASUREMENT_ID
 };

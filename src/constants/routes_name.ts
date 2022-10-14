@@ -19,4 +19,12 @@ export const ROUTES_NAME = {
   USER: {
     ADD_USER: '/add-user',
   },
+  PRODUCT: {
+    GET_ALL_PRODUCTS: '/get-all',
+    GET_PRODUCT_BY_NAME_OR_CODE: '/get'
+  },
+  COMMENT: {
+    ADD_NEW_COMMENT: '/add-comment',
+    GET_COMMENT: '/get-comment'
+  }
 };

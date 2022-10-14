@@ -1,34 +1,18 @@
-import { CheckCodeAuth, CheckPhoneAuth } from './../../types/auth/auth.type';
-import { GetCAPTCHACode } from './../../libs/capcha_number';
-import jwt, { Jwt, JwtPayload } from 'jsonwebtoken';
-import { MESSAGE_VN } from './../../constants/message';
-import { QueryResult } from 'pg';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import { modelQuery } from './../../interfaces/model_query/modelQuery';
-import { User } from './../../types/user.type';
 import { NextFunction, Request, Response } from 'express';
 import { AuthModel } from './../../models/auth/auth.model';
 import { RegisterAuth, VerifyAuth } from '../../schemas/auth/auth.schema';
-import sendEmail from '../../utils/mail/mailer';
-import UserModel from '../../models/user/user.model';
 import config from '../../config/config';
-import bcrypt from 'bcrypt';
 import { LoginAuth, PhoneSendCodeAuth } from '../../types/schemas/authSchema.type';
-import { AuthenticateLogin, UserLogin } from '../../types/auth/auth.type';
-import signJWT from '../../functions/jwt/signJWT';
 import { jwtTokens, verifyJWT } from '../../utils/jwt/jwt-token';
-import pool from '../../database';
 import { makeId } from '../../libs/make_id';
 import { hasPassword } from '../../libs/hash_password';
-const generateAccessToken = (user: any) => {
-  return jwt.sign(user, config.access_token_secret as string, {
-    expiresIn: '30s',
-  });
-};
-const generateRefreshToken = (user: any) => {
-  return jwt.sign(user, config.refresh_token_secret as string, { expiresIn: 60 * 60 * 24 });
-};
+import { CheckCodeAuth, CheckPhoneAuth } from '../../types/auth/auth.type';
+import { GetCAPTCHACode } from '../../libs/capcha_number';
 
-const logoutAuth = async (req: Request, res: Response) => {};
+
+const logoutAuth = async (req: Request, res: Response) => { };
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -51,7 +35,7 @@ const getAllUsers = async (req: Request, res: Response) => {
         });
       }
     });
-  } catch (error) {}
+  } catch (error) { }
 };
 const getMe = async (req: Request, res: Response) => {
   try {
@@ -85,7 +69,7 @@ const loginPhone = async (req: Request, res: Response, next: NextFunction) => {
   });
   // await AuthModel.loginUserModel();
   try {
-  } catch (error) {}
+  } catch (error) { }
 };
 const VerifyTokenUser = async (req: Request<{}, {}, LoginAuth>, res: Response, next: NextFunction) => {
   try {
@@ -106,7 +90,7 @@ const VerifyTokenUser = async (req: Request<{}, {}, LoginAuth>, res: Response, n
         },
       };
     }
-  } catch (error) {}
+  } catch (error) { }
 };
 const SendCodePhone = async (req: Request<{}, {}, PhoneSendCodeAuth>, res: Response) => {
   try {

@@ -12,8 +12,8 @@ module.exports = {
   },
   plugins: ['@typescript-eslint', 'prettier'],
   rules: {
-    'semi-style': ['error', 2],
-    'prettier/prettier': 2,
+    'semi-style': 'error',
+    //   'prettier/prettier': 2,
     'no-console': 1,
     'no-var': 'error',
     'prefer-const': 'error',
