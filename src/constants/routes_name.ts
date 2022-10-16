@@ -26,5 +26,10 @@ export const ROUTES_NAME = {
   COMMENT: {
     ADD_NEW_COMMENT: '/add-comment',
     GET_COMMENT: '/get-comment'
+  },
+  CART: {
+    GET_CART: '/get-cart',
+    ADD_CART: '/add-cart',
+    REMOVE_CART: '/remove-cart'
   }
 };

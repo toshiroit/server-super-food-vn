@@ -25,7 +25,7 @@ class Model {
   };
 
   protected static getAll = async (value: modelQuery, callback: CallbackHandler) => {
-    pool.query(SqlRoot.SQL_GET_ALL(value.table, value.field), (err, result) => callback(err, result));
+    pool.query(SqlRoot.SQL_GET_ALL(value.table, value.field), callback);
   };
 
   public static getAllNoField = async (value: modelQuery, callback: CallbackHandler) => {

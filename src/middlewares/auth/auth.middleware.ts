@@ -46,9 +46,6 @@ export const handleCapChaError = (next: NextFunction) => {
 };
 export const validateCapChaMiddleware = (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authCapCha = req.body;
-  } catch (error) {}
-  try {
     // Get Header Authorization
     const authHeader = req.get('Authorization');
 
@@ -88,7 +85,6 @@ export const validateTokenAdminMiddleware = (req: Request, res: Response, next: 
           } else {
             if (decoded) {
               res.locals.jwt = decoded;
-              console.log(decoded);
               const data = decoded as JwtPayload;
               if (data.role) {
                 if (data.role === 1 || Number(data.role) === 1) {
@@ -120,7 +116,6 @@ export const validateTokenMiddleware = (req: Request, res: Response, next: NextF
   try {
     // Get Header Authorization
     const authHeader = req.get('cookie');
-
     if (authHeader) {
       const bearer = authHeader.split('=')[0].toLowerCase();
       const token = authHeader.split('=')[1];

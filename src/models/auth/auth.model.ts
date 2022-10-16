@@ -47,14 +47,13 @@ export class AuthModel extends Model {
     pool.query(SqlRoot.SQL_UPDATE_REFRESH_TOKEN_USER(), data);
   };
 
-  public static async authenticateModel(valueQuery: modelQuery, callback: CallbackHandler) {}
+  public static async authenticateModel(valueQuery: modelQuery, callback: CallbackHandler) { }
   public static loginUserModel = async (valueQuery: modelQuery, callback: CallbackHandler): Promise<any> => {
     let result: QueryResult<any> | null = null;
     result = await pool.query(SqlRoot.SQL_LOGIN_USER_FULL(), [valueQuery.value.phone]);
     if (result.rows.length > 0 && result.rows.length) {
       const { password: hasPassword } = result.rows[0];
       const isPassword = comparePassword(valueQuery.value.password, hasPassword.trim());
-      console.log(isPassword);
       const error: Error = {
         message: 'Tài khoản hoặc mật khẩu không chính xác ',
         name: 'error login',
@@ -100,7 +99,7 @@ export class AuthModel extends Model {
     const data = valueQuery.value as [];
     try {
       pool.query(SqlRoot.SQL_REGISTER_USER_PS(), data, callback);
-    } catch (error) {}
+    } catch (error) { }
   }
   public static async verifyAuthMailerModel(valueQuery: modelQuery, callback: CallbackHandler) {
     const data: any[] = valueQuery.value as [];

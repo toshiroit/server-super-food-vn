@@ -35,7 +35,11 @@ const getAllUsers = async (req: Request, res: Response) => {
         });
       }
     });
-  } catch (error) { }
+  } catch (error) {
+    res.json({
+      error: error
+    })
+  }
 };
 const getMe = async (req: Request, res: Response) => {
   try {
@@ -68,8 +72,6 @@ const loginPhone = async (req: Request, res: Response, next: NextFunction) => {
     data: res.locals,
   });
   // await AuthModel.loginUserModel();
-  try {
-  } catch (error) { }
 };
 const VerifyTokenUser = async (req: Request<{}, {}, LoginAuth>, res: Response, next: NextFunction) => {
   try {
@@ -172,6 +174,7 @@ const loginUser = async (req: Request<{}, {}, LoginAuth>, res: Response) => {
               });
             }
           } else if (result?.command) {
+
           } else {
             res.status(401).json({
               message: 'Tài khoản hoặc mật khẩu không chính xác ',

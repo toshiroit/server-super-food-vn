@@ -1,6 +1,13 @@
 class SqlRoot {
   public static SQL_GET_USER_PHONE = () => {
-    return `SELECT * FROM user_sp,user_detail_sp where user_sp.code_user_detail=user_detail_sp.code_user_detail and user_sp.phone=($1)`;
+    return `
+          SELECT u.*,ud.* FROM user_sp u 
+          left 
+          join user_detail_sp ud 
+          on u.code_user_detail=ud.code_user_detail 
+          where u.phone =($1)
+
+    `;
   };
   public static SQL_GET_USER_USER_NAME = () => {
     return `select * from users where user_name=($1)`;
@@ -9,7 +16,13 @@ class SqlRoot {
     return `select * from users where phone=($1) OR user_name=($2)`;
   };
   public static SQL_LOGIN_USER_FULL = () => {
-    return `SELECT * FROM user_sp,user_detail_sp where user_sp.code_user_detail=user_detail_sp.code_user_detail and user_sp.phone=($1)`;
+    return `
+          SELECT u.*,ud.* FROM user_sp u 
+          left 
+          join user_detail_sp ud 
+          on u.code_user_detail=ud.code_user_detail 
+          where u.phone =($1)
+    `;
   };
 
   /**
@@ -112,9 +125,43 @@ class SqlRoot {
           where p.code_product=($1)
       `
   }
+  public static SQL_GET_CART_BY_CODE_USER = () => {
+    return ` select c.*,p.*,pd.discount,v.code_w_voucher,v.price_voucher,
+                v.name_voucher,v.quality as quality_voucher,v.time_start,v.time_end,v.description
+                from cart_sp c 
+	              join user_sp u on u.code_user = c.code_user 
+		            join product_sp p on p.code_product = c.code_product 
+                join product_detail_sp pd on pd.code_product_detail = p.code_product_detail
+                left join voucher_sp v on v.code_product = p.code_product
+		            where u.code_user=($1)`
+  }
 
-  public static SQL_GET_USER_TEST = () => {
-    return `select * from user_sp`
+  /*public static SQL_ADD_CART_BY_CODE_USER = () => {
+    return `INSERT INTO cart_sp (code_cart,code_user,code_product,quality_product,createdat)
+            VALUES ($1,$2,$3,$4,$5)`
+  }*/
+
+  public static SQL_ADD_CART_BY_CODE_USER = () => {
+    return `
+      INSERT INTO cart_sp (code_cart,code_user,code_product,quality_product,createdat)
+      VALUES %L on conflict (code_cart)
+      DO UPDATE SET quality_product=EXCLUDED.quality_product,createdat=EXCLUDED.createdat
+    `
+  }
+
+  public static SQL_UPDATE_CART_BY_CODE_USER = () => {
+    return `
+      UPDATE cart_sp 
+      SET 
+      quality_product=($4),createdat=($5),code_product=($3) 
+      where code_cart=($1) and code_user=($2)
+    `
+  }
+  public static SQL_REMOVE_CART_BY_CODE_CART_AND_USER = () => {
+    return `
+      DELETE FROM cart_sp c
+	    WHERE c.code_cart=($1) AND c.code_user=($2)
+    `
   }
 
 }
