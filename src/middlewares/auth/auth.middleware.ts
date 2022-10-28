@@ -74,11 +74,11 @@ export const validateCapChaMiddleware = (req: Request, res: Response, next: Next
 };
 export const validateTokenAdminMiddleware = (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authHeader = req.get('Authorization');
+    const authHeader = req.get('cookie');
     if (authHeader) {
-      const bearer = authHeader.split(' ')[0].toLowerCase();
-      const token = authHeader.split(' ')[1];
-      if (token && bearer === 'bearer') {
+      const bearer = authHeader.split('=')[0].toLowerCase();
+      const token = authHeader.split('=')[1];
+      if (token && bearer === 'jwt') {
         jwt.verify(token, config.refresh_token_secret as unknown as string, (err, decoded) => {
           if (err) {
             handleUnauthorizedError(next);
@@ -86,10 +86,11 @@ export const validateTokenAdminMiddleware = (req: Request, res: Response, next: 
             if (decoded) {
               res.locals.jwt = decoded;
               const data = decoded as JwtPayload;
-              if (data.role) {
-                if (data.role === 1 || Number(data.role) === 1) {
+              console.log("DATA : ", data)
+              if (data.code_role) {
+                if (data.code_role === 'ROLE-WIAO-ADMIN') {
                   next();
-                } else if (data.role === 0 || Number(data.role) === 0) {
+                } else if (data.code_role === 'ROLE-WIXO-USER') {
                   handlePermissionDenied(next);
                 } else {
                   handlePermissionDenied(next);

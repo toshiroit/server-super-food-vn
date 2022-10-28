@@ -7,12 +7,11 @@ import config from '../../config/config';
 import { LoginAuth, PhoneSendCodeAuth } from '../../types/schemas/authSchema.type';
 import { jwtTokens, verifyJWT } from '../../utils/jwt/jwt-token';
 import { makeId } from '../../libs/make_id';
-import { hasPassword } from '../../libs/hash_password';
-import { CheckCodeAuth, CheckPhoneAuth } from '../../types/auth/auth.type';
+import { comparePassword, hasPassword } from '../../libs/hash_password';
+import { AuthLoginAdmin, CheckCodeAuth, CheckPhoneAuth } from '../../types/auth/auth.type';
 import { GetCAPTCHACode } from '../../libs/capcha_number';
 
 
-const logoutAuth = async (req: Request, res: Response) => { };
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -73,7 +72,7 @@ const loginPhone = async (req: Request, res: Response, next: NextFunction) => {
   });
   // await AuthModel.loginUserModel();
 };
-const VerifyTokenUser = async (req: Request<{}, {}, LoginAuth>, res: Response, next: NextFunction) => {
+const VerifyTokenUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.get('Authorization');
     const authorization = req.headers.authorization;
@@ -92,7 +91,11 @@ const VerifyTokenUser = async (req: Request<{}, {}, LoginAuth>, res: Response, n
         },
       };
     }
-  } catch (error) { }
+  } catch (error) {
+    res.json({
+      error: "error"
+    })
+  }
 };
 const SendCodePhone = async (req: Request<{}, {}, PhoneSendCodeAuth>, res: Response) => {
   try {
@@ -118,19 +121,25 @@ const SendCodePhone = async (req: Request<{}, {}, PhoneSendCodeAuth>, res: Respo
     });
   }
 };
-const loginUser = async (req: Request<{}, {}, LoginAuth>, res: Response) => {
+const loginUser = async (req: Request, res: Response) => {
   // res.setHeader('Set-Cookie', 'visited=true; Max-Age=3000; HttpOnly, Secure');
+  console.log(req.body)
   try {
     const valueQuery: modelQuery = {
       table: 'users',
       value: {
-        code_user: makeId(14),
+        code_user: makeId(14).toUpperCase(),
+        code_user_detail: makeId(14).toUpperCase(),
         password: req.body.password,
         role: 'ROLE-WIAO-ADMIN',
         phone: req.body.phone,
         hashPassword: hasPassword(req.body.password),
         createdAt: new Date(Date.now()).toISOString(),
         status: false,
+        full_name: req.body.fullName as string || '',
+        sex: false,
+        code_restpass: makeId(14),
+        createdAtDetail: new Date(Date.now()).toISOString()
       },
       field: null,
       obj: {
@@ -174,7 +183,9 @@ const loginUser = async (req: Request<{}, {}, LoginAuth>, res: Response) => {
               });
             }
           } else if (result?.command) {
-
+            res.json({
+              message: result
+            })
           } else {
             res.status(401).json({
               message: 'Tài khoản hoặc mật khẩu không chính xác ',
@@ -341,11 +352,61 @@ const checkPhoneAuth = async (req: Request<{}, {}, CheckPhoneAuth>, res: Respons
     });
   }
 };
-const verifyCodeAuth = async (req: Request<{}, {}, CheckCodeAuth>, res: Response) => {
+const verifyCodeAuth = async (req: Request, res: Response) => {
   res.json({
     message: 'OK',
   });
 };
+
+
+const loginAuthAdmin = async (req: Request, res: Response) => {
+  try {
+    const { user_name, password } = req.body
+    const dataSQL: AuthLoginAdmin = {
+      user_name: user_name,
+      password: password
+    }
+    const dataUserModel = await AuthModel.getUserAdminModel(dataSQL)
+    if (dataUserModel.rows.length > 0) {
+      const isPassword = comparePassword(password, dataUserModel.rows[0].password.trim())
+      if (isPassword) {
+        delete dataUserModel.rows[0].password
+        delete dataUserModel.rows[0].passwordResetCode
+        delete dataUserModel.rows[0].refresh_token
+        delete dataUserModel.rows[0].verification_code
+        const tokens = jwtTokens(dataUserModel.rows[0])
+        res.cookie('jwt', tokens.refreshToken, {
+          expires: new Date(Date.now() + 900000),
+          httpOnly: true,
+          path: '/',
+          maxAge: 24 * 60 * 60 * 1000,
+          sameSite: 'strict'
+        })
+        res.json({
+          token: tokens.accessToken,
+          message: "Đăng nhập thành công ",
+          data: dataUserModel.rows
+        })
+      }
+      else {
+        res.status(400).json({
+          message: "Tên tài khoản hoặc mật khẩu không"
+        })
+      }
+    }
+    else {
+      res.status(400).json({
+        message: "Tên tài khoản hoặc mật khẩu không"
+      })
+    }
+  } catch (err) {
+    res.json({
+      error: "Error"
+    })
+  }
+
+}
+
 export {
   loginUser,
   loginPhone,
@@ -353,6 +414,7 @@ export {
   refreshToken,
   registerUser,
   getAllUsers,
+  loginAuthAdmin,
   getMe,
   VerifyTokenUser,
   SendCodePhone,

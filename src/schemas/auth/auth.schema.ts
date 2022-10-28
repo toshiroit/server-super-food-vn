@@ -122,6 +122,18 @@ export const checkPhoneAuthSchema = object({
       }),
   }),
 });
+
+export const loginAuthAdminSchema = object({
+  body: object({
+    user_name: string({
+      required_error: "Không được bỏ trống tên tài khoản "
+    }),
+    password: string({
+      required_error: "Không được bỏ trống mật khẩu "
+    })
+  })
+})
 export type RegisterAuth = TypeOf<typeof registerAuthSchema>['body'];
 export type VerifyAuth = TypeOf<typeof verifyAuthSchema>['params'];
 export type LoginAuth = TypeOf<typeof loginAuthSchema>['body'];
+export type LoginAuthAdmin = TypeOf<typeof loginAuthAdminSchema>['body']

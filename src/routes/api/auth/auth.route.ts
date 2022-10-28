@@ -1,15 +1,12 @@
 import { checkPhoneAuthSchema, verifyCodePhoneAuth } from './../../../schemas/auth/auth.schema';
 import {
-  validateCapChaMiddleware,
   sendCodeLimiter,
   validateTokenAdminMiddleware,
 } from './../../../middlewares/auth/auth.middleware';
 import * as AuthController from './../../../controllers/auth/auth.controller';
 import { Router } from 'express';
-import { UserController } from '../../../controllers/user/user.controller';
 import { validateResource } from '../../../middlewares/validateResource';
 import {
-  loginAuthPhone,
   loginAuthSchema,
   phoneAuthSendCode,
   registerAuthSchema,

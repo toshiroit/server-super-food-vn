@@ -31,7 +31,9 @@ const {
   FIREBASE_STORAGE_BUCKET,
   FIREBASE_MESSAING_SENDER_ID,
   FIREBASE_APP_ID,
-  FIREBASE_MEASUREMENT_ID
+  FIREBASE_MEASUREMENT_ID,
+  SEARCH_PRODUCT_LIMIT_SHOW,
+  ORDER_USER_LIMIT_SHOW,
 } = process.env;
 export default {
   port: PORT,
@@ -64,5 +66,7 @@ export default {
   firebase_storageBucket: FIREBASE_STORAGE_BUCKET as string,
   firebase_messagingSenderId: FIREBASE_MESSAING_SENDER_ID as string,
   firebase_appId: FIREBASE_APP_ID,
-  firebase_measurementId: FIREBASE_MEASUREMENT_ID
+  firebase_measurementId: FIREBASE_MEASUREMENT_ID,
+  search_product_limit_show: SEARCH_PRODUCT_LIMIT_SHOW as string,
+  order_user_limit_show: ORDER_USER_LIMIT_SHOW as string,
 };

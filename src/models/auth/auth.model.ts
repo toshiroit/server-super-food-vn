@@ -13,6 +13,7 @@ import { getDataObjectFields } from '../../libs/get_fields_object';
 import { getDataObjectValues } from '../../libs/get_values_object';
 import twilio from 'twilio';
 import { Error } from '../../interfaces/error.interface';
+import { AuthLoginAdmin } from '../../types/auth/auth.type';
 
 export class AuthModel extends Model {
   public static async sendCodeModel(
@@ -74,13 +75,26 @@ export class AuthModel extends Model {
         new Date(Date.now()).toISOString(),
         false,
       ];
+      const dataReg = [
+        valueQuery.value.code_user,
+        valueQuery.value.code_user_detail,
+        valueQuery.value.hashPassword,
+        'ROLE-WIXO-USER',
+        valueQuery.value.phone,
+        new Date(Date.now()).toISOString(),
+        false,
+        valueQuery.value.full_name,
+        valueQuery.value.sex,
+        valueQuery.value.code_restpass,
+        valueQuery.value.createdAtDetail,
+      ]
       const valueQueryRegister: modelQuery = {
         table: 'user_sp',
         obj: {
           condition: null,
         },
         field: null,
-        value: data,
+        value: dataReg,
       };
       this.registerUserModel(valueQueryRegister, (err, result) => {
         callback(err, result);
@@ -94,15 +108,16 @@ export class AuthModel extends Model {
    * @param callback return callback -> request and response query
    */
   public static async registerUserModel(valueQuery: modelQuery, callback: CallbackHandler) {
-    const field = getDataObjectFields(valueQuery.value);
-    const value = getDataObjectValues(valueQuery.value);
     const data = valueQuery.value as [];
-    try {
-      pool.query(SqlRoot.SQL_REGISTER_USER_PS(), data, callback);
-    } catch (error) { }
+    pool.query(SqlRoot.SQL_REGISTER_USER_PS(), data, callback);
   }
   public static async verifyAuthMailerModel(valueQuery: modelQuery, callback: CallbackHandler) {
     const data: any[] = valueQuery.value as [];
     return pool.query(SqlRoot.SQL_GET_ONE_USER_VERIFY_MAILER_CODE(), data, callback);
+  }
+
+  public static async getUserAdminModel(data: AuthLoginAdmin) {
+    const dataResult = [data.user_name]
+    return pool.query(SqlRoot.SQL_GET_USER_ADMIN(), dataResult)
   }
 }

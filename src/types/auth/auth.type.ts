@@ -13,3 +13,8 @@ export type CheckPhoneAuth = {
 export type CheckCodeAuth = {
   code: string;
 };
+
+export type AuthLoginAdmin = {
+  user_name: string;
+  password: string;
+}

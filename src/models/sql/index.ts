@@ -46,9 +46,27 @@ class SqlRoot {
     return `insert into ${table} (${fields}) VALUES (${values})`;
   };
 
-  public static SQL_REGISTER_USER_PS = () => {
-    return `insert into user_sp (code_user,password,code_role,phone,"createdAt",status) VALUES ($1,$2,$3,$4,$5,$6)`;
+  public static SQL_REGISTER_USER_PS_3 = () => {
+    return `insert into user_sp 
+            (code_user,password,code_role,phone,"createdAt",status) VALUES ($1,$2,$3,$4,$5,$6)
+    `;
   };
+
+  public static SQL_REGISTER_USER_PS = () => {
+    return `
+        with ins as (
+	        INSERT INTO user_sp 
+        	  (code_user,code_user_detail,password,code_role,phone,"createdAt",status) 
+	        VALUES 
+	          ($1,$2,$3,$4,$5,$6,$7)
+	        RETURNING code_user_detail
+        )
+          INSERT INTO user_detail_sp 
+          (code_user_detail, full_name, sex, code_restpass,"createdAT")
+            VALUES
+          ((select code_user_detail from ins),$8,$9,$10,$11)
+    `
+  }
   /**
    *
    * @param table table database
@@ -161,6 +179,121 @@ class SqlRoot {
     return `
       DELETE FROM cart_sp c
 	    WHERE c.code_cart=($1) AND c.code_user=($2)
+    `
+  }
+
+  public static SQL_GET_PRODUCT_BY_QUERY = () => {
+    return `
+      select * from product_sp p join product_detail_sp pd on 
+      p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
+      on pg.code_product_guide=pd.code_product_guide
+    `
+  }
+
+  public static SQL_GET_COUNT_PRODUCT = () => {
+    return `
+      select count(*) from product_sp p join product_detail_sp pd on 
+      p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
+      on pg.code_product_guide=pd.code_product_guide
+    `
+  }
+
+
+  public static SQL_UPDATE_USER_W1 = () => {
+    return `
+        UPDATE user_detail_sp SET full_name=($1),sex=($2),date_birth=($3) where code_user_detail=($4)
+    `
+  }
+
+  public static SQL_GET_ORDER_BY_USER = () => {
+    return `
+      SELECT o.*,od.*,
+      u.code_user,
+      u.avatar,
+      u.phone,
+      s.*
+      FROM order_sp o 
+      join user_sp u on u.code_user = o.code_user 
+      left join user_detail_sp ud  on ud.code_user_detail = u.code_user_detail  
+      join order_detail_sp od on od.code_order_detail = o.code_order_detail 
+      left join shop_sp s on s.code_shop = od.code_shop
+      where u.code_user = ($1)
+    `
+  }
+  public static SQL_GET_COUNT_ORDER_BY_USER = () => {
+    return `
+      SELECT 
+      count(*)
+      FROM order_sp o 
+      join user_sp u on u.code_user = o.code_user 
+      left join user_detail_sp ud  on ud.code_user_detail = u.code_user_detail  
+      join order_detail_sp od on od.code_order_detail = o.code_order_detail 
+      where u.code_user = ($1)
+    `
+  }
+
+  public static SQL_GET_ADDRESS_BY_USER = () => {
+    return `
+    select ar.*,ard.* from address_sp ar 
+    join address_detail_sp ard on ar.code_address_detail = ard.code_address_detail 
+    join user_sp u on u.code_user = ar.code_user 
+    where u.code_user=($1)
+    `
+  }
+
+  public static SQL_GET_ORDER_DETAIL_BY_USER = () => {
+    return `
+      SELECT o.*,od.*,
+      u.code_user,
+      u.avatar,
+      u.phone,
+      s.*,
+      p.*
+      FROM order_sp o 
+      join user_sp u on u.code_user = o.code_user 
+      left join user_detail_sp ud  on ud.code_user_detail = u.code_user_detail  
+      join order_detail_sp od on od.code_order_detail = o.code_order_detail 
+      left join shop_sp s on s.code_shop = od.code_shop
+      join product_sp p on p.code_product = ANY (o.code_product)
+      where u.code_user = ($1) and o.code_order = ($2)
+    `
+  }
+  public static SQL_GET_USER_ADMIN = () => {
+    return `
+          SELECT u.*,ud.* FROM user_sp u 
+          left 
+          join user_detail_sp ud 
+          on u.code_user_detail=ud.code_user_detail 
+          join role_sp r on r.code_role = u.code_role
+          where u.user_name = ($1) AND r.code_role='ROLE-WIAO-ADMIN'
+
+    `;
+  }
+  public static SQL_GET_PRODUCT_BY_SHOP = () => {
+    return `
+      select * from product_sp p join product_detail_sp pd on 
+      p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
+      on pg.code_product_guide=pd.code_product_guide
+      left join shop_sp s on s.code_shop = p.code_shop 
+      where p.code_shop=($1) ORDER BY p.evaluate 
+    `
+  }
+
+  public static SQL_GET_PRODUCT_BY_TOP = () => {
+    return `
+      select * from product_sp p join product_detail_sp pd on 
+      p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
+      on pg.code_product_guide=pd.code_product_guide
+      ORDER BY p.evaluate 
+    `
+  }
+
+  public static SQL_GET_PRODUCT_BY_PAY_TOP = () => {
+    return `
+      select * from product_sp p join product_detail_sp pd on 
+      p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
+      on pg.code_product_guide=pd.code_product_guide
+      ORDER BY pd.purchase
     `
   }
 
