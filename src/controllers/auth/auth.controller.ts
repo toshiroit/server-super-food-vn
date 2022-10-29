@@ -10,6 +10,7 @@ import { makeId } from '../../libs/make_id';
 import { comparePassword, hasPassword } from '../../libs/hash_password';
 import { AuthLoginAdmin, CheckCodeAuth, CheckPhoneAuth } from '../../types/auth/auth.type';
 import { GetCAPTCHACode } from '../../libs/capcha_number';
+import { getDataUser } from '../../libs/getUserToken';
 
 
 
@@ -390,13 +391,13 @@ const loginAuthAdmin = async (req: Request, res: Response) => {
       }
       else {
         res.status(400).json({
-          message: "Tên tài khoản hoặc mật khẩu không"
+          message: "Tên tài khoản hoặc mật khẩu không đúng"
         })
       }
     }
     else {
       res.status(400).json({
-        message: "Tên tài khoản hoặc mật khẩu không"
+        message: "Tên tài khoản hoặc mật khẩu không đúng"
       })
     }
   } catch (err) {
@@ -406,8 +407,46 @@ const loginAuthAdmin = async (req: Request, res: Response) => {
   }
 
 }
+const getMeShop = async (req: Request, res: Response) => {
+  try {
+    const { cookie } = req.headers;
+    const bearer = cookie?.split('=')[0].toLowerCase();
+    const token = cookie?.split('=')[1];
+    const dataUser = getDataUser(token, bearer)
+    if (dataUser) {
+      const data = dataUser.payload
+      await AuthModel.getMeShopModel({ code_user: data.code_user.trim() || '' }, (err, result) => {
+        if (err) {
+          res.json({
+            error: err
+          })
+        }
+        else {
+          if (result) {
+            if (result.rows.length > 0) {
+              res.json({
+                data: result.rows
+              })
+            }
+            else {
+              res.json({
+                message: "Lỗi hệ thông"
+              })
+            }
+          }
+        }
+      })
 
+    }
+  } catch (err) {
+    res.json({
+      error: "Error"
+    })
+  }
+
+}
 export {
+  getMeShop,
   loginUser,
   loginPhone,
   verifyAuthMailer,

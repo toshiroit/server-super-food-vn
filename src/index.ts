@@ -7,7 +7,7 @@ import ratelimit from 'express-rate-limit';
 import errorMiddleware from './middlewares/error.middleware';
 import pool from './database';
 import routes from './routes';
-import adminRoutes from './routes/admin'
+import shopRoutes from './routes/shop'
 import cookieParser from 'cookie-parser';
 import config from './config/config';
 import bodyParser from 'body-parser';
@@ -32,7 +32,8 @@ app.use(
     origin: [
       config.domain_admin, config.domain_web_client, config.domain_web_client_shop,
       'https://super-food-vn.vercel.app',
-      'http://localhost:3001'
+      'http://localhost:3001',
+      'https://admin-super-food.vercel.app'
     ],
     methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH', 'OPTIONS'],
     credentials: true,
@@ -52,7 +53,7 @@ app.use(
 
 // Add routing for / path
 app.use('/api', routes);
-app.use('/api/v1/sp-admin', adminRoutes)
+app.use('/api/v1/sp-shop', shopRoutes)
 app.use(errorMiddleware);
 
 app.listen(process.env.PORT || 8080, async () => {

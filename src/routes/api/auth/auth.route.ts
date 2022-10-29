@@ -1,7 +1,6 @@
 import { checkPhoneAuthSchema, verifyCodePhoneAuth } from './../../../schemas/auth/auth.schema';
 import {
   sendCodeLimiter,
-  validateTokenAdminMiddleware,
 } from './../../../middlewares/auth/auth.middleware';
 import * as AuthController from './../../../controllers/auth/auth.controller';
 import { Router } from 'express';
@@ -51,7 +50,6 @@ routes.get(ROUTES_NAME.AUTH.USER, validateTokenMiddleware, AuthController.getMe)
  * Get All user
  * Login => true => role admin
  */
-routes.get(ROUTES_NAME.AUTH.GET_ALL_USERS, validateTokenAdminMiddleware, AuthController.getAllUsers);
 
 /**
  * Rest password user

@@ -31,7 +31,7 @@ export const searchProductByType = async (req: Request<null, null, null, SearchP
             rows: result.rows
           }
           const { tutorials, totalItems, totalPages, currentPage } =
-            getPagingData(dataPaging, Number(dataQuery.page) || 0, Number(config.search_product_limit_show) || 2)
+            getPagingData(dataPaging, Number(dataQuery.page) || 0, Number(config.search_product_limit_show) || 30)
           res.json({
             totalItems,
             totalPages,

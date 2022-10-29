@@ -72,7 +72,7 @@ export const validateCapChaMiddleware = (req: Request, res: Response, next: Next
     handleUnauthorizedError(next);
   }
 };
-export const validateTokenAdminMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const validateTokenAdminShopMiddleware = (req: Request, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.get('cookie');
     if (authHeader) {
@@ -86,11 +86,10 @@ export const validateTokenAdminMiddleware = (req: Request, res: Response, next: 
             if (decoded) {
               res.locals.jwt = decoded;
               const data = decoded as JwtPayload;
-              console.log("DATA : ", data)
               if (data.code_role) {
-                if (data.code_role === 'ROLE-WIAO-ADMIN') {
+                if (data.code_role.trim() === 'ROLE-WIXX-SHOP') {
                   next();
-                } else if (data.code_role === 'ROLE-WIXO-USER') {
+                } else if (data.code_role.trim() === 'ROLE-WIXO-USER') {
                   handlePermissionDenied(next);
                 } else {
                   handlePermissionDenied(next);

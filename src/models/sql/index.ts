@@ -265,9 +265,21 @@ class SqlRoot {
           join user_detail_sp ud 
           on u.code_user_detail=ud.code_user_detail 
           join role_sp r on r.code_role = u.code_role
-          where u.user_name = ($1) AND r.code_role='ROLE-WIAO-ADMIN'
+          where u.user_name = ($1) AND r.code_role='ROLE-WIXX-SHOP'
 
     `;
+  }
+
+  public static SQL_GET_ME_SHOP = () => {
+    return `
+    SELECT s.*,sd.* FROM user_sp u
+    left
+    join user_detail_sp ud on u.code_user_detail=ud.code_user_detail
+    join role_sp r on r.code_role = u.code_role
+    join shop_sp s on s.code_shop= u.code_shop
+    join shop_detail_sp sd on sd.code_shop_detail = s.code_shop_detail
+    where u.code_user = ($1) AND r.code_role='ROLE-WIXX-SHOP'
+    `
   }
   public static SQL_GET_PRODUCT_BY_SHOP = () => {
     return `
@@ -278,6 +290,16 @@ class SqlRoot {
       where p.code_shop=($1) ORDER BY p.evaluate 
     `
   }
+  public static SQL_GET_COUNT_PRODUCT_BY_SHOP = () => {
+    return `
+      select count(*) from product_sp p join product_detail_sp pd on 
+      p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
+      on pg.code_product_guide=pd.code_product_guide
+      left join shop_sp s on s.code_shop = p.code_shop 
+      where p.code_shop=($1) 
+    `
+  }
+
 
   public static SQL_GET_PRODUCT_BY_TOP = () => {
     return `

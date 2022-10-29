@@ -54,6 +54,7 @@ export const ROUTES_NAME = {
 export const ROUTES_NAME_ADMIN = {
   AUTH: {
     LOGIN: '/login',
-    GET_ME: '/getMe'
+    GET_ME: '/getMe',
+    GET_ME_SHOP: '/getMeShop'
   }
 }
