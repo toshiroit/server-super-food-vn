@@ -34,7 +34,11 @@ const {
   FIREBASE_MEASUREMENT_ID,
   SEARCH_PRODUCT_LIMIT_SHOW,
   ORDER_USER_LIMIT_SHOW,
-  TABLE_PRODUCT_SHOP_LIMIT_SHOW
+  TABLE_PRODUCT_SHOP_LIMIT_SHOW,
+  CLOUDINARY_CLOUD_NAME,
+  CLOUDINARY_API_KEY,
+  CLOUDINARY_API_SECRET,
+  CLOUDINARY_API_ENVIRONMENT_VARIABLE_URL
 } = process.env;
 export default {
   port: PORT,
@@ -70,5 +74,9 @@ export default {
   firebase_measurementId: FIREBASE_MEASUREMENT_ID,
   search_product_limit_show: SEARCH_PRODUCT_LIMIT_SHOW as string,
   order_user_limit_show: ORDER_USER_LIMIT_SHOW as string,
-  table_product_shop_limit_show: TABLE_PRODUCT_SHOP_LIMIT_SHOW as string
+  table_product_shop_limit_show: TABLE_PRODUCT_SHOP_LIMIT_SHOW as string,
+  cloudinary_cloud_name: CLOUDINARY_CLOUD_NAME,
+  cloudinary_api_key: CLOUDINARY_API_KEY,
+  cloudinary_api_secret: CLOUDINARY_API_SECRET,
+  cloudinary_api_environment_variable_url: CLOUDINARY_API_ENVIRONMENT_VARIABLE_URL
 };

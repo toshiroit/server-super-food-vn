@@ -13,7 +13,6 @@ export const getAllProductShop = async (req: Request, res: Response) => {
     const data_user = getDataUser(token, bearer)
     const code_shop = data_user?.payload.code_shop as string || ''
     const dataCountProductShop = await ProductShopModel.getCountAllProductShopModel({ code_shop: code_shop })
-    console.log("COUNT : ", dataCountProductShop.rows)
     await ProductShopModel.getAllProductShopModel({ code_shop: code_shop, page: Number(page) || 1 }, (err, result) => {
       if (err) {
         res.json({

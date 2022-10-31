@@ -319,5 +319,20 @@ class SqlRoot {
     `
   }
 
+  public static SQL_GET_CATEGORY_PRODUCT_BY_SHOP = () => {
+    return `
+        select ct.* from category_sp ct 
+        join product_detail_sp pd on ct.category_code=ANY (pd.category_code)
+        join product_sp p on p.code_product_detail = pd.code_product_detail
+        where p.code_shop=($1)
+    `
+  }
+
+  public static SQL_ADD_PRODUCT_BY_SHOP = () => {
+    return `
+
+    `
+  }
+
 }
 export default SqlRoot;

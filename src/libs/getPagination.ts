@@ -1,8 +1,8 @@
 import config from "../config/config";
 
-export const getPagination = (page: number) => {
-  const limit = Number(config.search_product_limit_show) || 2;
-  const offset = (page - 1) * limit;
+export const getPagination = (page: number, limit: number) => {
+  const limitResult = limit || 2;
+  const offset = (page - 1) * limitResult;
 
   return { limit, offset };
 };

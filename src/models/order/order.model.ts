@@ -1,3 +1,4 @@
+import config from "../../config/config";
 import pool from "../../database";
 import { CallbackHandler } from "../../interfaces/model_query/modelQuery";
 import { getPagination } from "../../libs/getPagination";
@@ -9,7 +10,8 @@ export class OrderModel extends Model {
   public static async getOrderByUserModel(data: OrderGetByUserData, callback: CallbackHandler) {
     const dataSQL = [data.codeUser]
 
-    const { limit, offset } = getPagination(Number(data.page || 0) === 0 ? 1 : Number(data.page))
+    const { limit, offset } =
+      getPagination(Number(data.page || 0) === 0 ? 1 : Number(data.page), Number(config.order_user_limit_show))
     let queryOrder = ''
     if (limit !== null && offset !== null) {
       queryOrder += ` LIMIT ${limit} OFFSET ${offset}`

@@ -15,10 +15,13 @@ export class ProductShopModel extends Model {
 
   public static async getAllProductShopModel(data: { code_shop: string, page: number }, callback: CallbackHandler) {
     let querySearch = ''
-    const { offset, limit } = getPagination(data.page)
+    const { offset, limit } = getPagination(data.page, Number(config.table_product_shop_limit_show))
+
+    console.log("offset : ", offset)
     const dataResult = [data.code_shop]
     querySearch += ` LIMIT ${Number(config.table_product_shop_limit_show) || 10} OFFSET ${offset} `
     const queryResult = SqlRoot.SQL_GET_PRODUCT_BY_SHOP() + querySearch
+    console.log(queryResult)
     pool.query(queryResult, dataResult, callback)
   }
 }

@@ -1,3 +1,4 @@
+import config from "../../config/config";
 import pool from "../../database";
 import { CallbackHandler } from "../../interfaces/model_query/modelQuery";
 import { getPagination } from "../../libs/getPagination";
@@ -18,7 +19,7 @@ export class ProductModel extends Model {
         queryGetProduct += ` ORDER BY pd."createdAt" DESC `
       }
       else if (data.typeSort === 'shop-new') {
-        console.log("CHUA")
+        queryGetProduct += ``
       }
       else if (data.typeSort === 'pay-top') {
         queryGetProduct += ` ORDER BY pd.purchase DESC `
@@ -80,7 +81,7 @@ export class ProductModel extends Model {
     pool.query(queryResult, callback)
   }
   public static async getProductByQueryModel(data: SearchProductByQuery, callback: CallbackHandler) {
-    const { limit, offset } = getPagination(Number(data.page || 1))
+    const { limit, offset } = getPagination(Number(data.page || 1), Number(config.search_product_limit_show))
 
     let querySearch = ''
     const dataSql = []
