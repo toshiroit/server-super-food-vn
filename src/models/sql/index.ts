@@ -144,13 +144,14 @@ class SqlRoot {
       `
   }
   public static SQL_GET_CART_BY_CODE_USER = () => {
-    return ` select c.*,p.*,pd.discount,v.code_w_voucher,v.price_voucher,
+    return ` select c.*,p.*,s.*,pd.discount,v.code_w_voucher,v.price_voucher,
                 v.name_voucher,v.quality as quality_voucher,v.time_start,v.time_end,v.description
                 from cart_sp c 
 	              join user_sp u on u.code_user = c.code_user 
 		            join product_sp p on p.code_product = c.code_product 
                 join product_detail_sp pd on pd.code_product_detail = p.code_product_detail
                 left join voucher_sp v on v.code_product = p.code_product
+                left join shop_sp s on s.code_shop = p.code_shop
 		            where u.code_user=($1)`
   }
 
@@ -242,6 +243,8 @@ class SqlRoot {
   }
 
   public static SQL_GET_ORDER_DETAIL_BY_USER = () => {
+    //join product_sp p on p.code_product = ANY (o.code_product)
+
     return `
       SELECT o.*,od.*,
       u.code_user,
@@ -254,8 +257,7 @@ class SqlRoot {
       left join user_detail_sp ud  on ud.code_user_detail = u.code_user_detail  
       join order_detail_sp od on od.code_order_detail = o.code_order_detail 
       left join shop_sp s on s.code_shop = od.code_shop
-      join product_sp p on p.code_product = ANY (o.code_product)
-      where u.code_user = ($1) and o.code_order = ($2)
+            where u.code_user = ($1) and o.code_order = ($2)
     `
   }
   public static SQL_GET_USER_ADMIN = () => {
@@ -321,17 +323,77 @@ class SqlRoot {
 
   public static SQL_GET_CATEGORY_PRODUCT_BY_SHOP = () => {
     return `
-        select ct.* from category_sp ct 
-        join product_detail_sp pd on ct.category_code=ANY (pd.category_code)
+      select c.*
+        from product_detail_sp pd  
         join product_sp p on p.code_product_detail = pd.code_product_detail
+        cross join jsonb_to_recordset(pd.category_code) as al(code varchar)
+        inner join category_sp c on c.category_code=al.code
         where p.code_shop=($1)
     `
   }
 
   public static SQL_ADD_PRODUCT_BY_SHOP = () => {
     return `
-
+      with insp as (
+	      INSERT INTO product_sp(
+	      code_product, code_shop, image, name, price, quality, evaluate, code_product_detail)
+	      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+  	    RETURNING code_product_detail
+      ),
+       inspd as (
+	      INSERT INTO product_detail_sp(
+	      code_product_detail, purchase, discount, code_product_guide, "createdAt", type_product, category_code,"date_start","date_end",is_show)
+	      VALUES 
+	      ((select code_product_detail from insp ),$9,$10,$11,$12,$13,$14,$15,$16,$17)
+	      RETURNING code_product_guide
+      )
+	      INSERT INTO product_guide_sp(
+	      code_product_guide, description, guide, "return", note)
+	      VALUES ((select code_product_guide from inspd ), $18, $19, $20, $21)
     `
+  }
+  public static SQL_GET_ALL_CATEGORY_BY_SHOP = () => {
+    return 'select * from category_sp c where c.code_shop=($1)'
+  }
+
+  public static SQL_GET_PRODUCT_BY_CODE_AND_SHOP = () => {
+    return `
+      select * from product_sp p join product_detail_sp pd on 
+      p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
+      on pg.code_product_guide=pd.code_product_guide
+      WHERE p.code_shop=($1) and p.code_product=($2)
+    `
+  }
+
+  public static SQL_GET_ALL_PRODUCT_BY_ORDER_AND_SHOP = () => {
+    return `
+      select p.* from order_sp o 
+      join order_detail_sp od on od.code_order_detail = o.code_order_detail
+      cross join jsonb_to_recordset(o.code_product) as al(code varchar)
+      inner join product_sp p on p.code_product = al.code
+      where od.code_shop = ($1)
+    `
+  }
+
+  public static SQL_GET_ALL_ORDER_BY_SHOP = () => {
+    return `
+      select * from order_sp o 
+      join order_detail_sp od on od.code_order_detail = o.code_order_detail
+      where od.code_shop=($1)
+    `
+  }
+
+  public static SQL_HIDE_ORDER_BY_SHOP = () => {
+    return `
+        UPDATE order_sp SET is_show=($1)
+        where code_shop=($2) and code_order=($3)
+      `
+  }
+
+  public static SQL_REMOVE_ORDER_SHOP = () => {
+    return `
+
+      `
   }
 
 }

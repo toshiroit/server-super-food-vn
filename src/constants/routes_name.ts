@@ -59,10 +59,25 @@ export const ROUTES_NAME_SHOP = {
   },
   CATEGORY: {
     HOME: '/category',
-    CATEGORY_ALL: '/get-by-product-shop'
+    CATEGORY_ALL: '/get-by-product-shop',
+    CATEGORY_ALL_BY_SHOP: '/get-all-category-by-shop'
+  },
+  PRODUCT: {
+    HOME: '/product',
+    ADD_PRODUCT: '/add-product',
+    GET_PRODUCT_BY_CODE: '/get-product-by-code-and-shop',
+    GET_ALL_PRODUCT: '/get-all-product'
   },
   UPLOAD: {
     home: '/upload',
-    image: '/images'
+    image: '/image'
+  },
+  ORDER: {
+    HOME: '/order',
+    ADD_ORDER_BY_SHOP: '/add-order-by-shop',
+    HIDE_ORDER_BY_SHOP: '/hide-order-by-shop',
+    REMOVE_ORDER_BY_SHOP: '/remove-order-by-shop',
+    GET_ALL_ORDER_BY_SHOP: '/get-all-order-by-shop',
+    GET_ALL_PRODUCT_BY_ORDER_AND_SHOP: '/get-all-product-by-order-and-shop'
   }
 }

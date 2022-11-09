@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { getPagination } from "../../libs/getPagination";
 import { ProductModel } from "../../models/product/product.model";
+import { AddProductShop } from "../../schemas/shop/product/product.schema";
 import { GetAllProductShop, GetAllProductTp, GetProductDetailTp } from "../../types/product/product.type";
 
 export const productGetAll = async (req: Request, res: Response) => {

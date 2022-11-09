@@ -15,18 +15,23 @@ dotenv.config();
 
 // Create instance server
 const app: Application = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({
+  limit: '50mb'
+}));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(bodyParser.json());
 // HTTP request logger middleware
 app.use(morgan('common'));
 // HTTP Security middleware
 app.use(helmet());
-// Add cors security server
+
+// Set limit upload 
 
 // set cookies
 app.use(cookieParser());
+app.use(express.static(__dirname));
 
+// Change domain cors
 app.use(
   cors({
     origin: [
@@ -40,6 +45,17 @@ app.use(
     preflightContinue: false,
   })
 );
+/*
+origin: [
+      config.domain_admin, config.domain_web_client, config.domain_web_client_shop,
+      'https://super-food-vn.vercel.app',
+      'http://localhost:3001',
+      'https://admin-super-food.vercel.app'
+    ]
+
+*/
+
+
 // Apply the rate limiting middleware to all request
 // app.use(
 //   ratelimit({
@@ -52,6 +68,8 @@ app.use(
 // );
 
 // Add routing for / path
+
+
 app.use('/api', routes);
 app.use('/api/v1/sp-shop', shopRoutes)
 app.use(errorMiddleware);

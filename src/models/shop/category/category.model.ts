@@ -10,4 +10,9 @@ export class CategoryModel extends Model {
     const dataSQL = [data.code_shop]
     pool.query(SqlRoot.SQL_GET_CATEGORY_PRODUCT_BY_SHOP(), dataSQL, callback)
   }
+
+  public static async getAllCategoryByShopModel(data: { code_shop: string }, callback: CallbackHandler) {
+    console.log("CODE SHOP : ", data.code_shop)
+    pool.query(SqlRoot.SQL_GET_ALL_CATEGORY_BY_SHOP(), [data.code_shop.trim()], callback)
+  }
 }

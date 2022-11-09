@@ -2,6 +2,7 @@ import config from "../../config/config";
 import pool from "../../database";
 import { CallbackHandler } from "../../interfaces/model_query/modelQuery";
 import { getPagination } from "../../libs/getPagination";
+import { toLowerCaseNonAccentVietnamese } from "../../libs/nonAccentVietnamese";
 import { GetAllProductShop, GetAllProductTp, GetProductDetailTp } from "../../types/product/product.type";
 import { SearchProductByQuery } from "../../types/search/search";
 import Model from "../Model";
@@ -82,14 +83,13 @@ export class ProductModel extends Model {
   }
   public static async getProductByQueryModel(data: SearchProductByQuery, callback: CallbackHandler) {
     const { limit, offset } = getPagination(Number(data.page || 1), Number(config.search_product_limit_show))
-
     let querySearch = ''
     const dataSql = []
     querySearch += ' where '
 
     if (data.q) {
-      querySearch += ' p.name like ($1) '
-      dataSql.push(`%${data.q}%`)
+      querySearch += ' convertTVkdau(p.name) ilike ($1) '
+      dataSql.push(`%${toLowerCaseNonAccentVietnamese(data.q)}%`)
     }
     if (data.sort) {
       if (data.sort.trim() === '0') {
@@ -105,6 +105,7 @@ export class ProductModel extends Model {
     }
 
     const queryResult = SqlRoot.SQL_GET_PRODUCT_BY_QUERY() + querySearch
+    //queryResult = queryResult
     return pool.query(queryResult, dataSql, callback)
   }
 
