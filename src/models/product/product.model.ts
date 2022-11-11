@@ -14,7 +14,7 @@ export class ProductModel extends Model {
    * @params {data} data code and name
    */
   public static async getAllProductModel(data: GetAllProductTp, callback: CallbackHandler) {
-    let queryGetProduct = ''
+    let queryGetProduct = ' WHERE is_show=1 and pd.date_end >= now() '
     if (data) {
       if (data.typeSort === 'new-product') {
         queryGetProduct += ` ORDER BY pd."createdAt" DESC `
@@ -46,7 +46,12 @@ export class ProductModel extends Model {
     let queryCount = ''
     const dataQ = []
     if (data.q) {
-      queryCount += ' where p.name like ($1) '
+      queryCount += ` where convertTVkdau(p.name) like ($1) 
+      and pd.is_show=1 
+      and pd.date_end IS NULL 
+      or pd.date_end is NOT null and pd.date_end < now()
+
+      `
       dataQ.push(`%${data.q}%`)
     }
 
@@ -81,16 +86,27 @@ export class ProductModel extends Model {
     const queryResult = SqlRoot.SQL_GET_PRODUCT_BY_PAY_TOP() + querySearch
     pool.query(queryResult, callback)
   }
+
+  public static async getAllProductByNewShop(data: { limit: string }, callback: CallbackHandler) {
+    let querySearch = '  '
+    if (data.limit) {
+      querySearch += ` LIMIT ${data.limit}`
+    }
+    const queryResult = SqlRoot.SQL_GET_PRODUCT_BY_NEW_SHOP() + querySearch
+    pool.query(queryResult, callback)
+  }
   public static async getProductByQueryModel(data: SearchProductByQuery, callback: CallbackHandler) {
     const { limit, offset } = getPagination(Number(data.page || 1), Number(config.search_product_limit_show))
     let querySearch = ''
     const dataSql = []
-    querySearch += ' where '
-
     if (data.q) {
-      querySearch += ' convertTVkdau(p.name) ilike ($1) '
+      querySearch += ' where convertTVkdau(p.name) ilike ($1) and '
       dataSql.push(`%${toLowerCaseNonAccentVietnamese(data.q)}%`)
     }
+    querySearch += ` 
+     pd.is_show=1 
+    and pd.date_end IS NULL 
+    or pd.date_end is NOT null and pd.date_end < now() `
     if (data.sort) {
       if (data.sort.trim() === '0') {
         querySearch += ' ORDER BY p.name ASC '
@@ -109,4 +125,11 @@ export class ProductModel extends Model {
     return pool.query(queryResult, dataSql, callback)
   }
 
+
+  public static async getAllTypeProductByShopModel(data: { code_shop: string }, callback: CallbackHandler) {
+    pool.query(SqlRoot.SQL_GET_ALL_PRODUCT_TYPE(), [data.code_shop], callback)
+  }
+
 }
+
+

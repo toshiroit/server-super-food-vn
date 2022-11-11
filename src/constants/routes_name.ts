@@ -25,7 +25,8 @@ export const ROUTES_NAME = {
     GET_PRODUCT_BY_NAME_OR_CODE: '/get',
     GET_ALL_PRODUCT_SHOP: '/get-all-shop',
     GET_ALL_PRODUCT_TOP: '/get-all-top',
-    GET_ALL_PRODUCT_PAY_TOP: '/get-all-pay-top'
+    GET_ALL_PRODUCT_PAY_TOP: '/get-all-pay-top',
+    GET_ALL_PRODUCT_NEW_SHOP: '/get-all-new-shop',
   },
   COMMENT: {
     ADD_NEW_COMMENT: '/add-comment',
@@ -66,11 +67,17 @@ export const ROUTES_NAME_SHOP = {
     HOME: '/product',
     ADD_PRODUCT: '/add-product',
     GET_PRODUCT_BY_CODE: '/get-product-by-code-and-shop',
-    GET_ALL_PRODUCT: '/get-all-product'
+    GET_ALL_PRODUCT: '/get-all-product',
+    GET_ALL_TYPE_PRODUCT: '/get-all-type-product',
+    ADD_TYPE_PRODUCT: '/add-type-product',
+    REMOVE_PRODUCT_BY_SHOP: '/remove-product-by-shop'
   },
   UPLOAD: {
     home: '/upload',
-    image: '/image'
+    image: '/image',
+    images: '/images',
+    video: '/video',
+    videos: 'videos'
   },
   ORDER: {
     HOME: '/order',
@@ -78,6 +85,7 @@ export const ROUTES_NAME_SHOP = {
     HIDE_ORDER_BY_SHOP: '/hide-order-by-shop',
     REMOVE_ORDER_BY_SHOP: '/remove-order-by-shop',
     GET_ALL_ORDER_BY_SHOP: '/get-all-order-by-shop',
-    GET_ALL_PRODUCT_BY_ORDER_AND_SHOP: '/get-all-product-by-order-and-shop'
+    GET_ALL_PRODUCT_BY_ORDER_AND_SHOP: '/get-all-product-by-order-and-shop',
+
   }
 }

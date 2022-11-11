@@ -124,7 +124,6 @@ const SendCodePhone = async (req: Request<{}, {}, PhoneSendCodeAuth>, res: Respo
 };
 const loginUser = async (req: Request, res: Response) => {
   // res.setHeader('Set-Cookie', 'visited=true; Max-Age=3000; HttpOnly, Secure');
-  console.log(req.body)
   try {
     const valueQuery: modelQuery = {
       table: 'users',
@@ -160,7 +159,7 @@ const loginUser = async (req: Request, res: Response) => {
           delete result.rows[0].verification_code;
           const tokens = jwtTokens(result.rows[0]);
           res.cookie('jwt', tokens.refreshToken, {
-            expires: new Date(Date.now() + 900000),
+            expires: new Date(Date.now() + 12000),
             httpOnly: true,
             path: '/',
             maxAge: 24 * 60 * 60 * 1000,

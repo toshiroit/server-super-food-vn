@@ -4,7 +4,7 @@ import * as uploadController from '../../../controllers/upload/upload.controller
 import multer from "multer";
 import { uploadFile } from "../../../upload";
 
-const upload = multer()
 const router = Router()
 router.post(ROUTES_NAME_SHOP.UPLOAD.image, uploadFile.single('image'), uploadController.uploadImage)
+router.post(ROUTES_NAME_SHOP.UPLOAD.images, uploadFile.array('images', 10), uploadController.uploadImages)
 export default router;

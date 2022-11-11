@@ -8,4 +8,5 @@ router.get(ROUTES_NAME.PRODUCT.GET_PRODUCT_BY_NAME_OR_CODE, productController.pr
 router.get(ROUTES_NAME.PRODUCT.GET_ALL_PRODUCT_SHOP, productController.getAllProductByShop)
 router.get(ROUTES_NAME.PRODUCT.GET_ALL_PRODUCT_TOP, productController.getAllProductByTop)
 router.get(ROUTES_NAME.PRODUCT.GET_ALL_PRODUCT_PAY_TOP, productController.getAllProductByPayTop)
+router.get(ROUTES_NAME.PRODUCT.GET_ALL_PRODUCT_NEW_SHOP, productController.getAllProductByNewShop)
 export default router;

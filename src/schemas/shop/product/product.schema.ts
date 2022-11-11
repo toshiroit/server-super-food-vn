@@ -1,4 +1,4 @@
-import z, { preprocess, array, date, number, object, string, TypeOf, ZodType, lazy, union, } from "zod";
+import z, { preprocess, array, date, number, object, string, TypeOf, ZodType, lazy, union, boolean, } from "zod";
 import { getProductByCodeAndShop } from "../../../controllers/shop/product/product.controller";
 const dateSchema = preprocess((arg) => {
   if (typeof arg == "string" || arg instanceof Date) return new Date(arg);
@@ -21,6 +21,21 @@ export const getProductByCodeAndShopSchema = object({
     })
   })
 })
+
+export const addTypeProductSchema = object({
+  body: object({
+    code_product_type: string({
+      required_error: "Mã loại sản phẩm không được bỏ trống"
+    }).max(15, 'Mã sản phẩm chỉ tối đa 15 chữ '),
+    name_product_type: string({
+      required_error: "Tên sản phẩm không được bỏ trống"
+    }),
+    status: boolean({
+      required_error: "Tình trạng không được bỏ trống"
+    }),
+  })
+})
+
 export const addProductShopSchema = object({
   body: object({
     name_product: string({
@@ -81,7 +96,11 @@ export const addProductShopSchema = object({
       required_error: 'Trường này không được bỏ trống'
     }),
     product_date: dateSchema,
-    type_product: jsonSchema
+    type_product: jsonSchema,
+    images: jsonSchema,
+    code_product_type: string({
+      required_error: 'Mã loại sản phẩm'
+    }).max(15, 'Mã chỉ chứa được 15 kí tự ')
   })
 })
 

@@ -187,7 +187,7 @@ class SqlRoot {
     return `
       select * from product_sp p join product_detail_sp pd on 
       p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
-      on pg.code_product_guide=pd.code_product_guide
+      on pg.code_product_guide=pd.code_product_guide 
     `
   }
 
@@ -289,7 +289,7 @@ class SqlRoot {
       p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
       on pg.code_product_guide=pd.code_product_guide
       left join shop_sp s on s.code_shop = p.code_shop 
-      where p.code_shop=($1) ORDER BY p.evaluate 
+      where p.code_shop=($1) 
     `
   }
   public static SQL_GET_COUNT_PRODUCT_BY_SHOP = () => {
@@ -308,7 +308,7 @@ class SqlRoot {
       select * from product_sp p join product_detail_sp pd on 
       p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
       on pg.code_product_guide=pd.code_product_guide
-      ORDER BY p.evaluate 
+      ORDER BY p.evaluate DESC
     `
   }
 
@@ -317,7 +317,19 @@ class SqlRoot {
       select * from product_sp p join product_detail_sp pd on 
       p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
       on pg.code_product_guide=pd.code_product_guide
-      ORDER BY pd.purchase
+      ORDER BY pd.purchase DESC
+    `
+  }
+
+  public static SQL_GET_PRODUCT_BY_NEW_SHOP = () => {
+    return `
+      select * from product_sp p 
+      join product_detail_sp pd on p.code_product_detail=pd.code_product_detail 
+      join product_guide_sp pg on pg.code_product_guide=pd.code_product_guide
+      join shop_sp s on s.code_shop = p.code_shop
+      join shop_detail_sp sd on sd.code_shop_detail = s.code_shop_detail
+      where pd.is_show=1
+      ORDER BY sd.createdat DESC
     `
   }
 
@@ -336,20 +348,20 @@ class SqlRoot {
     return `
       with insp as (
 	      INSERT INTO product_sp(
-	      code_product, code_shop, image, name, price, quality, evaluate, code_product_detail)
-	      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+	      code_product, code_shop, image, name, price, quality, evaluate, code_product_detail,code_product_type)
+	      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
   	    RETURNING code_product_detail
       ),
        inspd as (
 	      INSERT INTO product_detail_sp(
-	      code_product_detail, purchase, discount, code_product_guide, "createdAt", type_product, category_code,"date_start","date_end",is_show)
+	      code_product_detail, purchase, discount, code_product_guide, "createdAt", type_product, category_code,"date_start","date_end",is_show,images,free_ship)
 	      VALUES 
-	      ((select code_product_detail from insp ),$9,$10,$11,$12,$13,$14,$15,$16,$17)
+	      ((select code_product_detail from insp ),$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
 	      RETURNING code_product_guide
       )
 	      INSERT INTO product_guide_sp(
 	      code_product_guide, description, guide, "return", note)
-	      VALUES ((select code_product_guide from inspd ), $18, $19, $20, $21)
+	      VALUES ((select code_product_guide from inspd ), $21, $22, $23, $24)
     `
   }
   public static SQL_GET_ALL_CATEGORY_BY_SHOP = () => {
@@ -394,6 +406,46 @@ class SqlRoot {
     return `
 
       `
+  }
+
+  public static SQL_GET_ALL_PRODUCT_TYPE = () => {
+    return `
+      select * from product_type_sp pt where pt.code_shop=($1)
+    `
+  }
+
+  public static SQL_ADD_TYPE_PRODUCT = () => {
+    return `
+      INSERT INTO product_type_sp
+      (code_product_type, name_product_type, status, code_shop)
+      VALUES 
+      ($1,$2,$3,$4)
+    `
+  }
+
+
+  public static SQL_REMOVE_PRODUCT_BY_SHOP = () => {
+    return `
+      with rmProduct_sp as (
+	      DELETE FROM product_sp where code_product=($1) and code_shop=($2)
+	      returning code_product_detail,code_product
+      ),
+      rmProductDetail_sp as (
+	      DELETE FROM product_detail_sp where code_product_detail in (select code_product_detail from rmProduct_sp)
+        returning code_product_guide
+      ),
+      rmProductGuide_sp as (
+	      DELETE FROM product_guide_sp where code_product_guide in (select code_product_guide from rmProductDetail_sp)
+      ),
+      rmVoucher_sp as (
+	      DELETE FROM voucher_sp where code_product in (select code_product from rmProduct_sp)
+	      RETURNING code_type_voucher
+      ),
+      rmVoucherType as (
+	      DELETE FROM voucher_type_sp where code_type_voucher in (select code_type_voucher from rmVoucher_sp)
+      )
+        DELETE FROM cart_sp where cart_sp.code_product in (select code_product from rmProduct_sp)
+    `
   }
 
 }

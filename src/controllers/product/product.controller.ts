@@ -156,3 +156,29 @@ export const getAllProductByPayTop = async (req: Request, res: Response) => {
     })
   }
 }
+
+export const getAllProductByNewShop = async (req: Request, res: Response) => {
+  try {
+    const { limit } = req.query
+    await ProductModel.getAllProductByNewShop({ limit: limit as string }, (err, result) => {
+      if (err) {
+        res.json({
+          error: err
+        })
+      }
+      else {
+        if (result) {
+          res.json({
+            data: result.rows
+          })
+        }
+      }
+    })
+  } catch (err) {
+    res.json({
+      error: "Error"
+    })
+  }
+}
+
+

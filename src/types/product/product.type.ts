@@ -14,3 +14,5 @@ export type GetAllProductShop = {
   limit: string;
   code_shop: string;
 }
+
+export type TypeGetProductWP = 'new' | 'top' | 'top-pay'
