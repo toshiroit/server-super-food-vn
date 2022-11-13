@@ -11,55 +11,42 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthModel = void 0;
 const hash_password_1 = require("./../../libs/hash_password");
+const config_1 = __importDefault(require("../../config/config"));
 const Model_1 = __importDefault(require("../Model"));
 const database_1 = __importDefault(require("../../database"));
 const sql_1 = __importDefault(require("../sql"));
-const get_fields_object_1 = require("../../libs/get_fields_object");
-const get_values_object_1 = require("../../libs/get_values_object");
+const twilio_1 = __importDefault(require("twilio"));
 class AuthModel extends Model_1.default {
-    static authenticateModel(valueQuery, callback) {
-        return __awaiter(this, void 0, void 0, function* () { });
+    static sendCodeModel(data, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            (0, twilio_1.default)(config_1.default.twilio_account_sid, config_1.default.twilio_auth_token, {
+                lazyLoading: true,
+            })
+                .messages.create({
+                from: '19567585828',
+                to: `+84${data.phone}`,
+                body: `Code verify phone account : ${data.capCha}`,
+            })
+                .then(res => {
+                return callback(null, res);
+            })
+                .catch(err => {
+                return callback(err, null);
+            });
+        });
     }
-    static loginUserModel(valueQuery, callback) {
+    static checkPhone(valueQuery, callback) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = valueQuery.value;
-            const dataLogin = [data.phone, data.username];
-            console.log('=>', dataLogin);
-            let result = null;
-            if (data.phone && data.username) {
-                result = yield database_1.default.query(sql_1.default.SQL_LOGIN_USER_FULL(), dataLogin);
-            }
-            else {
-                result = yield database_1.default.query(sql_1.default.SQL_LOGIN_USER('users'), dataLogin);
-            }
-            if (result.rows.length || result.rows.length > 0) {
-                const { password: hasPassword } = result.rows[0];
-                const isPassword = (0, hash_password_1.comparePassword)(data.passwordConfirmation, hasPassword);
-                if (isPassword) {
-                    if (data.phone && data.username) {
-                        return database_1.default.query(sql_1.default.SQL_LOGIN_USER_FULL(), dataLogin, callback);
-                    }
-                    else if (!data.phone && data.username) {
-                        return database_1.default.query(sql_1.default.SQL_GET_USER_USER_NAME(), [data.username], callback);
-                    }
-                    else if (data.phone && !data.username) {
-                        return database_1.default.query(sql_1.default.SQL_GET_USER_PHONE(), [data.phone], callback);
-                    }
-                    else {
-                        return callback(null, null);
-                    }
-                }
-                else {
-                    return callback(null, null);
-                }
-            }
-            else {
-                return callback(null, null);
-            }
+            database_1.default.query(sql_1.default.SQL_GET_ONE(valueQuery.table, valueQuery.field), data, callback);
         });
+    }
+    static authenticateModel(valueQuery, callback) {
+        return __awaiter(this, void 0, void 0, function* () { });
     }
     /**
      * Register User
@@ -68,13 +55,8 @@ class AuthModel extends Model_1.default {
      */
     static registerUserModel(valueQuery, callback) {
         return __awaiter(this, void 0, void 0, function* () {
-            const field = (0, get_fields_object_1.getDataObjectFields)(valueQuery.value);
-            const value = (0, get_values_object_1.getDataObjectValues)(valueQuery.value);
-            try {
-                database_1.default.query(sql_1.default.SQL_INSERT_DATA_PS(valueQuery.table, field, value), callback);
-                //console.log(SqlRoot.SQL_INSERT_DATA_PS(valueQuery.table, field, value));
-            }
-            catch (error) { }
+            const data = valueQuery.value;
+            database_1.default.query(sql_1.default.SQL_REGISTER_USER_PS(), data, callback);
         });
     }
     static verifyAuthMailerModel(valueQuery, callback) {
@@ -83,5 +65,74 @@ class AuthModel extends Model_1.default {
             return database_1.default.query(sql_1.default.SQL_GET_ONE_USER_VERIFY_MAILER_CODE(), data, callback);
         });
     }
+    static getUserAdminModel(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const dataResult = [data.user_name];
+            return database_1.default.query(sql_1.default.SQL_GET_USER_ADMIN(), dataResult);
+        });
+    }
+    static getMeShopModel(data, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const dataResult = [data.code_user];
+            database_1.default.query(sql_1.default.SQL_GET_ME_SHOP(), dataResult, callback);
+        });
+    }
 }
 exports.AuthModel = AuthModel;
+_a = AuthModel;
+AuthModel.updateRefreshToken = (data) => __awaiter(void 0, void 0, void 0, function* () {
+    database_1.default.query(sql_1.default.SQL_UPDATE_REFRESH_TOKEN_USER(), data);
+});
+AuthModel.loginUserModel = (valueQuery, callback) => __awaiter(void 0, void 0, void 0, function* () {
+    let result = null;
+    result = yield database_1.default.query(sql_1.default.SQL_LOGIN_USER_FULL(), [valueQuery.value.phone]);
+    if (result.rows.length > 0 && result.rows.length) {
+        const { password: hasPassword } = result.rows[0];
+        const isPassword = (0, hash_password_1.comparePassword)(valueQuery.value.password, hasPassword.trim());
+        const error = {
+            message: 'Tài khoản hoặc mật khẩu không chính xác ',
+            name: 'error login',
+            status: 401,
+        };
+        if (isPassword) {
+            database_1.default.query(sql_1.default.SQL_GET_USER_PHONE(), [valueQuery.value.phone], callback);
+        }
+        else {
+            callback(null, null);
+        }
+    }
+    else {
+        const data = [
+            valueQuery.value.code_user,
+            valueQuery.value.hashPassword,
+            'ROLE-WIXO-USER',
+            valueQuery.value.phone,
+            new Date(Date.now()).toISOString(),
+            false,
+        ];
+        const dataReg = [
+            valueQuery.value.code_user,
+            valueQuery.value.code_user_detail,
+            valueQuery.value.hashPassword,
+            'ROLE-WIXO-USER',
+            valueQuery.value.phone,
+            new Date(Date.now()).toISOString(),
+            false,
+            valueQuery.value.full_name,
+            valueQuery.value.sex,
+            valueQuery.value.code_restpass,
+            valueQuery.value.createdAtDetail,
+        ];
+        const valueQueryRegister = {
+            table: 'user_sp',
+            obj: {
+                condition: null,
+            },
+            field: null,
+            value: dataReg,
+        };
+        _a.registerUserModel(valueQueryRegister, (err, result) => {
+            callback(err, result);
+        });
+    }
+});

@@ -81,8 +81,8 @@ export const addProductShopSchema = object({
     order_max: number({
       required_error: 'Trường này không được bỏ trống'
     }),
-    date_start: string(),
-    date_end: string(),
+    date_start: string().nullable(),
+    date_end: string().nullable(),
     status: number({
       required_error: 'Trường này không được bỏ trống'
     }),
@@ -95,7 +95,6 @@ export const addProductShopSchema = object({
     free_ship: number({
       required_error: 'Trường này không được bỏ trống'
     }),
-    product_date: dateSchema,
     type_product: jsonSchema,
     images: jsonSchema,
     code_product_type: string({

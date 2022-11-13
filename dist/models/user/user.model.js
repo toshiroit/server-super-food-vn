@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const database_1 = __importDefault(require("../../database"));
 const Model_1 = __importDefault(require("../Model"));
+const sql_1 = __importDefault(require("../sql"));
 class UserModel extends Model_1.default {
     constructor() {
         super(...arguments);
@@ -30,6 +31,13 @@ class UserModel extends Model_1.default {
             catch (error) {
                 throw new Error(`Unable to create (${u.user_name}): ${error.message}`);
             }
+        });
+    }
+    static updateUserW1(data, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const code_user_detail_ds = data.dataUserLogin.payload.code_user_detail;
+            const resultData = [data.fullName, data.sex, data.date, code_user_detail_ds];
+            database_1.default.query(sql_1.default.SQL_UPDATE_USER_W1(), resultData, callback);
         });
     }
 }

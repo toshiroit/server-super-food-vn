@@ -70,7 +70,9 @@ export const ROUTES_NAME_SHOP = {
     GET_ALL_PRODUCT: '/get-all-product',
     GET_ALL_TYPE_PRODUCT: '/get-all-type-product',
     ADD_TYPE_PRODUCT: '/add-type-product',
-    REMOVE_PRODUCT_BY_SHOP: '/remove-product-by-shop'
+    REMOVE_PRODUCT_BY_SHOP: '/remove-product-by-shop',
+    SEARCH_PRODUCT_BY_VALUE_AND_SHOP: '/searc-product-by-value-and-shop',
+    UPDATE_PRODUCT_PRODUCT_BY_CODE_AND_SHOP: '/update-product-by-code-and-shop'
   },
   UPLOAD: {
     home: '/upload',

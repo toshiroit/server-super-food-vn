@@ -19,9 +19,8 @@ class Model {
 }
 _a = Model;
 Model.getOne = (value, callback) => __awaiter(void 0, void 0, void 0, function* () {
-    database_1.default.query(sql_1.default.SQL_GET_ONE(value.table, value.field), [18], (err, result) => {
-        return callback(err, result);
-    });
+    const data = value.value;
+    database_1.default.query(sql_1.default.SQL_GET_ONE(value.table, value.field), data, callback);
 });
 Model.addData = (value, callback) => __awaiter(void 0, void 0, void 0, function* () {
     database_1.default.query(sql_1.default.SQL_INSERT_DATA(value.table), [value.value], (err, result) => callback(err, result));
@@ -33,7 +32,7 @@ Model.deleteData = (value, callback) => __awaiter(void 0, void 0, void 0, functi
     database_1.default.query(sql_1.default.SQL_DELETE_DATA(value.table, value.condition), [value.value], (err, result) => callback(err, result));
 });
 Model.getAll = (value, callback) => __awaiter(void 0, void 0, void 0, function* () {
-    database_1.default.query(sql_1.default.SQL_GET_ALL(value.table, value.field), (err, result) => callback(err, result));
+    database_1.default.query(sql_1.default.SQL_GET_ALL(value.table, value.field), callback);
 });
 Model.getAllNoField = (value, callback) => __awaiter(void 0, void 0, void 0, function* () {
     return database_1.default.query(sql_1.default.SQL_GET_ALL_NO_FIELD(value.table, value.field), (err, result) => {

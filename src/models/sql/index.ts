@@ -389,8 +389,15 @@ class SqlRoot {
 
   public static SQL_GET_ALL_ORDER_BY_SHOP = () => {
     return `
-      select * from order_sp o 
+      select o.*,od.*,pm.*,u.user_name,u.phone,
+      ud.full_name,
+      ud.date_birth,
+      ud.sex
+      from order_sp o 
       join order_detail_sp od on od.code_order_detail = o.code_order_detail
+      join user_sp u on u.code_user=o.code_user
+      join user_detail_sp ud on ud.code_user_detail = u.code_user_detail
+      left join payment_sp pm on pm.code_payment = od.code_payment
       where od.code_shop=($1)
     `
   }
@@ -448,5 +455,49 @@ class SqlRoot {
     `
   }
 
+
+
+  public static SQL_SEARCH_PRODUCT_BY_SHOP = () => {
+    return `
+      select * from product_sp p join product_detail_sp pd on 
+      p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
+      on pg.code_product_guide=pd.code_product_guide
+      left join shop_sp s on s.code_shop = p.code_shop 
+      where p.code_shop=($1) 
+    `
+  }
+  public static SQL_GET_COUNT_SEARCH_PRODUCT_BY_SHOP = () => {
+    return `
+      select count(*) from product_sp p join product_detail_sp pd on 
+      p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
+      on pg.code_product_guide=pd.code_product_guide
+      left join shop_sp s on s.code_shop = p.code_shop 
+      where p.code_shop=($1) or p.name like ($2) or p.code_product=($2)
+    `
+  }
+
+  public static SQL_UPDATE_PRODUCT_BY_CODE_AND_SHOP = () => {
+    return `
+        with productSp_update as (
+	        UPDATE product_sp
+      	  SET 
+	        image=($3), name=($4), price=($5), quality=($6), code_product_type=($7) 
+	        where code_product=($1) and code_shop=($2)
+	        RETURNING code_product_detail
+        ),productDetailSp_update as (
+	        UPDATE product_detail_sp 
+	        SET 
+          "updatedAt"=($8), 
+	        type_product=($9), date_start=($10), date_end=($11), category_code=($12), is_show=($13), 
+	        images=($14), free_ship=($15) 
+          where code_product_detail IN (select code_product_detail from productSp_update)
+	        RETURNING code_product_guide
+        )
+	        UPDATE product_guide_sp
+	        SET
+  	      description=($16), guide=($17), "return"=($18), note=($19)
+	        where code_product_guide in (select code_product_guide from productDetailSp_update)
+    `
+  }
 }
 export default SqlRoot;

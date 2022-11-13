@@ -1,12 +1,11 @@
 import { Request, Response } from "express";
 import config from "../../../config/config";
-import { getPagingData } from "../../../libs/getPagination";
+import { getPagination, getPagingData } from "../../../libs/getPagination";
 import { getDataUser } from "../../../libs/getUserToken";
 import { makeId } from "../../../libs/make_id";
 import { ProductModel } from "../../../models/product/product.model";
 import { ProductShopModel } from "../../../models/shop/product/product.model";
 import { AddProductShop, GetProductByCodeAndShop } from "../../../schemas/shop/product/product.schema";
-import { TypeGetProductWP } from "../../../types/product/product.type";
 import * as TypeProduct from '../../../types/shop/product/product'
 
 export const dataUserTK = (req: Request) => {
@@ -19,17 +18,22 @@ export const dataUserTK = (req: Request) => {
 
 export const getAllProductShop = async (req: Request, res: Response) => {
   try {
-    const { page, type } = req.query
+    const { page, type, q } = req.query
     const { cookie } = req.headers
     const bearer = cookie?.split('=')[0].toLowerCase();
     const token = cookie?.split('=')[1];
     const data_user = getDataUser(token, bearer)
     const code_shop = data_user?.payload.code_shop as string || ''
     const dataCountProductShop = await ProductShopModel.getCountAllProductShopModel({ code_shop: code_shop })
-    await ProductShopModel.getAllProductShopModel({ code_shop: code_shop, page: Number(page) || 1, type: type as string || '' }, (err, result) => {
+    await ProductShopModel.getAllProductShopModel({
+      code_shop: code_shop,
+      page: Number(page) || 1,
+      type: type as string || '',
+      q: q as string || ''
+    }, (err, result) => {
       if (err) {
         res.json({
-          err: "Error"
+          err: err
         })
       }
       else {
@@ -90,7 +94,6 @@ export const addProductShop = async (req: Request<any, null, AddProductShop>, re
       req.body.return,
       req.body.note,
     ]
-    console.log(dataAddProductSQL)
     await ProductShopModel.addProductShopModel(dataAddProductSQL, (err, result) => {
       if (err) {
         res.json({
@@ -241,6 +244,94 @@ export const addTypeProductByShop = async (req: Request, res: Response) => {
   } catch (err) {
     res.json({
       error: "Error"
+    })
+  }
+}
+
+export const searchProductByValueAndShop = async (req: Request, res: Response) => {
+  try {
+    const { page } = req.query
+    const dataUser = dataUserTK(req)
+    const dataSQL = {
+      code_shop: dataUser?.payload.code_shop,
+      value: req.body.value
+    }
+    const dataSearchCount = await ProductShopModel.getCountSearchByValueAndShop(dataSQL)
+
+    await ProductShopModel.searchProductByValueAndShop(dataSQL, (err, result) => {
+      if (err) {
+        res.json({
+          error: err
+        })
+      }
+      else {
+        if (result) {
+          const dataPaging = {
+            count: Number(dataSearchCount.rows[0].count),
+            rows: result.rows
+          }
+
+          const { tutorials, totalItems, totalPages, currentPage } =
+            getPagingData(dataPaging, Number(page) || 0, 20)
+        }
+      }
+    })
+  } catch (err) {
+    res.json({
+      error: err
+    })
+  }
+}
+
+export const updateProductByCodeAndShop = async (req: Request, res: Response) => {
+  try {
+    const data_user = dataUserTK(req)
+    const dataEditProductSQL = [
+      req.query.code_product,
+      data_user?.payload.code_shop,
+      req.body.image,
+      req.body.name_product,
+      req.body.price,
+      req.body.quantity,
+      req.body.code_product_type,
+      new Date(Date.now()).toISOString(),
+      JSON.stringify(req.body.type_product),
+      req.body.date_start || null,
+      req.body.date_end || null,
+      JSON.stringify(req.body.category),
+      req.body.isShow,
+      JSON.stringify(req.body.images),
+      req.body.free_ship === 1 ? false : true,
+      req.body.description,
+      req.body.guide,
+      req.body.return,
+      req.body.note,
+    ]
+    await ProductShopModel.updateProductByCodeAndShop(dataEditProductSQL, (err, result) => {
+      if (err) {
+        res.json({
+          error: err,
+          message: 'Cập nhật không thành công : Lỗi PW'
+        })
+      }
+      else {
+        if (result) {
+          if (result.rowCount === 1) {
+            res.json({
+              message: 'Cập nhật thành công '
+            })
+          }
+          else {
+            res.json({
+              message: 'Cập nhật không thành công '
+            })
+          }
+        }
+      }
+    })
+  } catch (err) {
+    res.json({
+      error: err
     })
   }
 }

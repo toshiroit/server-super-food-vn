@@ -1,7 +1,9 @@
+import { query } from "express";
 import config from "../../../config/config";
 import pool from "../../../database";
 import { CallbackHandler } from "../../../interfaces/model_query/modelQuery";
 import { getPagination } from "../../../libs/getPagination";
+import { toLowerCaseNonAccentVietnamese } from "../../../libs/nonAccentVietnamese";
 import { AddTypeProductByShop, GetProductByCodeAndShop } from "../../../types/shop/product/product";
 import Model from "../../Model";
 import SqlRoot from "../../sql";
@@ -13,11 +15,15 @@ export class ProductShopModel extends Model {
     return pool.query(SqlRoot.SQL_GET_COUNT_PRODUCT_BY_SHOP(), dataResult)
 
   }
-  public static async getAllProductShopModel(data: { code_shop: string, page: number, type?: string }, callback: CallbackHandler) {
+  public static async getAllProductShopModel(data: { code_shop: string, page: number, type?: string, q?: string }, callback: CallbackHandler) {
     let querySearch = ''
     const { offset, limit } = getPagination(data.page, Number(config.table_product_shop_limit_show))
+    if (data.q) {
+      console.log(data.q)
+      querySearch += ` AND converttvkdau(p.name) ilike '%${toLowerCaseNonAccentVietnamese(data.q)}%' `
+      querySearch += ` OR p.code_product='${data.q}' `
+    }
     if (data.type) {
-      console.log("TYPE ", data.type)
       if (data.type === 'top-pay') {
         querySearch += ' ORDER BY pd.purchase DESC '
       }
@@ -31,7 +37,6 @@ export class ProductShopModel extends Model {
     const dataResult = [data.code_shop]
     querySearch += ` LIMIT ${Number(config.table_product_shop_limit_show) || 10} OFFSET ${offset} `
     const queryResult = SqlRoot.SQL_GET_PRODUCT_BY_SHOP() + querySearch
-    console.log(queryResult)
     pool.query(queryResult, dataResult, callback)
   }
 
@@ -53,5 +58,19 @@ export class ProductShopModel extends Model {
   public static async removeProductByShop(data: { code_product: string, code_shop: string }, callback: CallbackHandler) {
     const dataSQL = [data.code_product, data.code_shop]
     pool.query(SqlRoot.SQL_REMOVE_PRODUCT_BY_SHOP(), dataSQL, callback)
+  }
+
+  public static async searchProductByValueAndShop(data: { code_shop: string, value: string }, callback: CallbackHandler) {
+    const dataSQL = [data.code_shop, data.value]
+    pool.query(SqlRoot.SQL_SEARCH_PRODUCT_BY_SHOP(), dataSQL, callback)
+  }
+
+  public static async getCountSearchByValueAndShop(data: { code_shop: string, value: string }) {
+    const dataSQL = [data.code_shop, data.value]
+    return pool.query(SqlRoot.SQL_GET_COUNT_SEARCH_PRODUCT_BY_SHOP(), dataSQL)
+  }
+
+  public static async updateProductByCodeAndShop(data: any, callback: CallbackHandler) {
+    pool.query(SqlRoot.SQL_UPDATE_PRODUCT_BY_CODE_AND_SHOP(), data, callback)
   }
 }

@@ -11,6 +11,9 @@ const pool = new pg_1.Pool({
     user: config_1.default.user_db,
     password: config_1.default.pass_db,
     port: config_1.default.port_DB,
+    // ssl: {
+    //   rejectUnauthorized: false,
+    // },
     max: 4,
 });
 pool.on('error', (error) => {

@@ -23,7 +23,7 @@ export const uploadImage = async (req: Request, res: Response) => {
   try {
     const localFilePath = req.file?.path || ''
     await cloudinary.uploader.upload(localFilePath, {
-      public_id: 'olympic_flag'
+      //     public_id: 'olympic_flag'
     }).then((result) => {
       res.json({
         is_upload: true,
@@ -51,7 +51,7 @@ export const uploadImages = async (req: Request, res: Response) => {
     if (images) {
       for (const file of images) {
         await cloudinary.uploader.upload(file.path, {
-          public_id: 'olympic_flag'
+          //       public_id: 'olympic_flag'
         }).then((result) => {
           const data = {
             is_upload: true,

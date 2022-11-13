@@ -36,4 +36,16 @@ router.delete(
   validateTokenAdminShopMiddleware,
   productShopController.removeProductByShop
 )
+
+router.post(
+  ROUTES_NAME_SHOP.PRODUCT.SEARCH_PRODUCT_BY_VALUE_AND_SHOP,
+  validateTokenAdminShopMiddleware,
+)
+
+router.put(
+  ROUTES_NAME_SHOP.PRODUCT.UPDATE_PRODUCT_PRODUCT_BY_CODE_AND_SHOP,
+  validateTokenAdminShopMiddleware,
+  validateResource(addProductShopSchema),
+  productShopController.updateProductByCodeAndShop
+)
 export default router;
