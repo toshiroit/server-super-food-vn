@@ -85,7 +85,8 @@ export const getAllOrderByShop = async (req: Request, res: Response) => {
               })
             }
             else if (result.rows.length === 0) {
-              res.json({
+              res.status(203).json({
+                status: 203,
                 message: "Không có đơn hàng "
               })
             }

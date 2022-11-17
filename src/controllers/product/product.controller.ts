@@ -15,17 +15,13 @@ export const productGetAll = async (req: Request, res: Response) => {
           error: err,
         });
       } else {
-        if (!result?.rows || result.rows.length <= 0) {
+        if (result) {
           res.json({
-            message: "Không có sản phẩm"
+            quality: result.rows.length,
+            type: dataQuery.typeSort,
+            data: result.rows,
           })
         }
-        res.json({
-          quality: result?.rows.length,
-          type: dataQuery.typeSort,
-          data: result?.rows,
-
-        })
       }
     })
   } catch (err) {
@@ -43,7 +39,6 @@ export const productGetByNameOrCode = async (req: Request, res: Response) => {
     size: size as string || null,
     title: title as string || null
   }
-
   try {
     await ProductModel.getProductDetailModel(data, (err, result) => {
       if (err) {

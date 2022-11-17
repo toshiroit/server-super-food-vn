@@ -57,7 +57,7 @@ class SqlRoot {
         with ins as (
 	        INSERT INTO user_sp 
         	  (code_user,code_user_detail,password,code_role,phone,"createdAt",status) 
-	        VALUES 
+	          VALUES 
 	          ($1,$2,$3,$4,$5,$6,$7)
 	        RETURNING code_user_detail
         )
@@ -275,8 +275,7 @@ class SqlRoot {
   public static SQL_GET_ME_SHOP = () => {
     return `
     SELECT s.*,sd.* FROM user_sp u
-    left
-    join user_detail_sp ud on u.code_user_detail=ud.code_user_detail
+    left join user_detail_sp ud on u.code_user_detail=ud.code_user_detail
     join role_sp r on r.code_role = u.code_role
     join shop_sp s on s.code_shop= u.code_shop
     join shop_detail_sp sd on sd.code_shop_detail = s.code_shop_detail
@@ -329,7 +328,7 @@ class SqlRoot {
       join shop_sp s on s.code_shop = p.code_shop
       join shop_detail_sp sd on sd.code_shop_detail = s.code_shop_detail
       where pd.is_show=1
-      ORDER BY sd.createdat DESC
+      ORDER BY (sd."createdAt" IS NULL) DESC
     `
   }
 
@@ -478,8 +477,7 @@ class SqlRoot {
 
   public static SQL_UPDATE_PRODUCT_BY_CODE_AND_SHOP = () => {
     return `
-        with productSp_update as (
-	        UPDATE product_sp
+        with productSp_update as ( UPDATE product_sp
       	  SET 
 	        image=($3), name=($4), price=($5), quality=($6), code_product_type=($7) 
 	        where code_product=($1) and code_shop=($2)
@@ -497,6 +495,72 @@ class SqlRoot {
 	        SET
   	      description=($16), guide=($17), "return"=($18), note=($19)
 	        where code_product_guide in (select code_product_guide from productDetailSp_update)
+    `
+  }
+
+  public static SQL_CHECK_USER_REGISTER = () => {
+    return `
+        select count(*) from user_sp where user_name=($1) or phone=($2)
+      `
+  }
+
+  public static SQL_REGISTER_SHOP = () => {
+    return `
+          with ins_userSP as (
+	          INSERT INTO user_sp 
+		          (code_user,code_user_detail,avatar,user_name,password,code_role,phone,"createdAt",status,code_shop)
+	          VALUES
+		          ($1,$2,$3,$4,$5,$6,$7,$8,$9,$28)
+	          RETURNING code_user_detail,code_user
+          ),ins_userDetailSP as (
+            INSERT INTO user_detail_sp
+		          (code_user_detail, full_name, sex, code_restpass, date_birth, "createdAT")
+	        VALUES 
+		        ((select code_user_detail from ins_userSP),$10,$11,$12,$13,$14) 
+          ),ins_addressSP as (
+	          INSERT INTO address_sp 
+		          (code_address, code_user, full_name, phone, detail_address, status, code_address_detail)
+	          VALUES 
+		          ($15,(select code_user from ins_userSP ),$16,$17,$18,$19,$20)
+	          RETURNING code_address_detail
+          ),ins_addressDetailSP as (
+            INSERT INTO address_detail_sp 
+		          (code_address_detail, phone_w, email, street, village, district, province, city)
+	          VALUES 
+		          ((select code_address_detail from ins_addressSP),$21,$22,$23,$24,$25,$26,$27)
+          ),ins_shopSP as (
+	          INSERT INTO shop_sp 
+	            (code_shop, image_shop, name_shop, evaluate, follow_shop, code_shop_detail, type_shop)
+	          VALUES
+	            ($28,$3,$29,0,0,$30,2)
+            RETURNING code_shop_detail
+          )
+            INSERT INTO shop_detail_sp
+              (code_shop_detail,full_name,email,date,phone,description,"createdAt",status,check_shop,censorship_shop)
+	          VALUES 
+              ((select code_shop_detail from ins_shopSP),$29,$22,$13,$7,'2',$8,false,1,1)
+      `
+  }
+
+  public static SQL_INSERT_ORDER_USER = () => {
+    return `
+            with ins_orderSP as (
+	            INSERT INTO order_sp
+	              (code_order, code_user, code_address, date_order, status, code_order_detail, code_product, status_order)
+	                VALUES 
+	              ($1,$2,$3,$4,$5,$6,$7,$8)
+	            RETURNING code_order_detail
+            )
+              INSERT INTO order_detail_sp
+	              (code_order_detail, phone_order, phone_shipw, code_payment, code_shop, total_order, quatity, progress)
+	          VALUES 
+                ((select code_order_detail from ins_orderSP ),$9,$10,$11,$12,$13,$14,$15)
+      `
+  }
+
+  public static SQL_GET_ALL_PAYMENT = () => {
+    return `
+      select * from payment_sp
     `
   }
 }

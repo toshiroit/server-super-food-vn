@@ -49,6 +49,15 @@ export const ROUTES_NAME = {
   ADDRESS: {
     HOME: '/address',
     GET_ADDRESS: '/get-address'
+  },
+  CHECKOUT: '/checkout',
+  PAYMENT: {
+    HOME: '/payment',
+    GET_ALL_PAYMENT: '/get-all-pay-ment'
+  },
+  NOTIFICATION: {
+    HOME: '/notification',
+    CHECKOUT: '/checkout'
   }
 };
 
@@ -56,7 +65,8 @@ export const ROUTES_NAME_SHOP = {
   AUTH: {
     LOGIN: '/login',
     GET_ME: '/getMe',
-    GET_ME_SHOP: '/getMeShop'
+    GET_ME_SHOP: '/getMeShop',
+    REGISTER: '/register'
   },
   CATEGORY: {
     HOME: '/category',

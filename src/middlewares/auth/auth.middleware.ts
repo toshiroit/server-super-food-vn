@@ -125,7 +125,16 @@ export const validateTokenMiddleware = (req: Request, res: Response, next: NextF
             handleUnauthorizedError(next);
           } else {
             res.locals.jwt = decoded;
-            next();
+            const data = decoded as JwtPayload;
+            if (data.code_role) {
+              if (data.code_role.trim() === 'ROLE-WIXO-USER') {
+                next();
+              } else {
+                handlePermissionDenied(next);
+              }
+            } else {
+              handlePermissionDenied(next);
+            }
           }
         });
       } else {

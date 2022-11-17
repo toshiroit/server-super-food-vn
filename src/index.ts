@@ -11,10 +11,14 @@ import shopRoutes from './routes/shop'
 import cookieParser from 'cookie-parser';
 import config from './config/config';
 import bodyParser from 'body-parser';
+import { Server } from 'socket.io'
+import http from 'http'
+import { ClientToServerEvents, InterServerEvents, ServerToClientEvents, SocketData } from './types/socketio/socketio';
 dotenv.config();
 
 // Create instance server
 const app: Application = express();
+
 app.use(express.json({
   limit: '50mb'
 }));
@@ -38,6 +42,7 @@ app.use(
       config.domain_admin, config.domain_web_client, config.domain_web_client_shop,
       'https://super-food-vn.vercel.app',
       'http://localhost:3001',
+      'http://localhost:4005',
       'https://admin-super-food.vercel.app'
     ],
     methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH', 'OPTIONS'],
@@ -45,6 +50,10 @@ app.use(
     preflightContinue: false,
   })
 );
+
+// Setup socketio 
+
+
 /*
 origin: [
       config.domain_admin, config.domain_web_client, config.domain_web_client_shop,
@@ -74,8 +83,27 @@ app.use('/api', routes);
 app.use('/api/v1/sp-shop', shopRoutes)
 app.use(errorMiddleware);
 
-app.listen(process.env.PORT || 8080, async () => {
+const server = app.listen(process.env.PORT || 8080, async () => {
   await pool.connect();
   console.log(`🚀 🚀  Server running into http://localhost:${process.env.PORT} 🚀  🚀 `);
 });
+const io = new Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+})
+
+io.on('connection', (socket) => {
+  socket.on('notification', (data) => {
+    io.emit('notification', data)
+  })
+})
+
+
 export default app;

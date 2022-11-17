@@ -74,6 +74,7 @@ export class ProductModel extends Model {
     if (data.limit) {
       querySearch += ` LIMIT ${data.limit}`
     }
+
     const queryResult = SqlRoot.SQL_GET_PRODUCT_BY_TOP() + querySearch
     pool.query(queryResult, callback)
   }

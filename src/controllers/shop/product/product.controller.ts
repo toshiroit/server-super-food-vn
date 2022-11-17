@@ -220,13 +220,13 @@ export const addTypeProductByShop = async (req: Request, res: Response) => {
   try {
     const data = req.body
     const dataUser = dataUserTK(req)
+    console.log(dataUser)
     const dataSQL: TypeProduct.AddTypeProductByShop = {
       code_product_type: makeId(15),
       name_product_type: data.name_product_type,
       status: data.status,
       code_shop: dataUser?.payload.code_shop
     }
-    console.log(dataSQL)
     await ProductShopModel.addTypeProductModel(dataSQL, (err, result) => {
       if (err) {
         res.json({
