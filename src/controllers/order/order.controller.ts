@@ -39,7 +39,7 @@ export const getOrderByUser = async (req: Request, res: Response) => {
               rows: result.rows
             }
             const { tutorials, totalItems, totalPages, currentPage }
-              = getPagingData(dataPaging, Number(page) || 0, Number(config.order_user_limit_show) || 2)
+              = getPagingData(dataPaging, Number(page) || 0, Number(config.order_user_limit_show) || 10)
             res.json({
               totalItems,
               totalPages,

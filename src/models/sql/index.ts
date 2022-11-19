@@ -208,17 +208,27 @@ class SqlRoot {
 
   public static SQL_GET_ORDER_BY_USER = () => {
     return `
-      SELECT o.*,od.*,
+    SELECT o.*,od.*,
       u.code_user,
       u.avatar,
       u.phone,
-      s.*
+      (select string_agg(p.name,' , ') from order_sp ow
+	        cross join jsonb_to_recordset(ow.code_product) as al(code varchar)
+	        inner join product_sp p on p.code_product = al.code
+ 	        where ow.code_order= o.code_order
+      ) as name_product,
+      (select string_agg(p.image,' , ') from order_sp ow
+	        cross join jsonb_to_recordset(ow.code_product) as al(code varchar)
+	        inner join product_sp p on p.code_product = al.code
+ 	        where ow.code_order= o.code_order
+      ) as image_product,
+      s.* 
       FROM order_sp o 
-      join user_sp u on u.code_user = o.code_user 
-      left join user_detail_sp ud  on ud.code_user_detail = u.code_user_detail  
-      join order_detail_sp od on od.code_order_detail = o.code_order_detail 
-      left join shop_sp s on s.code_shop = od.code_shop
-      where u.code_user = ($1)
+        join user_sp u on u.code_user = o.code_user
+        left join user_detail_sp ud  on ud.code_user_detail = u.code_user_detail
+        join order_detail_sp od on od.code_order_detail = o.code_order_detail
+        left join shop_sp s on s.code_shop = od.code_shop   
+        where u.code_user = ($1)
     `
   }
   public static SQL_GET_COUNT_ORDER_BY_USER = () => {
@@ -246,18 +256,26 @@ class SqlRoot {
     //join product_sp p on p.code_product = ANY (o.code_product)
 
     return `
-      SELECT o.*,od.*,
+      SELECT 
+      o.*,od.*,
       u.code_user,
       u.avatar,
       u.phone,
       s.*,
-      p.*
+      p.*,
+      pt.*,
+      sd.phone as phone_shop,
+      sd.email as email_shop
       FROM order_sp o 
       join user_sp u on u.code_user = o.code_user 
       left join user_detail_sp ud  on ud.code_user_detail = u.code_user_detail  
+      cross join jsonb_to_recordset(o.code_product) as al(code varchar)
+      inner join product_sp p on p.code_product = al.code
       join order_detail_sp od on od.code_order_detail = o.code_order_detail 
       left join shop_sp s on s.code_shop = od.code_shop
-            where u.code_user = ($1) and o.code_order = ($2)
+      left join shop_detail_sp sd on sd.code_shop_detail = s.code_shop_detail
+      left join product_type_sp pt ON pt.code_product_type = p.code_product_type
+      where u.code_user = ($1) and o.code_order = ($2)
     `
   }
   public static SQL_GET_USER_ADMIN = () => {
@@ -561,6 +579,23 @@ class SqlRoot {
   public static SQL_GET_ALL_PAYMENT = () => {
     return `
       select * from payment_sp
+    `
+  }
+
+  public static SQL_REMOVE_CART_BY_CODE = () => {
+    return `
+      DELETE FROM cart_sp where code_user=($1) 
+    `
+  }
+
+  public static SQL_GET_CATEGRY_BY_PRODUCT = () => {
+    return `
+
+    `
+  }
+
+  public static SQL_GET_TYPE_PRODUCT_BY_PRODUCT = () => {
+    return `
     `
   }
 }

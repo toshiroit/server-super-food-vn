@@ -8,4 +8,5 @@ const router = Router()
 router.get(ROUTES_NAME.CART.GET_CART, validateTokenMiddleware, cartController.getCart)
 router.post(ROUTES_NAME.CART.ADD_CART, validateTokenMiddleware, cartController.addCartByCodeUser)
 router.delete(ROUTES_NAME.CART.REMOVE_CART, validateTokenMiddleware, cartController.removeCart)
+router.delete(ROUTES_NAME.CART.REMOVE_CART_BY_CODE, validateTokenMiddleware, cartController.removeCartByCode)
 export default router;

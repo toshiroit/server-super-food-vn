@@ -93,4 +93,16 @@ export class CartModel extends Model {
     const dataQuery: [] = data.value
     pool.query(SqlRoot.SQL_REMOVE_CART_BY_CODE_CART_AND_USER(), dataQuery, callback)
   }
+
+  public static async removeCartByCodeProduct(data: { code_user: string, code_product: [] }, callback: CallbackHandler) {
+    let code_product_string = ''
+    data.code_product.map((item, index) => {
+      code_product_string += `'${item}'`
+      if (data.code_product.length !== index + 1) {
+        code_product_string += `,`
+      }
+    })
+    const sqlResult = SqlRoot.SQL_REMOVE_CART_BY_CODE() + `AND code_product IN (${code_product_string})`
+    pool.query(sqlResult, [data.code_user], callback)
+  }
 }

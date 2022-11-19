@@ -38,7 +38,8 @@ export const ROUTES_NAME = {
   CART: {
     GET_CART: '/get-cart',
     ADD_CART: '/add-cart',
-    REMOVE_CART: '/remove-cart'
+    REMOVE_CART: '/remove-cart',
+    REMOVE_CART_BY_CODE: '/remove-cart-by-code-product'
   },
   ORDER: {
     HOME: '/order',
