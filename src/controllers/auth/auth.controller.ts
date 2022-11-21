@@ -414,7 +414,6 @@ const getMeShop = async (req: Request, res: Response) => {
     const dataUser = getDataUser(token, bearer)
     if (dataUser) {
       const data = dataUser.payload
-      console.log("DATA : ", data)
       await AuthModel.getMeShopModel({ code_user: data.code_user.trim() || '' }, (err, result) => {
         if (err) {
           res.json({
@@ -423,7 +422,6 @@ const getMeShop = async (req: Request, res: Response) => {
         }
         else {
           if (result) {
-            console.log(result.rows, result.rowCount)
             if (result.rows.length > 0) {
               res.json({
                 data: result.rows

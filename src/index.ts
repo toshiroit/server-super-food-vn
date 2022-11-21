@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import cors from 'cors';
+import jwt from 'jsonwebtoken';
 import ratelimit from 'express-rate-limit';
 import errorMiddleware from './middlewares/error.middleware';
 import pool from './database';
@@ -12,7 +13,6 @@ import cookieParser from 'cookie-parser';
 import config from './config/config';
 import bodyParser from 'body-parser';
 import { Server } from 'socket.io'
-import http from 'http'
 import { ClientToServerEvents, InterServerEvents, ServerToClientEvents, SocketData } from './types/socketio/socketio';
 dotenv.config();
 
@@ -99,9 +99,54 @@ const io = new Server<
   }
 })
 
+io.use((socket, next) => {
+  try {
+    socket.data.auth_isLogin = false
+    const { cookie } = socket.request.headers
+    const bearer = cookie?.split('=')[0].toLowerCase();
+    const token = cookie?.split('=')[1];
+    if (token && bearer === 'jwt') {
+      jwt.verify(token, config.refresh_token_secret as unknown as string, (err, decoded) => {
+        if (err) {
+          next(new Error(' Please try again'))
+        }
+        else {
+          if (decoded) {
+            socket.data.auth_isLogin = true
+            socket.data.auth_data = decoded
+            next()
+          }
+        }
+      })
+    }
+  } catch (err) {
+    next(new Error(`Error ${err}`))
+    socket.data.auth_isLogin = false
+  }
+})
 io.on('connection', (socket) => {
-  socket.on('notification', (data) => {
-    io.emit('notification', data)
+  if (socket.data.auth_data.code_role.trim() === 'ROLE-WIXO-USER') {
+    socket.join(socket.data.auth_data.code_user)
+  }
+  if (socket.data.auth_data.code_role.trim() === 'ROLE-WIXX-SHOP') {
+    socket.join(socket.data.auth_data.code_shop)
+  }
+  socket.on('notification_order', (data) => {
+    if (data) {
+      io.emit('notification_order_all', {
+        message: `Tài khoản ${socket.data.auth_data.code_user.trim()} vừa đặt hàng thành công`
+      })
+      data.code_shop.map((item) => {
+        io.to(item.code_shop.trim()).emit('notification_order_shop', {
+          message: `Đặt hàng mã ${socket.data.auth_data.phone}`
+        })
+      })
+
+    }
+  })
+
+  socket.on('disconnect', () => {
+    console.log('disconnect : ', socket.data.auth_data)
   })
 })
 

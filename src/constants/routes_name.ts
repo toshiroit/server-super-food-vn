@@ -102,3 +102,9 @@ export const ROUTES_NAME_SHOP = {
 
   }
 }
+export const SOCKET_ROUTE = {
+  NOTIFICATION: {
+    HOME: '/notification',
+    SEND: '/send'
+  }
+}
