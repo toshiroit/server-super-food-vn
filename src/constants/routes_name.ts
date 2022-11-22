@@ -99,7 +99,8 @@ export const ROUTES_NAME_SHOP = {
     REMOVE_ORDER_BY_SHOP: '/remove-order-by-shop',
     GET_ALL_ORDER_BY_SHOP: '/get-all-order-by-shop',
     GET_ALL_PRODUCT_BY_ORDER_AND_SHOP: '/get-all-product-by-order-and-shop',
-
+    GET_ORDER_DETAIL_BY_ORDER_AND_SHOP: '/get-order-detail-by-order-and-shop',
+    CONFIRM_ORDER_BY_CODE_ORDER: '/confirm-order-by-code-order'
   }
 }
 export const SOCKET_ROUTE = {

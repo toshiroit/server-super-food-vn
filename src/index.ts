@@ -138,6 +138,7 @@ io.on('connection', (socket) => {
       })
       data.code_shop.map((item) => {
         io.to(item.code_shop.trim()).emit('notification_order_shop', {
+          quatity: item.cartItem.length,
           message: `Đặt hàng mã ${socket.data.auth_data.phone}`
         })
       })

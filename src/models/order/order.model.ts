@@ -28,4 +28,6 @@ export class OrderModel extends Model {
     const dataResult = [data.code_user, data.code_order]
     pool.query(SqlRoot.SQL_GET_ORDER_DETAIL_BY_USER(), dataResult, callback)
   }
+
+
 }

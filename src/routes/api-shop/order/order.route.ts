@@ -32,4 +32,14 @@ router.delete(
   validateResource(removeOrderByShopSchema),
   orderController.removeOrderByShop
 )
+router.get(
+  ROUTES_NAME_SHOP.ORDER.GET_ORDER_DETAIL_BY_ORDER_AND_SHOP,
+  validateTokenAdminShopMiddleware,
+  orderController.getOrderDetailByOrderAndShop
+)
+router.put(
+  ROUTES_NAME_SHOP.ORDER.CONFIRM_ORDER_BY_CODE_ORDER,
+  validateTokenAdminShopMiddleware,
+  orderController.confirmOrderByCodeOrder
+)
 export default router;

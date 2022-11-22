@@ -31,5 +31,7 @@ export interface SocketData {
 
 
 export type CodeShopData = {
-  code_shop: string
+  code_shop: string,
+  cartItem: any[]
 }
+

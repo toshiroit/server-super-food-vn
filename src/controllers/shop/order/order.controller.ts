@@ -3,7 +3,13 @@ import { getDataUser } from "../../../libs/getUserToken";
 import { OrderModel } from "../../../models/shop/order/order.model";
 import { HideOrderByShopTypeZod } from "../../../schemas/shop/order/order.schema";
 import { HideOrderByShopTp, RemoveOrderByShopTp } from "../../../types/shop/order/order";
-
+export const dataUserTK = (req: Request) => {
+  const { cookie } = req.headers
+  const bearer = cookie?.split('=')[0].toLowerCase();
+  const token = cookie?.split('=')[1];
+  const data_user = getDataUser(token, bearer)
+  return data_user;
+}
 export const addOrderByShop = async (req: Request, res: Response) => {
   try {
     res.json({
@@ -71,7 +77,8 @@ export const getAllOrderByShop = async (req: Request, res: Response) => {
     const data_user = getDataUser(token, bearer)
     if (data_user) {
       const code_shop = data_user?.payload.code_shop
-      await OrderModel.getAllOrderByShop({ code_shop: code_shop }, (err, result) => {
+      const type = req.query.type
+      await OrderModel.getAllOrderByShop({ code_shop: code_shop, type: type }, (err, result) => {
         if (err) {
           res.json({
             error: err
@@ -153,6 +160,35 @@ export const getAllProductByOrderAndShop = async (req: Request, res: Response) =
   }
 }
 
+export const getOrderDetailByOrderAndShop = async (req: Request, res: Response) => {
+  try {
+    const data_user = dataUserTK(req)
+    if (data_user) {
+      const dataSQL = {
+        code_shop: data_user.payload.code_shop,
+        code_order: req.query.code_order as string || ''
+      }
+      await OrderModel.getOrderDetailByOrderAndShop(dataSQL, (err, result) => {
+        if (err) {
+          res.json({
+            error: err
+          })
+        } else {
+          if (result) {
+            res.json({
+              data: result.rows
+            })
+          }
+        }
+      })
+    }
+
+  } catch (err) {
+    res.json({
+      error: err
+    })
+  }
+}
 export const removeOrderByShop = async (req: Request, res: Response) => {
   try {
     const { cookie } = req.headers
@@ -189,6 +225,46 @@ export const removeOrderByShop = async (req: Request, res: Response) => {
         }
       }
     })
+  } catch (err) {
+    res.json({
+      error: err
+    })
+  }
+}
+export const confirmOrderByCodeOrder = async (req: Request, res: Response) => {
+  try {
+    const data_user = dataUserTK(req)
+    if (data_user) {
+      const { code_order } = req.query
+      const { value } = req.body
+      const dataSQL = {
+        code_shop: data_user.payload.code_shop,
+        code_order: code_order as string || '',
+        value: value
+      }
+      console.log('data SQL : ', dataSQL)
+      await OrderModel.confirmOrderByCodeOrderModel(dataSQL, (err, result) => {
+        if (err) {
+          res.json({
+            error: err
+          })
+        }
+        else {
+          if (result) {
+            if (result.rowCount > 0) {
+              res.json({
+                message: 'Cập nhật thành công '
+              })
+            }
+            else {
+              res.json({
+                message: 'Cập nhật không thành công '
+              })
+            }
+          }
+        }
+      })
+    }
   } catch (err) {
     res.json({
       error: err

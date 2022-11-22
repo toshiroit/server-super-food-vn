@@ -265,12 +265,16 @@ class SqlRoot {
       p.*,
       pt.*,
       sd.phone as phone_shop,
-      sd.email as email_shop
+      sd.email as email_shop,
+      ( 
+	    select json_agg(row_to_json((p.*)))  AS product_order
+      from order_sp ow
+      cross join jsonb_to_recordset(o.code_product) as al(code varchar)
+      inner join product_sp p on p.code_product = al.code
+      where ow.code_order=o.code_order )
       FROM order_sp o 
       join user_sp u on u.code_user = o.code_user 
       left join user_detail_sp ud  on ud.code_user_detail = u.code_user_detail  
-      cross join jsonb_to_recordset(o.code_product) as al(code varchar)
-      inner join product_sp p on p.code_product = al.code
       join order_detail_sp od on od.code_order_detail = o.code_order_detail 
       left join shop_sp s on s.code_shop = od.code_shop
       left join shop_detail_sp sd on sd.code_shop_detail = s.code_shop_detail
@@ -409,13 +413,40 @@ class SqlRoot {
       select o.*,od.*,pm.*,u.user_name,u.phone,
       ud.full_name,
       ud.date_birth,
-      ud.sex
+      ud.sex,
+      ( 
+	    select json_agg(row_to_json((p.*)))  AS product_order
+      from order_sp ow
+      cross join jsonb_to_recordset(o.code_product) as al(code varchar)
+      inner join product_sp p on p.code_product = al.code
+      where ow.code_order=o.code_order )
       from order_sp o 
       join order_detail_sp od on od.code_order_detail = o.code_order_detail
       join user_sp u on u.code_user=o.code_user
       join user_detail_sp ud on ud.code_user_detail = u.code_user_detail
       left join payment_sp pm on pm.code_payment = od.code_payment
-      where od.code_shop=($1)
+      where od.code_shop=($1) 
+    `
+  }
+
+  public static SQL_GET_ORDER_DETAIL_BY_ORDER_AND_SHOP = () => {
+    return `
+      select o.*,od.*,pm.*,u.user_name,u.phone,
+      ud.full_name,
+      ud.date_birth,
+      ud.sex,
+      ( 
+	    select json_agg(row_to_json((p.*)))  AS product_order
+      from order_sp ow
+      cross join jsonb_to_recordset(o.code_product) as al(code varchar)
+      inner join product_sp p on p.code_product = al.code
+      where ow.code_order=o.code_order )
+      from order_sp o 
+      join order_detail_sp od on od.code_order_detail = o.code_order_detail
+      join user_sp u on u.code_user=o.code_user
+      join user_detail_sp ud on ud.code_user_detail = u.code_user_detail
+      left join payment_sp pm on pm.code_payment = od.code_payment
+      where od.code_shop=($1) and o.code_order=($2)
     `
   }
 
@@ -596,6 +627,18 @@ class SqlRoot {
 
   public static SQL_GET_TYPE_PRODUCT_BY_PRODUCT = () => {
     return `
+    `
+  }
+
+  public static SQL_UPDATE_ORDER_BY_CODE_ORDER = () => {
+    return `
+    with codeOrder_OrderSP as (
+	    select od.code_order_detail from order_sp o 
+      join order_detail_sp od on od.code_order_detail = o.code_order_detail 
+      where o.code_order=($1) and od.code_shop=($2) 
+    )
+    UPDATE order_detail_sp SET progress=($3) 
+    where code_order_detail=(select code_order_detail from codeOrder_OrderSP) 
     `
   }
 }
