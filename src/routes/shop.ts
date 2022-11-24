@@ -5,10 +5,12 @@ import categoryShop from './api-shop/category/category.route'
 import { ROUTES_NAME_SHOP } from "../constants/routes_name";
 import uploadRoute from './api-shop/upload/upload.route'
 import orderRoute from './api-shop/order/order.route'
+import notifyRoute from './api-shop/notify/notify.route'
 const router = Router()
 router.use('/auth', authShop)
 router.use('/product', productShop)
 router.use('/category', categoryShop)
 router.use(ROUTES_NAME_SHOP.UPLOAD.home, uploadRoute)
 router.use(ROUTES_NAME_SHOP.ORDER.HOME, orderRoute)
+router.use(ROUTES_NAME_SHOP.NOTIFY.HOME, notifyRoute)
 export default router;

@@ -65,8 +65,8 @@ class SqlRoot {
           (code_user_detail, full_name, sex, code_restpass,"createdAT")
             VALUES
           ((select code_user_detail from ins),$8,$9,$10,$11)
-    `
-  }
+    `;
+  };
   /**
    *
    * @param table table database
@@ -121,17 +121,25 @@ class SqlRoot {
     return `SELECT * FROM users where id=($1) AND verification_code=($2)`;
   };
 
-
   public static SQL_GET_PRODUCT_BY_NAME_OR_CODE = () => {
-    return `select * from product_sp p join product_detail_sp pd on 
-            p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
-            on pg.code_product_guide=pd.code_product_guide where p.code_product=($1) OR name like ($2)`
-  }
+    return `select p.*,pd.*,pg.*,
+            (select count(*) from product_sp where code_shop=p.code_shop) as shop_quatity_product,
+            s.follow_shop,
+            s.evaluate as evaluate_shop,
+            s.image_shop,
+            s.name_shop
+            from product_sp p
+            join product_detail_sp pd on p.code_product_detail=pd.code_product_detail 
+            join product_guide_sp pg on pg.code_product_guide=pd.code_product_guide 
+            left join shop_sp s on s.code_shop=p.code_shop
+            left join shop_detail_sp sd on sd.code_shop_detail=s.code_shop_detail
+            where p.code_product=($1) OR name like ($2)`;
+  };
   public static SQL_GET_PRODUCT_ALL = () => {
     return `select * from product_sp p join product_detail_sp pd on 
             p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
-            on pg.code_product_guide=pd.code_product_guide`
-  }
+            on pg.code_product_guide=pd.code_product_guide`;
+  };
 
   public static SQL_GET_COMMENT_ALL_BY_PRODUCT = () => {
     return `
@@ -141,8 +149,8 @@ class SqlRoot {
           join user_sp u on u.code_user = cm.code_user
           join user_detail_sp ud on ud.code_user_detail = u.code_user_detail
           where p.code_product=($1)
-      `
-  }
+      `;
+  };
   public static SQL_GET_CART_BY_CODE_USER = () => {
     return ` select c.*,p.*,s.*,pd.discount,v.code_w_voucher,v.price_voucher,
                 v.name_voucher,v.quality as quality_voucher,v.time_start,v.time_end,v.description
@@ -152,8 +160,8 @@ class SqlRoot {
                 join product_detail_sp pd on pd.code_product_detail = p.code_product_detail
                 left join voucher_sp v on v.code_product = p.code_product
                 left join shop_sp s on s.code_shop = p.code_shop
-		            where u.code_user=($1)`
-  }
+		            where u.code_user=($1)`;
+  };
 
   /*public static SQL_ADD_CART_BY_CODE_USER = () => {
     return `INSERT INTO cart_sp (code_cart,code_user,code_product,quality_product,createdat)
@@ -165,8 +173,8 @@ class SqlRoot {
       INSERT INTO cart_sp (code_cart,code_user,code_product,quality_product,createdat)
       VALUES %L on conflict (code_cart)
       DO UPDATE SET quality_product=EXCLUDED.quality_product,createdat=EXCLUDED.createdat
-    `
-  }
+    `;
+  };
 
   public static SQL_UPDATE_CART_BY_CODE_USER = () => {
     return `
@@ -174,37 +182,36 @@ class SqlRoot {
       SET 
       quality_product=($4),createdat=($5),code_product=($3) 
       where code_cart=($1) and code_user=($2)
-    `
-  }
+    `;
+  };
   public static SQL_REMOVE_CART_BY_CODE_CART_AND_USER = () => {
     return `
       DELETE FROM cart_sp c
 	    WHERE c.code_cart=($1) AND c.code_user=($2)
-    `
-  }
+    `;
+  };
 
   public static SQL_GET_PRODUCT_BY_QUERY = () => {
     return `
       select * from product_sp p join product_detail_sp pd on 
       p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
       on pg.code_product_guide=pd.code_product_guide 
-    `
-  }
+    `;
+  };
 
   public static SQL_GET_COUNT_PRODUCT = () => {
     return `
       select count(*) from product_sp p join product_detail_sp pd on 
       p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
       on pg.code_product_guide=pd.code_product_guide
-    `
-  }
-
+    `;
+  };
 
   public static SQL_UPDATE_USER_W1 = () => {
     return `
         UPDATE user_detail_sp SET full_name=($1),sex=($2),date_birth=($3) where code_user_detail=($4)
-    `
-  }
+    `;
+  };
 
   public static SQL_GET_ORDER_BY_USER = () => {
     return `
@@ -229,8 +236,8 @@ class SqlRoot {
         join order_detail_sp od on od.code_order_detail = o.code_order_detail
         left join shop_sp s on s.code_shop = od.code_shop   
         where u.code_user = ($1)
-    `
-  }
+    `;
+  };
   public static SQL_GET_COUNT_ORDER_BY_USER = () => {
     return `
       SELECT 
@@ -240,8 +247,8 @@ class SqlRoot {
       left join user_detail_sp ud  on ud.code_user_detail = u.code_user_detail  
       join order_detail_sp od on od.code_order_detail = o.code_order_detail 
       where u.code_user = ($1)
-    `
-  }
+    `;
+  };
 
   public static SQL_GET_ADDRESS_BY_USER = () => {
     return `
@@ -249,8 +256,8 @@ class SqlRoot {
     join address_detail_sp ard on ar.code_address_detail = ard.code_address_detail 
     join user_sp u on u.code_user = ar.code_user 
     where u.code_user=($1)
-    `
-  }
+    `;
+  };
 
   public static SQL_GET_ORDER_DETAIL_BY_USER = () => {
     //join product_sp p on p.code_product = ANY (o.code_product)
@@ -262,12 +269,18 @@ class SqlRoot {
       u.avatar,
       u.phone,
       s.*,
-      p.*,
-      pt.*,
       sd.phone as phone_shop,
       sd.email as email_shop,
+      ad.full_name,
+      ad.detail_address,
+      adt.phone_w as phone_w_detail,
+      adt.street,
+      adt.village,
+      adt.district,
+      adt.province,
+      adt.city,
       ( 
-	    select json_agg(row_to_json((p.*)))  AS product_order
+	   select json_agg(row_to_json((p.*)))  AS product_order
       from order_sp ow
       cross join jsonb_to_recordset(o.code_product) as al(code varchar)
       inner join product_sp p on p.code_product = al.code
@@ -278,10 +291,11 @@ class SqlRoot {
       join order_detail_sp od on od.code_order_detail = o.code_order_detail 
       left join shop_sp s on s.code_shop = od.code_shop
       left join shop_detail_sp sd on sd.code_shop_detail = s.code_shop_detail
-      left join product_type_sp pt ON pt.code_product_type = p.code_product_type
-      where u.code_user = ($1) and o.code_order = ($2)
-    `
-  }
+      left join address_sp ad on ad.code_address = o.code_address
+      join address_detail_sp adt on adt.code_address_detail = ad.code_address_detail
+      where u.code_user =($1) and o.code_order =($2)
+    `;
+  };
   public static SQL_GET_USER_ADMIN = () => {
     return `
           SELECT u.*,ud.* FROM user_sp u 
@@ -292,7 +306,7 @@ class SqlRoot {
           where u.user_name = ($1) AND r.code_role='ROLE-WIXX-SHOP'
 
     `;
-  }
+  };
 
   public static SQL_GET_ME_SHOP = () => {
     return `
@@ -302,8 +316,8 @@ class SqlRoot {
     join shop_sp s on s.code_shop= u.code_shop
     join shop_detail_sp sd on sd.code_shop_detail = s.code_shop_detail
     where u.code_user = ($1) AND r.code_role='ROLE-WIXX-SHOP'
-    `
-  }
+    `;
+  };
   public static SQL_GET_PRODUCT_BY_SHOP = () => {
     return `
       select * from product_sp p join product_detail_sp pd on 
@@ -311,8 +325,8 @@ class SqlRoot {
       on pg.code_product_guide=pd.code_product_guide
       left join shop_sp s on s.code_shop = p.code_shop 
       where p.code_shop=($1) 
-    `
-  }
+    `;
+  };
   public static SQL_GET_COUNT_PRODUCT_BY_SHOP = () => {
     return `
       select count(*) from product_sp p join product_detail_sp pd on 
@@ -320,9 +334,8 @@ class SqlRoot {
       on pg.code_product_guide=pd.code_product_guide
       left join shop_sp s on s.code_shop = p.code_shop 
       where p.code_shop=($1) 
-    `
-  }
-
+    `;
+  };
 
   public static SQL_GET_PRODUCT_BY_TOP = () => {
     return `
@@ -330,8 +343,8 @@ class SqlRoot {
       p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
       on pg.code_product_guide=pd.code_product_guide
       ORDER BY p.evaluate DESC
-    `
-  }
+    `;
+  };
 
   public static SQL_GET_PRODUCT_BY_PAY_TOP = () => {
     return `
@@ -339,8 +352,8 @@ class SqlRoot {
       p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
       on pg.code_product_guide=pd.code_product_guide
       ORDER BY pd.purchase DESC
-    `
-  }
+    `;
+  };
 
   public static SQL_GET_PRODUCT_BY_NEW_SHOP = () => {
     return `
@@ -351,8 +364,8 @@ class SqlRoot {
       join shop_detail_sp sd on sd.code_shop_detail = s.code_shop_detail
       where pd.is_show=1
       ORDER BY (sd."createdAt" IS NULL) DESC
-    `
-  }
+    `;
+  };
 
   public static SQL_GET_CATEGORY_PRODUCT_BY_SHOP = () => {
     return `
@@ -362,8 +375,8 @@ class SqlRoot {
         cross join jsonb_to_recordset(pd.category_code) as al(code varchar)
         inner join category_sp c on c.category_code=al.code
         where p.code_shop=($1)
-    `
-  }
+    `;
+  };
 
   public static SQL_ADD_PRODUCT_BY_SHOP = () => {
     return `
@@ -383,11 +396,11 @@ class SqlRoot {
 	      INSERT INTO product_guide_sp(
 	      code_product_guide, description, guide, "return", note)
 	      VALUES ((select code_product_guide from inspd ), $21, $22, $23, $24)
-    `
-  }
+    `;
+  };
   public static SQL_GET_ALL_CATEGORY_BY_SHOP = () => {
-    return 'select * from category_sp c where c.code_shop=($1)'
-  }
+    return 'select * from category_sp c where c.code_shop=($1)';
+  };
 
   public static SQL_GET_PRODUCT_BY_CODE_AND_SHOP = () => {
     return `
@@ -395,8 +408,8 @@ class SqlRoot {
       p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
       on pg.code_product_guide=pd.code_product_guide
       WHERE p.code_shop=($1) and p.code_product=($2)
-    `
-  }
+    `;
+  };
 
   public static SQL_GET_ALL_PRODUCT_BY_ORDER_AND_SHOP = () => {
     return `
@@ -405,8 +418,8 @@ class SqlRoot {
       cross join jsonb_to_recordset(o.code_product) as al(code varchar)
       inner join product_sp p on p.code_product = al.code
       where od.code_shop = ($1)
-    `
-  }
+    `;
+  };
 
   public static SQL_GET_ALL_ORDER_BY_SHOP = () => {
     return `
@@ -414,6 +427,14 @@ class SqlRoot {
       ud.full_name,
       ud.date_birth,
       ud.sex,
+      ad.full_name,
+      ad.detail_address,
+      adt.phone_w as phone_w_detail,
+      adt.street,
+      adt.village,
+      adt.district,
+      adt.province,
+      adt.city,
       ( 
 	    select json_agg(row_to_json((p.*)))  AS product_order
       from order_sp ow
@@ -425,9 +446,11 @@ class SqlRoot {
       join user_sp u on u.code_user=o.code_user
       join user_detail_sp ud on ud.code_user_detail = u.code_user_detail
       left join payment_sp pm on pm.code_payment = od.code_payment
+      left join address_sp ad on ad.code_address = o.code_address
+      join address_detail_sp adt on adt.code_address_detail = ad.code_address_detail
       where od.code_shop=($1) 
-    `
-  }
+    `;
+  };
 
   public static SQL_GET_ORDER_DETAIL_BY_ORDER_AND_SHOP = () => {
     return `
@@ -435,6 +458,14 @@ class SqlRoot {
       ud.full_name,
       ud.date_birth,
       ud.sex,
+      ad.full_name,
+      ad.detail_address,
+      adt.phone_w as phone_w_detail,
+      adt.street,
+      adt.village,
+      adt.district,
+      adt.province,
+      adt.city,
       ( 
 	    select json_agg(row_to_json((p.*)))  AS product_order
       from order_sp ow
@@ -446,28 +477,30 @@ class SqlRoot {
       join user_sp u on u.code_user=o.code_user
       join user_detail_sp ud on ud.code_user_detail = u.code_user_detail
       left join payment_sp pm on pm.code_payment = od.code_payment
+      left join address_sp ad on ad.code_address = o.code_address
+      join address_detail_sp adt on adt.code_address_detail = ad.code_address_detail
       where od.code_shop=($1) and o.code_order=($2)
-    `
-  }
+    `;
+  };
 
   public static SQL_HIDE_ORDER_BY_SHOP = () => {
     return `
         UPDATE order_sp SET is_show=($1)
         where code_shop=($2) and code_order=($3)
-      `
-  }
+      `;
+  };
 
   public static SQL_REMOVE_ORDER_SHOP = () => {
     return `
 
-      `
-  }
+      `;
+  };
 
   public static SQL_GET_ALL_PRODUCT_TYPE = () => {
     return `
       select * from product_type_sp pt where pt.code_shop=($1)
-    `
-  }
+    `;
+  };
 
   public static SQL_ADD_TYPE_PRODUCT = () => {
     return `
@@ -475,9 +508,8 @@ class SqlRoot {
       (code_product_type, name_product_type, status, code_shop)
       VALUES 
       ($1,$2,$3,$4)
-    `
-  }
-
+    `;
+  };
 
   public static SQL_REMOVE_PRODUCT_BY_SHOP = () => {
     return `
@@ -500,10 +532,8 @@ class SqlRoot {
 	      DELETE FROM voucher_type_sp where code_type_voucher in (select code_type_voucher from rmVoucher_sp)
       )
         DELETE FROM cart_sp where cart_sp.code_product in (select code_product from rmProduct_sp)
-    `
-  }
-
-
+    `;
+  };
 
   public static SQL_SEARCH_PRODUCT_BY_SHOP = () => {
     return `
@@ -512,8 +542,8 @@ class SqlRoot {
       on pg.code_product_guide=pd.code_product_guide
       left join shop_sp s on s.code_shop = p.code_shop 
       where p.code_shop=($1) 
-    `
-  }
+    `;
+  };
   public static SQL_GET_COUNT_SEARCH_PRODUCT_BY_SHOP = () => {
     return `
       select count(*) from product_sp p join product_detail_sp pd on 
@@ -521,8 +551,8 @@ class SqlRoot {
       on pg.code_product_guide=pd.code_product_guide
       left join shop_sp s on s.code_shop = p.code_shop 
       where p.code_shop=($1) or p.name like ($2) or p.code_product=($2)
-    `
-  }
+    `;
+  };
 
   public static SQL_UPDATE_PRODUCT_BY_CODE_AND_SHOP = () => {
     return `
@@ -544,14 +574,14 @@ class SqlRoot {
 	        SET
   	      description=($16), guide=($17), "return"=($18), note=($19)
 	        where code_product_guide in (select code_product_guide from productDetailSp_update)
-    `
-  }
+    `;
+  };
 
   public static SQL_CHECK_USER_REGISTER = () => {
     return `
         select count(*) from user_sp where user_name=($1) or phone=($2)
-      `
-  }
+      `;
+  };
 
   public static SQL_REGISTER_SHOP = () => {
     return `
@@ -588,8 +618,8 @@ class SqlRoot {
               (code_shop_detail,full_name,email,date,phone,description,"createdAt",status,check_shop,censorship_shop)
 	          VALUES 
               ((select code_shop_detail from ins_shopSP),$29,$22,$13,$7,'2',$8,false,1,1)
-      `
-  }
+      `;
+  };
 
   public static SQL_INSERT_ORDER_USER = () => {
     return `
@@ -604,31 +634,31 @@ class SqlRoot {
 	              (code_order_detail, phone_order, phone_shipw, code_payment, code_shop, total_order, quatity, progress)
 	          VALUES 
                 ((select code_order_detail from ins_orderSP ),$9,$10,$11,$12,$13,$14,$15)
-      `
-  }
+      `;
+  };
 
   public static SQL_GET_ALL_PAYMENT = () => {
     return `
       select * from payment_sp
-    `
-  }
+    `;
+  };
 
   public static SQL_REMOVE_CART_BY_CODE = () => {
     return `
       DELETE FROM cart_sp where code_user=($1) 
-    `
-  }
+    `;
+  };
 
   public static SQL_GET_CATEGRY_BY_PRODUCT = () => {
     return `
 
-    `
-  }
+    `;
+  };
 
   public static SQL_GET_TYPE_PRODUCT_BY_PRODUCT = () => {
     return `
-    `
-  }
+    `;
+  };
 
   public static SQL_UPDATE_ORDER_BY_CODE_ORDER = () => {
     return `
@@ -639,6 +669,73 @@ class SqlRoot {
     )
     UPDATE order_detail_sp SET progress=($3) 
     where code_order_detail=(select code_order_detail from codeOrder_OrderSP) 
+    `;
+  };
+
+  public static SQL_GET_DETAIL_SHOP = () => {
+    return `
+      select 
+	      s.code_shop,
+	      s.evaluate,
+	      s.follow_shop,
+	      s.name_shop,
+	      s.type_shop,
+	      s.video_shop,
+	      sd.facebook,
+	      sd.phone,
+	      sd.youtube,
+	      sd.description,
+        sd.background_shop,
+	      sd."createdAt",
+        ((select 
+	          CASE 
+	  	        WHEN f.code_user IS NULL THEN FALSE ELSE TRUE
+	          END as is_follow
+	        from follow_shop_sp f where f.code_user=($2) and f.code_shop=($1)
+	      ))
+	      from shop_sp s
+      join shop_detail_sp sd  on sd.code_shop_detail=s.code_shop_detail where s.code_shop=($1)
+    `;
+  };
+
+  public static SQL_GET_ALL_CATEGORY_BY_PRODUCT_SHOP = () => {
+    return `
+  select json_agg(row_to_json((ct.*)))  AS category_all from product_sp p 
+	 join product_detail_sp pd on p.code_product_detail=pd.code_product_detail 
+	 join product_guide_sp pg
+	 on pg.code_product_guide=pd.code_product_guide
+	 left join shop_sp s on s.code_shop = p.code_shop 
+	 cross join jsonb_to_recordset(pd.category_code) as al(code varchar)
+	 inner join category_sp ct on ct.category_code=al.code
+	 where p.code_shop=($1)
+    `
+  }
+
+  public static SQL_FOLLOW_SHOP_BY_USER = () => {
+    return `
+    INSERT INTO follow_shop_sp(
+	    code_follow, code_user, code_shop
+    )
+	  SELECT '($1)','($2)','($3)'
+		  WHERE NOT EXISTS(
+		  SELECT code_follow,code_user,code_shop
+		  FROM follow_shop_sp
+		  WHERE follow_shop_sp.code_user=($2) and follow_shop_sp.code_shop=($3)
+    )
+    `
+  }
+
+  public static SQL_INSERT_NOTIFY_SHOP = () => {
+    return `
+      INSERT INTO notify_shop_sp
+      (code_notifiy_shop, code_shop, title, info, code_type_notify, "createdAt")
+      VALUES ($1,$2,$3,$4,$5,$6)
+    `
+  }
+
+  public static SQL_GET_ALL_NOTIFY_SHOP = () => {
+    return `
+      select * from notify_shop_sp where code_shop=($1) LIMIT ($2)
     `
   }
 }

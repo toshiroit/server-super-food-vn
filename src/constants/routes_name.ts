@@ -18,7 +18,7 @@ export const ROUTES_NAME = {
   },
   USER: {
     ADD_USER: '/add-user',
-    UPDATE_USER: '/update-user-w1'
+    UPDATE_USER: '/update-user-w1',
   },
   PRODUCT: {
     GET_ALL_PRODUCTS: '/get-all',
@@ -30,35 +30,45 @@ export const ROUTES_NAME = {
   },
   COMMENT: {
     ADD_NEW_COMMENT: '/add-comment',
-    GET_COMMENT: '/get-comment'
+    GET_COMMENT: '/get-comment',
   },
   SEARCH: {
-    SEARCH: '/search'
+    SEARCH: '/search',
   },
   CART: {
     GET_CART: '/get-cart',
     ADD_CART: '/add-cart',
     REMOVE_CART: '/remove-cart',
-    REMOVE_CART_BY_CODE: '/remove-cart-by-code-product'
+    REMOVE_CART_BY_CODE: '/remove-cart-by-code-product',
   },
   ORDER: {
     HOME: '/order',
     GET_ORDER_DETAIL_BY_CODE: '/get-order',
     GET_ORDER_BY_USER: '/get-order-user',
-    GET_ORDER_BY_ALL_ADMIN: '/get-order-all'
+    GET_ORDER_BY_ALL_ADMIN: '/get-order-all',
   },
   ADDRESS: {
     HOME: '/address',
-    GET_ADDRESS: '/get-address'
+    GET_ADDRESS: '/get-address',
   },
   CHECKOUT: '/checkout',
   PAYMENT: {
     HOME: '/payment',
-    GET_ALL_PAYMENT: '/get-all-pay-ment'
+    GET_ALL_PAYMENT: '/get-all-pay-ment',
   },
   NOTIFICATION: {
     HOME: '/notification',
-    CHECKOUT: '/checkout'
+    CHECKOUT: '/checkout',
+  },
+  SHOP: {
+    HOME: '/shop',
+    DETAIL_SHOP: '/detail-shop',
+    PRODUCT_SHOP: '/all-product',
+    FOLLOW_SHOP: '/follow-shop'
+  },
+  NOTIFY: {
+    HOME: '/notify',
+    ADD_NOTIFY_NEW_SHOP: '/add-new-notify-shop',
   }
 };
 
@@ -67,12 +77,12 @@ export const ROUTES_NAME_SHOP = {
     LOGIN: '/login',
     GET_ME: '/getMe',
     GET_ME_SHOP: '/getMeShop',
-    REGISTER: '/register'
+    REGISTER: '/register',
   },
   CATEGORY: {
     HOME: '/category',
     CATEGORY_ALL: '/get-by-product-shop',
-    CATEGORY_ALL_BY_SHOP: '/get-all-category-by-shop'
+    CATEGORY_ALL_BY_SHOP: '/get-all-category-by-shop',
   },
   PRODUCT: {
     HOME: '/product',
@@ -83,14 +93,14 @@ export const ROUTES_NAME_SHOP = {
     ADD_TYPE_PRODUCT: '/add-type-product',
     REMOVE_PRODUCT_BY_SHOP: '/remove-product-by-shop',
     SEARCH_PRODUCT_BY_VALUE_AND_SHOP: '/searc-product-by-value-and-shop',
-    UPDATE_PRODUCT_PRODUCT_BY_CODE_AND_SHOP: '/update-product-by-code-and-shop'
+    UPDATE_PRODUCT_PRODUCT_BY_CODE_AND_SHOP: '/update-product-by-code-and-shop',
   },
   UPLOAD: {
     home: '/upload',
     image: '/image',
     images: '/images',
     video: '/video',
-    videos: 'videos'
+    videos: 'videos',
   },
   ORDER: {
     HOME: '/order',
@@ -100,12 +110,16 @@ export const ROUTES_NAME_SHOP = {
     GET_ALL_ORDER_BY_SHOP: '/get-all-order-by-shop',
     GET_ALL_PRODUCT_BY_ORDER_AND_SHOP: '/get-all-product-by-order-and-shop',
     GET_ORDER_DETAIL_BY_ORDER_AND_SHOP: '/get-order-detail-by-order-and-shop',
-    CONFIRM_ORDER_BY_CODE_ORDER: '/confirm-order-by-code-order'
+    CONFIRM_ORDER_BY_CODE_ORDER: '/confirm-order-by-code-order',
+  },
+  NOTIFY: {
+    HOME: '/notify',
+    GET_ALL_NOTIFY_SHOP: '/get-all-notify-shop'
   }
-}
+};
 export const SOCKET_ROUTE = {
   NOTIFICATION: {
     HOME: '/notification',
-    SEND: '/send'
-  }
-}
+    SEND: '/send',
+  },
+};
