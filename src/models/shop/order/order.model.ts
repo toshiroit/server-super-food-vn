@@ -7,20 +7,35 @@ import SqlRoot from '../../sql';
 export class OrderModel extends Model {
   public static async getAllOrderByShop(data: { code_shop: string; type?: any }, callback: CallbackHandler) {
     let sql_result = SqlRoot.SQL_GET_ALL_ORDER_BY_SHOP();
-    console.log('TYPE : ', data.type);
     if (data.type === 'new_order') {
-      sql_result += 'AND od.progress = -1';
+      sql_result += 'AND od.progress = -1  and od.progress > -2 ';
     }
     if (data.type === 'check_out') {
-      sql_result += 'AND od.progress = 1 or od.progress=2';
+      sql_result += 'AND od.progress = 1 or od.progress=2  and od.progress > -2 ';
     } else if (data.type === 'ship') {
-      sql_result += 'AND od.progress = 3';
+      sql_result += 'AND od.progress = 3  and od.progress > -2 ';
     } else {
-      sql_result += 'ORDER BY o.date_order DESC';
+      sql_result += ' and od.progress > -2 ';
     }
+    sql_result += 'ORDER BY o.date_order DESC ';
     pool.query(sql_result, [data.code_shop], callback);
   }
 
+  public static async getCountOrderByShop(data: { code_shop: string; type?: any }) {
+    let sql_result = SqlRoot.SQL_COUNT_ALL_ORDER_BY_SHOP();
+    if (data.type === 'new_order') {
+      sql_result += 'AND od.progress = -1 and od.progress > -2 ';
+    }
+    if (data.type === 'check_out') {
+      sql_result += 'AND od.progress = 1 or od.progress=2  and od.progress > -2 ';
+    } else if (data.type === 'ship') {
+      sql_result += 'AND od.progress = 3  and od.progress > -2 ';
+    } else {
+      sql_result += ' and od.progress > -2 ';
+    }
+    console.log(sql_result);
+    return pool.query(sql_result, [data.code_shop]);
+  }
   public static async getAllProductByOrderAndShop(data: { code_shop: string }, callback: CallbackHandler) {
     pool.query(SqlRoot.SQL_GET_ALL_PRODUCT_BY_ORDER_AND_SHOP(), [data.code_shop], callback);
   }

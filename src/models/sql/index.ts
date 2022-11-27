@@ -318,6 +318,14 @@ class SqlRoot {
     where u.code_user = ($1) AND r.code_role='ROLE-WIXX-SHOP'
     `;
   };
+  public static SQL_GET_ME_USER = () => {
+    return `
+    SELECT u.*,ud.* FROM user_sp u
+    join user_detail_sp ud on u.code_user_detail=ud.code_user_detail
+    join role_sp r on r.code_role = u.code_role
+    where u.code_user = ($1) AND r.code_role='ROLE-WIXO-USER'
+    `;
+  };
   public static SQL_GET_PRODUCT_BY_SHOP = () => {
     return `
       select * from product_sp p join product_detail_sp pd on 
@@ -441,6 +449,20 @@ class SqlRoot {
       cross join jsonb_to_recordset(o.code_product) as al(code varchar)
       inner join product_sp p on p.code_product = al.code
       where ow.code_order=o.code_order )
+      from order_sp o 
+      join order_detail_sp od on od.code_order_detail = o.code_order_detail
+      join user_sp u on u.code_user=o.code_user
+      join user_detail_sp ud on ud.code_user_detail = u.code_user_detail
+      left join payment_sp pm on pm.code_payment = od.code_payment
+      left join address_sp ad on ad.code_address = o.code_address
+      join address_detail_sp adt on adt.code_address_detail = ad.code_address_detail
+      where od.code_shop=($1) 
+    `;
+  };
+
+  public static SQL_COUNT_ALL_ORDER_BY_SHOP = () => {
+    return `
+      select count(*)
       from order_sp o 
       join order_detail_sp od on od.code_order_detail = o.code_order_detail
       join user_sp u on u.code_user=o.code_user
@@ -700,7 +722,7 @@ class SqlRoot {
 
   public static SQL_GET_ALL_CATEGORY_BY_PRODUCT_SHOP = () => {
     return `
-  select json_agg(row_to_json((ct.*)))  AS category_all from product_sp p 
+    select json_agg(row_to_json((ct.*)))  AS category_all from product_sp p 
 	 join product_detail_sp pd on p.code_product_detail=pd.code_product_detail 
 	 join product_guide_sp pg
 	 on pg.code_product_guide=pd.code_product_guide
@@ -708,8 +730,8 @@ class SqlRoot {
 	 cross join jsonb_to_recordset(pd.category_code) as al(code varchar)
 	 inner join category_sp ct on ct.category_code=al.code
 	 where p.code_shop=($1)
-    `
-  }
+    `;
+  };
 
   public static SQL_FOLLOW_SHOP_BY_USER = () => {
     return `
@@ -722,21 +744,67 @@ class SqlRoot {
 		  FROM follow_shop_sp
 		  WHERE follow_shop_sp.code_user=($2) and follow_shop_sp.code_shop=($3)
     )
-    `
-  }
+    `;
+  };
 
   public static SQL_INSERT_NOTIFY_SHOP = () => {
     return `
       INSERT INTO notify_shop_sp
       (code_notifiy_shop, code_shop, title, info, code_type_notify, "createdAt")
       VALUES ($1,$2,$3,$4,$5,$6)
-    `
-  }
+    `;
+  };
 
   public static SQL_GET_ALL_NOTIFY_SHOP = () => {
     return `
       select * from notify_shop_sp where code_shop=($1) LIMIT ($2)
-    `
-  }
+    `;
+  };
+
+  public static SQL_SEND_MESSENGER_CHAT = () => {
+    return `
+       INSERT INTO chat_sp 
+       (code_chat, code_user, type_chat, text_chat, time_chat, room_chat, code_shop)
+       values 
+       ($1,$2,$3,$4,$5,$6,$7)
+    `;
+  };
+
+  public static SQL_GET_ALL_MESSENGER_CHAT_BY_CODE_USER = () => {
+    return `
+      with resultMess as (
+	      select 
+		      u.avatar,
+          u.phone,
+          u.code_user,
+          u.user_name,
+          ud.facebook,
+          c.*
+          from chat_sp c 
+          join user_sp u on u.code_user = c.code_user
+          join user_detail_sp ud on ud.code_user_detail = u.code_user_detail
+        where u.code_user=($1) and c.code_shop=($2) ORDER BY  c.time_chat DESC LIMIT($3)
+      )
+      select ROW_NUMBER() OVER (ORDER BY 1) AS id,s.*  FROM resultMess s ORDER BY id DESC
+    `;
+  };
+  public static SQL_GET_ALL_MESSENGER_CHAT_SHOP_BY_CODE_USER = () => {
+    return `
+    with  resultMess as (
+	      select 
+		      u.avatar,
+          u.phone,
+          u.code_user,
+          u.user_name,
+          ud.facebook,
+          c.*
+          from chat_sp c 
+          join user_sp u on u.code_user = c.code_user
+          join user_detail_sp ud on ud.code_user_detail = u.code_user_detail
+        where u.code_user=($1) and c.code_shop=($2) ORDER BY  c.time_chat DESC LIMIT($3)
+      )
+      select ROW_NUMBER() OVER (ORDER BY 1) AS id,s.*  FROM resultMess s ORDER BY id DESC
+    `;
+  };
 }
 export default SqlRoot;

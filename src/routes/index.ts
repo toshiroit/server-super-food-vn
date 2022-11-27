@@ -11,7 +11,8 @@ import { ROUTES_NAME } from '../constants/routes_name';
 import checkoutRoute from './api/checkout/checkout.route';
 import paymentRoute from './api/payment/payment.route';
 import shopRoute from './api/shop/shop.route';
-import notifyRoute from './api/notify/notify.route'
+import notifyRoute from './api/notify/notify.route';
+import messengerRoute from './api/chat/chat.route';
 const router = Router();
 
 /**
@@ -37,7 +38,8 @@ router.use(ROUTES_NAME.ORDER.HOME, orderRoute);
 router.use(ROUTES_NAME.CHECKOUT, checkoutRoute);
 router.use(ROUTES_NAME.PAYMENT.HOME, paymentRoute);
 router.use(ROUTES_NAME.SHOP.HOME, shopRoute);
-router.use(ROUTES_NAME.NOTIFY.HOME, notifyRoute)
+router.use(ROUTES_NAME.NOTIFY.HOME, notifyRoute);
+router.use(ROUTES_NAME.CHAT.HOME, messengerRoute);
 router.get('/', (res: Response) => {
   res.json({
     message: 'Hello world',

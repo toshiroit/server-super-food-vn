@@ -123,10 +123,10 @@ io.use((socket, next) => {
 });
 io.on('connection', socket => {
   if (socket.data.auth_data.code_role.trim() === 'ROLE-WIXO-USER') {
-    socket.join(socket.data.auth_data.code_user);
+    socket.join(socket.data.auth_data.code_user.trim());
   }
   if (socket.data.auth_data.code_role.trim() === 'ROLE-WIXX-SHOP') {
-    socket.join(socket.data.auth_data.code_shop);
+    socket.join(socket.data.auth_data.code_shop.trim());
   }
   socket.on('notification_order', data => {
     if (data) {
@@ -142,47 +142,60 @@ io.on('connection', socket => {
     }
   });
   socket.on('notification_progress_1', data => {
-    io.to(data.item.code_user).emit('notification_progress', {
+    io.to(data.item.code_user.trim()).emit('notification_progress', {
       status: 2,
       code_order: data.item.code_order,
       message: `Đơn hàng bạn đã được xác nhận : ${data.item.code_order}`,
     });
   });
   socket.on('notification_progress_2', data => {
-    io.to(data.item.code_user).emit('notification_progress', {
+    io.to(data.item.code_user.trim()).emit('notification_progress', {
       status: 2,
       code_order: data.item.code_order,
       message: `Đơn hàng bạn đang được chế biến : ${data.item.code_order}`,
     });
   });
   socket.on('notification_progress_3', data => {
-    io.to(data.item.code_user).emit('notification_progress', {
+    io.to(data.item.code_user.trim()).emit('notification_progress', {
       status: 3,
       code_order: data.item.code_order,
       message: `Đơn hàng đã được chế biên xong - đang chờ shipper giao hàng : ${data.item.code_order}`,
     });
   });
   socket.on('notification_progress_4', data => {
-    io.to(data.item.code_user).emit('notification_progress', {
+    io.to(data.item.code_user.trim()).emit('notification_progress', {
       status: 3,
       code_order: data.item.code_order,
       message: `Đơn hàng bạn đã được giao cho shipper: ${data.item.code_order}`,
     });
   });
   socket.on('notification_progress_cancel', data => {
-    io.to(data.item.code_user).emit('notification_progress', {
+    io.to(data.item.code_user.trim()).emit('notification_progress', {
       status: -1,
       code_order: data.item.code_order,
       message: `Đơn hàng bạn đã bị hủy bởi người bán : ${data.item.code_order}`,
     });
   });
-  socket.on('notification_follow', (data) => {
-    console.log("NHAN DATA : ", data)
+  socket.on('notification_follow', data => {
     io.to(data.code_shop.trim()).emit('notification_follow', {
-      code_user: "---------",
-      message: 'Bạn nhận được 1 lượt theo dõi từ người dùng'
-    })
-  })
+      code_user: '---------',
+      message: 'Bạn nhận được 1 lượt theo dõi từ người dùng',
+    });
+  });
+
+  socket.on('messenger_send_to_shop', data => {
+    io.to(data.code_shop.trim()).emit('notification_messenger_shop', {
+      code_shop: data.code_user,
+      message: 'Bạn có 1 tin nhắn mới từ khách hàng',
+    });
+  });
+  socket.on('messenger_send_to_user', data => {
+    io.to(data.code_user.trim()).emit('notification_messenger_user', {
+      code_shop: data.code_shop,
+      message: 'Bạn có 1 tin nhắn mới từ Shop',
+    });
+  });
+
   socket.on('disconnect', () => {
     console.log('disconnect : ', socket.data.auth_data);
   });

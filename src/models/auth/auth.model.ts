@@ -43,7 +43,6 @@ export class AuthModel extends Model {
     pool.query(SqlRoot.SQL_UPDATE_REFRESH_TOKEN_USER(), data);
   };
 
-  public static async authenticateModel(valueQuery: modelQuery, callback: CallbackHandler) { }
   public static loginUserModel = async (valueQuery: modelQuery, callback: CallbackHandler): Promise<any> => {
     let result: QueryResult<any> | null = null;
     result = await pool.query(SqlRoot.SQL_LOGIN_USER_FULL(), [valueQuery.value.phone]);
@@ -82,7 +81,7 @@ export class AuthModel extends Model {
         valueQuery.value.sex,
         valueQuery.value.code_restpass,
         valueQuery.value.createdAtDetail,
-      ]
+      ];
       const valueQueryRegister: modelQuery = {
         table: 'user_sp',
         obj: {
@@ -112,12 +111,17 @@ export class AuthModel extends Model {
   }
 
   public static async getUserAdminModel(data: AuthLoginAdmin) {
-    const dataResult = [data.user_name]
-    return pool.query(SqlRoot.SQL_GET_USER_ADMIN(), dataResult)
+    const dataResult = [data.user_name];
+    return pool.query(SqlRoot.SQL_GET_USER_ADMIN(), dataResult);
   }
 
   public static async getMeShopModel(data: { code_user: string }, callback: CallbackHandler) {
-    const dataResult = [data.code_user]
-    pool.query(SqlRoot.SQL_GET_ME_SHOP(), dataResult, callback)
+    const dataResult = [data.code_user];
+    pool.query(SqlRoot.SQL_GET_ME_SHOP(), dataResult, callback);
+  }
+
+  public static async getMeUser(data: { code_user: string }, callback: CallbackHandler) {
+    console.log('CODE USER : ', data.code_user);
+    pool.query(SqlRoot.SQL_GET_ME_USER(), [data.code_user], callback);
   }
 }

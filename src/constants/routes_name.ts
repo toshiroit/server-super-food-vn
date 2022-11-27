@@ -64,12 +64,17 @@ export const ROUTES_NAME = {
     HOME: '/shop',
     DETAIL_SHOP: '/detail-shop',
     PRODUCT_SHOP: '/all-product',
-    FOLLOW_SHOP: '/follow-shop'
+    FOLLOW_SHOP: '/follow-shop',
   },
   NOTIFY: {
     HOME: '/notify',
     ADD_NOTIFY_NEW_SHOP: '/add-new-notify-shop',
-  }
+  },
+  CHAT: {
+    HOME: '/messenger',
+    SEND_CHAT: '/send-messenger',
+    GET_ALL_CHAT: '/get-all-messenger',
+  },
 };
 
 export const ROUTES_NAME_SHOP = {
@@ -114,8 +119,13 @@ export const ROUTES_NAME_SHOP = {
   },
   NOTIFY: {
     HOME: '/notify',
-    GET_ALL_NOTIFY_SHOP: '/get-all-notify-shop'
-  }
+    GET_ALL_NOTIFY_SHOP: '/get-all-notify-shop',
+  },
+  CHAT: {
+    HOME: '/messenger',
+    SEND_CHAT: '/send-messenger',
+    GET_ALL_CHAT: '/get-all-messenger',
+  },
 };
 export const SOCKET_ROUTE = {
   NOTIFICATION: {
