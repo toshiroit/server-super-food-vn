@@ -38,7 +38,13 @@ const {
   CLOUDINARY_CLOUD_NAME,
   CLOUDINARY_API_KEY,
   CLOUDINARY_API_SECRET,
-  CLOUDINARY_API_ENVIRONMENT_VARIABLE_URL
+  CLOUDINARY_API_ENVIRONMENT_VARIABLE_URL,
+  NODE_MAILER_USER,
+  NODE_MAILER_PASS,
+  NODE_MAILER_SMTP,
+  NODE_MAILER_HOST,
+  NODE_MAILER_PORT,
+  NODE_MAILER_ENCRYPTION,
 } = process.env;
 export default {
   port: PORT,
@@ -78,5 +84,11 @@ export default {
   cloudinary_cloud_name: CLOUDINARY_CLOUD_NAME,
   cloudinary_api_key: CLOUDINARY_API_KEY,
   cloudinary_api_secret: CLOUDINARY_API_SECRET,
-  cloudinary_api_environment_variable_url: CLOUDINARY_API_ENVIRONMENT_VARIABLE_URL
+  cloudinary_api_environment_variable_url: CLOUDINARY_API_ENVIRONMENT_VARIABLE_URL,
+  node_mailer_user: NODE_MAILER_USER,
+  node_mailer_pass: NODE_MAILER_PASS,
+  node_mail_smtp: NODE_MAILER_SMTP,
+  node_mail_host: NODE_MAILER_HOST,
+  node_mail_encryption: NODE_MAILER_ENCRYPTION,
+  node_mail_port: NODE_MAILER_PORT,
 };

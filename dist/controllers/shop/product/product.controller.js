@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addTypeProductByShop = exports.removeProductByShop = exports.getAllProductType = exports.getProductByCodeAndShop = exports.addProductShop = exports.getAllProductShop = exports.dataUserTK = void 0;
+exports.updateProductByCodeAndShop = exports.searchProductByValueAndShop = exports.addTypeProductByShop = exports.removeProductByShop = exports.getAllProductType = exports.getProductByCodeAndShop = exports.addProductShop = exports.getAllProductShop = exports.dataUserTK = void 0;
 const config_1 = __importDefault(require("../../../config/config"));
 const getPagination_1 = require("../../../libs/getPagination");
 const getUserToken_1 = require("../../../libs/getUserToken");
@@ -29,24 +29,29 @@ const dataUserTK = (req) => {
 exports.dataUserTK = dataUserTK;
 const getAllProductShop = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { page, type } = req.query;
+        const { page, type, q } = req.query;
         const { cookie } = req.headers;
         const bearer = cookie === null || cookie === void 0 ? void 0 : cookie.split('=')[0].toLowerCase();
         const token = cookie === null || cookie === void 0 ? void 0 : cookie.split('=')[1];
         const data_user = (0, getUserToken_1.getDataUser)(token, bearer);
         const code_shop = (data_user === null || data_user === void 0 ? void 0 : data_user.payload.code_shop) || '';
-        const dataCountProductShop = yield product_model_2.ProductShopModel.getCountAllProductShopModel({ code_shop: code_shop });
-        yield product_model_2.ProductShopModel.getAllProductShopModel({ code_shop: code_shop, page: Number(page) || 1, type: type || '' }, (err, result) => {
+        const dataCountProductShop = yield product_model_2.ProductShopModel.getCountAllProductShopModel({ code_shop: code_shop, q: q || '' });
+        yield product_model_2.ProductShopModel.getAllProductShopModel({
+            code_shop: code_shop,
+            page: Number(page) || 1,
+            type: type || '',
+            q: q || '',
+        }, (err, result) => {
             if (err) {
                 res.json({
-                    err: "Error"
+                    err: err,
                 });
             }
             else {
                 if (result) {
                     const dataPaging = {
                         count: Number(dataCountProductShop.rows[0].count) || 0,
-                        rows: result.rows
+                        rows: result.rows,
                     };
                     const { tutorials, totalItems, totalPages, currentPage } = (0, getPagination_1.getPagingData)(dataPaging, Number(page) || 0, Number(config_1.default.table_product_shop_limit_show) || 10);
                     res.json({
@@ -54,7 +59,7 @@ const getAllProductShop = (req, res) => __awaiter(void 0, void 0, void 0, functi
                         totalItems,
                         limit: Number(config_1.default.table_product_shop_limit_show),
                         currentPage,
-                        data: tutorials
+                        data: tutorials,
                     });
                 }
             }
@@ -62,7 +67,7 @@ const getAllProductShop = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
     catch (err) {
         res.json({
-            error: err
+            error: err,
         });
     }
 });
@@ -99,18 +104,17 @@ const addProductShop = (req, res) => __awaiter(void 0, void 0, void 0, function*
             req.body.return,
             req.body.note,
         ];
-        console.log(dataAddProductSQL);
         yield product_model_2.ProductShopModel.addProductShopModel(dataAddProductSQL, (err, result) => {
             if (err) {
                 res.json({
-                    error: err
+                    error: err,
                 });
             }
             else {
                 if (result) {
                     res.json({
                         data: result,
-                        message: 'Đăng sản phẩm thành công'
+                        message: 'Đăng sản phẩm thành công',
                     });
                 }
             }
@@ -118,7 +122,7 @@ const addProductShop = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
     catch (err) {
         res.json({
-            error: "Error"
+            error: 'Error',
         });
     }
 });
@@ -131,19 +135,19 @@ const getProductByCodeAndShop = (req, res) => __awaiter(void 0, void 0, void 0, 
         const data_user = (0, getUserToken_1.getDataUser)(token, bearer);
         const dataQuery = {
             code_product: req.query.code_product,
-            code_shop: data_user === null || data_user === void 0 ? void 0 : data_user.payload.code_shop
+            code_shop: data_user === null || data_user === void 0 ? void 0 : data_user.payload.code_shop,
         };
         yield product_model_2.ProductShopModel.getProductByCodeAndShopModel(dataQuery, (err, result) => {
             if (err) {
                 res.json({
-                    error: err
+                    error: err,
                 });
             }
             else {
                 if (result) {
                     res.json({
                         message: 'success',
-                        data: result.rows
+                        data: result.rows,
                     });
                 }
             }
@@ -151,7 +155,7 @@ const getProductByCodeAndShop = (req, res) => __awaiter(void 0, void 0, void 0, 
     }
     catch (err) {
         res.json({
-            error: "Error"
+            error: 'Error',
         });
     }
 });
@@ -164,13 +168,13 @@ const getAllProductType = (req, res) => __awaiter(void 0, void 0, void 0, functi
             yield product_model_1.ProductModel.getAllTypeProductByShopModel({ code_shop: code_shop }, (err, result) => {
                 if (err) {
                     res.json({
-                        error: err
+                        error: err,
                     });
                 }
                 else {
                     if (result) {
                         res.json({
-                            data: result.rows
+                            data: result.rows,
                         });
                     }
                 }
@@ -179,7 +183,7 @@ const getAllProductType = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
     catch (err) {
         res.json({
-            error: err
+            error: err,
         });
     }
 });
@@ -192,11 +196,11 @@ const removeProductByShop = (req, res) => __awaiter(void 0, void 0, void 0, func
         if (code_product) {
             yield product_model_2.ProductShopModel.removeProductByShop({
                 code_product: code_product,
-                code_shop: code_shop
+                code_shop: code_shop,
             }, (err, result) => {
                 if (err) {
                     res.json({
-                        error: err
+                        error: err,
                     });
                 }
                 else {
@@ -204,13 +208,13 @@ const removeProductByShop = (req, res) => __awaiter(void 0, void 0, void 0, func
                         if (result.rowCount === 1) {
                             res.json({
                                 success: true,
-                                message: 'Xóa dữ liệu thành công '
+                                message: 'Xóa dữ liệu thành công ',
                             });
                         }
                         else {
                             res.json({
                                 success: false,
-                                message: 'Xóa dữ liệu không thành công '
+                                message: 'Xóa dữ liệu không thành công ',
                             });
                         }
                     }
@@ -220,7 +224,7 @@ const removeProductByShop = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
     catch (err) {
         res.json({
-            error: err
+            error: err,
         });
     }
 });
@@ -229,23 +233,23 @@ const addTypeProductByShop = (req, res) => __awaiter(void 0, void 0, void 0, fun
     try {
         const data = req.body;
         const dataUser = (0, exports.dataUserTK)(req);
+        console.log(dataUser);
         const dataSQL = {
             code_product_type: (0, make_id_1.makeId)(15),
             name_product_type: data.name_product_type,
             status: data.status,
-            code_shop: dataUser === null || dataUser === void 0 ? void 0 : dataUser.payload.code_shop
+            code_shop: dataUser === null || dataUser === void 0 ? void 0 : dataUser.payload.code_shop,
         };
-        console.log(dataSQL);
         yield product_model_2.ProductShopModel.addTypeProductModel(dataSQL, (err, result) => {
             if (err) {
                 res.json({
-                    error: err
+                    error: err,
                 });
             }
             else {
                 if (result) {
                     res.json({
-                        data: result
+                        data: result,
                     });
                 }
             }
@@ -253,8 +257,95 @@ const addTypeProductByShop = (req, res) => __awaiter(void 0, void 0, void 0, fun
     }
     catch (err) {
         res.json({
-            error: "Error"
+            error: 'Error',
         });
     }
 });
 exports.addTypeProductByShop = addTypeProductByShop;
+const searchProductByValueAndShop = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { page } = req.query;
+        const dataUser = (0, exports.dataUserTK)(req);
+        const dataSQL = {
+            code_shop: dataUser === null || dataUser === void 0 ? void 0 : dataUser.payload.code_shop,
+            value: req.body.value,
+        };
+        const dataSearchCount = yield product_model_2.ProductShopModel.getCountSearchByValueAndShop(dataSQL);
+        yield product_model_2.ProductShopModel.searchProductByValueAndShop(dataSQL, (err, result) => {
+            if (err) {
+                res.json({
+                    error: err,
+                });
+            }
+            else {
+                if (result) {
+                    const dataPaging = {
+                        count: Number(dataSearchCount.rows[0].count),
+                        rows: result.rows,
+                    };
+                    const { tutorials, totalItems, totalPages, currentPage } = (0, getPagination_1.getPagingData)(dataPaging, Number(page) || 0, 20);
+                }
+            }
+        });
+    }
+    catch (err) {
+        res.json({
+            error: err,
+        });
+    }
+});
+exports.searchProductByValueAndShop = searchProductByValueAndShop;
+const updateProductByCodeAndShop = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const data_user = (0, exports.dataUserTK)(req);
+        const dataEditProductSQL = [
+            req.query.code_product,
+            data_user === null || data_user === void 0 ? void 0 : data_user.payload.code_shop,
+            req.body.image,
+            req.body.name_product,
+            req.body.price,
+            req.body.quantity,
+            req.body.code_product_type,
+            new Date(Date.now()).toISOString(),
+            JSON.stringify(req.body.type_product),
+            req.body.date_start || null,
+            req.body.date_end || null,
+            JSON.stringify(req.body.category),
+            req.body.isShow,
+            JSON.stringify(req.body.images),
+            req.body.free_ship === 1 ? false : true,
+            req.body.description,
+            req.body.guide,
+            req.body.return,
+            req.body.note,
+        ];
+        yield product_model_2.ProductShopModel.updateProductByCodeAndShop(dataEditProductSQL, (err, result) => {
+            if (err) {
+                res.json({
+                    error: err,
+                    message: 'Cập nhật không thành công : Lỗi PW',
+                });
+            }
+            else {
+                if (result) {
+                    if (result.rowCount === 1) {
+                        res.json({
+                            message: 'Cập nhật thành công ',
+                        });
+                    }
+                    else {
+                        res.json({
+                            message: 'Cập nhật không thành công ',
+                        });
+                    }
+                }
+            }
+        });
+    }
+    catch (err) {
+        res.json({
+            error: err,
+        });
+    }
+});
+exports.updateProductByCodeAndShop = updateProductByCodeAndShop;

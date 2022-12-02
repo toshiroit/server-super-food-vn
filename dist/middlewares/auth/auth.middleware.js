@@ -141,7 +141,18 @@ const validateTokenMiddleware = (req, res, next) => {
                     }
                     else {
                         res.locals.jwt = decoded;
-                        next();
+                        const data = decoded;
+                        if (data.code_role) {
+                            if (data.code_role.trim() === 'ROLE-WIXO-USER') {
+                                next();
+                            }
+                            else {
+                                handlePermissionDenied(next);
+                            }
+                        }
+                        else {
+                            handlePermissionDenied(next);
+                        }
                     }
                 });
             }

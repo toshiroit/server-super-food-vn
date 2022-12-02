@@ -25,16 +25,13 @@ const productGetAll = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 });
             }
             else {
-                if (!(result === null || result === void 0 ? void 0 : result.rows) || result.rows.length <= 0) {
+                if (result) {
                     res.json({
-                        message: "Không có sản phẩm"
+                        quality: result.rows.length,
+                        type: dataQuery.typeSort,
+                        data: result.rows,
                     });
                 }
-                res.json({
-                    quality: result === null || result === void 0 ? void 0 : result.rows.length,
-                    type: dataQuery.typeSort,
-                    data: result === null || result === void 0 ? void 0 : result.rows,
-                });
             }
         });
     }

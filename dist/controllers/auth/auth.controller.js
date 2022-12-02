@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyCodeAuth = exports.checkPhoneAuth = exports.SendCodePhone = exports.VerifyTokenUser = exports.getMe = exports.loginAuthAdmin = exports.getAllUsers = exports.registerUser = exports.refreshToken = exports.verifyAuthMailer = exports.loginPhone = exports.loginUser = exports.getMeShop = exports.logoutUser = void 0;
+exports.checkCodeOTP = exports.verifyAccountByCode = exports.verifyCodeAuth = exports.checkPhoneAuth = exports.SendCodePhone = exports.VerifyTokenUser = exports.getMe = exports.loginAuthAdmin = exports.getAllUsers = exports.registerUser = exports.refreshToken = exports.loginPhone = exports.loginUser = exports.getMeShop = exports.logoutUser = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const auth_model_1 = require("./../../models/auth/auth.model");
 const config_1 = __importDefault(require("../../config/config"));
@@ -21,6 +21,9 @@ const make_id_1 = require("../../libs/make_id");
 const hash_password_1 = require("../../libs/hash_password");
 const capcha_number_1 = require("../../libs/capcha_number");
 const getUserToken_1 = require("../../libs/getUserToken");
+const mail_1 = require("../../helpers/mail");
+const theme_mailer_1 = require("../../libs/theme_mailer");
+const timeVietNam_1 = require("../../libs/timeVietNam");
 const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const valueQuery = {
@@ -46,7 +49,7 @@ const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
     catch (error) {
         res.json({
-            error: error
+            error: error,
         });
     }
 });
@@ -57,12 +60,22 @@ const getMe = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const bearer = cookie === null || cookie === void 0 ? void 0 : cookie.split('=')[0].toLowerCase();
         const token = cookie === null || cookie === void 0 ? void 0 : cookie.split('=')[1];
         if (token && bearer === 'jwt') {
-            const user = (0, jwt_token_1.verifyJWT)(token, config_1.default.refresh_token_secret);
-            delete user.payload.password;
-            delete user.payload.verification_code;
-            delete user.payload.passwordResetCode;
-            res.json({
-                data: user,
+            const user = (yield (0, jwt_token_1.verifyJWT)(token, config_1.default.refresh_token_secret));
+            yield auth_model_1.AuthModel.getMeUser({ code_user: user.payload.code_user }, (err, result) => {
+                if (err) {
+                    res.json({
+                        error: err,
+                    });
+                }
+                else {
+                    if (result) {
+                        const data_user = result.rows[0];
+                        delete data_user.password;
+                        res.json({
+                            data: result.rows,
+                        });
+                    }
+                }
             });
         }
         else {
@@ -87,6 +100,40 @@ const loginPhone = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     // await AuthModel.loginUserModel();
 });
 exports.loginPhone = loginPhone;
+const checkCodeOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    try {
+        const { code } = req.query;
+        const is_check = yield auth_model_1.AuthModel.checkCodeModel({ code: code || '', time: (0, timeVietNam_1.timeVietNameYesterday)() });
+        if (is_check.rows.length > 0) {
+            const is_otp = (0, hash_password_1.comparePassword)(code || '', ((_a = is_check.rows[0]) === null || _a === void 0 ? void 0 : _a.otp_text) || '');
+            if (is_otp) {
+                const is_disable = yield auth_model_1.AuthModel.disableCodeModelByCode({ code: ((_b = is_check.rows[0]) === null || _b === void 0 ? void 0 : _b.code_otp) || '' });
+                if (is_disable.rowCount > 0) {
+                    res.status(200).json({
+                        message: 'Xác nhận thành công ',
+                    });
+                }
+            }
+            else {
+                res.status(400).json({
+                    message: 'Mã xác nhận không chính xác ',
+                });
+            }
+        }
+        else {
+            res.status(400).json({
+                message: 'Mã xác nhận không chính xác ',
+            });
+        }
+    }
+    catch (error) {
+        res.json({
+            error: error,
+        });
+    }
+});
+exports.checkCodeOTP = checkCodeOTP;
 const VerifyTokenUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const authHeader = req.get('Authorization');
@@ -109,30 +156,38 @@ const VerifyTokenUser = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
     }
     catch (error) {
         res.json({
-            error: "error"
+            error: 'error',
         });
     }
 });
 exports.VerifyTokenUser = VerifyTokenUser;
+// eslint-disable-next-line @typescript-eslint/ban-types
 const SendCodePhone = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const capCha_hash = (0, capcha_number_1.GetCAPTCHACode)();
         const data = {
             phone: req.body.phone,
-            capCha: (0, capcha_number_1.GetCAPTCHACode)(),
+            code: (0, make_id_1.makeId)(15),
+            capCha: capCha_hash,
+            data_hash: (0, hash_password_1.hasPassword)(capCha_hash),
+            createdAt: (0, timeVietNam_1.timeVietNameYesterday)(),
+            endTime: (0, timeVietNam_1.endtenMinute)(),
         };
-        let isPhone = false;
-        yield auth_model_1.AuthModel.sendCodeModel(data, (err, result) => {
-            if (err) {
-                res.status(500).json({
-                    error: err,
-                });
-            }
-            else {
-                res.status(200).json({
-                    message: 'Gửi mã thành công - vui lòng kiểm tra ',
-                });
-            }
-        });
+        const is_check = yield auth_model_1.AuthModel.saveCodeModel(data);
+        if (is_check.rowCount > 0) {
+            yield auth_model_1.AuthModel.sendCodeModel(data, (err, result) => {
+                if (err) {
+                    res.status(500).json({
+                        error: err,
+                    });
+                }
+                else {
+                    res.status(200).json({
+                        message: 'Gửi mã thành công - vui lòng kiểm tra ',
+                    });
+                }
+            });
+        }
     }
     catch (error) {
         res.status(401).json({
@@ -158,7 +213,9 @@ const loginUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 full_name: req.body.fullName || '',
                 sex: false,
                 code_restpass: (0, make_id_1.makeId)(14),
-                createdAtDetail: new Date(Date.now()).toISOString()
+                createdAtDetail: new Date(Date.now()).toISOString(),
+                email: req.body.email,
+                verification_code: (0, make_id_1.makeId)(50),
             },
             field: null,
             obj: {
@@ -192,22 +249,40 @@ const loginUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 }
                 else {
                     if ((result === null || result === void 0 ? void 0 : result.command) === 'INSERT') {
-                        if (result.rowCount === 1) {
-                            res.status(200).json({
-                                status: 200,
-                                message: 'Đăng kí tài khoản thành công ',
+                        const data_sendMaik = (0, mail_1.sendMail)({
+                            from: config_1.default.node_mailer_user,
+                            to: valueQuery.value.email,
+                            subject: `Đăng kí tài khoản thành công - ${(0, timeVietNam_1.timeVietNameYesterday)()}`,
+                            html: (0, theme_mailer_1.RegisterSuccess)(valueQuery.value.verification_code, config_1.default.domain_web_client || ''),
+                        });
+                        data_sendMaik
+                            .then(result2 => {
+                            if (result2) {
+                                if (result2.response) {
+                                    if (result.rowCount === 1) {
+                                        res.status(200).json({
+                                            status: 200,
+                                            message: 'Đăng kí tài khoản thành công ',
+                                        });
+                                    }
+                                    else {
+                                        res.status(400).json({
+                                            status: 400,
+                                            message: 'Đăng kí tài khoản không thành công ',
+                                        });
+                                    }
+                                }
+                            }
+                        })
+                            .catch(err => {
+                            res.json({
+                                error: err,
                             });
-                        }
-                        else {
-                            res.status(400).json({
-                                status: 400,
-                                message: 'Đăng kí tài khoản không thành công ',
-                            });
-                        }
+                        });
                     }
                     else if (result === null || result === void 0 ? void 0 : result.command) {
                         res.json({
-                            message: result
+                            message: result,
                         });
                     }
                     else {
@@ -279,6 +354,7 @@ const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.refreshToken = refreshToken;
+// eslint-disable-next-line @typescript-eslint/ban-types
 const registerUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const valueQuery = {
@@ -287,14 +363,7 @@ const registerUser = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                 condition: null,
             },
             field: null,
-            value: [
-                (0, make_id_1.makeId)(14),
-                (0, hash_password_1.hasPassword)('chanelnam2020'),
-                'ROLE-WIXO-USER',
-                req.body.phone,
-                new Date(Date.now()).toISOString(),
-                false,
-            ],
+            value: [(0, make_id_1.makeId)(14), (0, hash_password_1.hasPassword)('chanelnam2020'), 'ROLE-WIXO-USER', req.body.phone, new Date(Date.now()).toISOString(), false],
         };
         yield auth_model_1.AuthModel.registerUserModel(valueQuery, (err, result) => {
             if (err) {
@@ -319,40 +388,14 @@ const registerUser = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.registerUser = registerUser;
-const verifyAuthMailer = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = req.params.id;
-    const verificationCode = req.params.verificationCode;
-    const valueQuery = {
-        table: 'users',
-        obj: {
-            condition: null,
-        },
-        field: 'id',
-        value: [Number(id), verificationCode],
-    };
-    auth_model_1.AuthModel.verifyAuthMailerModel(valueQuery, (err, result) => {
-        if (err) {
-            res.status(400).json({
-                message: 'Error',
-            });
-        }
-        else {
-            if (!(result === null || result === void 0 ? void 0 : result.rows) || (result === null || result === void 0 ? void 0 : result.rows.length) === 0) {
-                res.status(203).json({
-                    status: 203,
-                    message: 'Error account verify code',
-                });
-            }
-            else {
-                res.status(200).json({
-                    status: 200,
-                    data: result.rows,
-                });
-            }
-        }
+const verifyAccountByCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { code } = yield req.query;
+    res.json({
+        code: code,
     });
 });
-exports.verifyAuthMailer = verifyAuthMailer;
+exports.verifyAccountByCode = verifyAccountByCode;
+// eslint-disable-next-line @typescript-eslint/ban-types
 const checkPhoneAuth = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const valueQuery = {
@@ -406,7 +449,7 @@ const loginAuthAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function*
         const { user_name, password } = req.body;
         const dataSQL = {
             user_name: user_name,
-            password: password
+            password: password,
         };
         const dataUserModel = yield auth_model_1.AuthModel.getUserAdminModel(dataSQL);
         if (dataUserModel.rows.length > 0) {
@@ -422,29 +465,29 @@ const loginAuthAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function*
                     httpOnly: true,
                     path: '/',
                     maxAge: 24 * 60 * 60 * 1000,
-                    sameSite: 'strict'
+                    sameSite: 'strict',
                 });
                 res.json({
                     token: tokens.accessToken,
-                    message: "Đăng nhập thành công ",
-                    data: dataUserModel.rows
+                    message: 'Đăng nhập thành công ',
+                    data: dataUserModel.rows,
                 });
             }
             else {
                 res.status(400).json({
-                    message: "Tên tài khoản hoặc mật khẩu không đúng"
+                    message: 'Tên tài khoản hoặc mật khẩu không đúng',
                 });
             }
         }
         else {
             res.status(400).json({
-                message: "Tên tài khoản hoặc mật khẩu không đúng"
+                message: 'Tên tài khoản hoặc mật khẩu không đúng',
             });
         }
     }
     catch (err) {
         res.json({
-            error: "Error"
+            error: 'Error',
         });
     }
 });
@@ -460,19 +503,19 @@ const getMeShop = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             yield auth_model_1.AuthModel.getMeShopModel({ code_user: data.code_user.trim() || '' }, (err, result) => {
                 if (err) {
                     res.json({
-                        error: err
+                        error: err,
                     });
                 }
                 else {
                     if (result) {
                         if (result.rows.length > 0) {
                             res.json({
-                                data: result.rows
+                                data: result.rows,
                             });
                         }
                         else {
                             res.json({
-                                message: "Lỗi hệ thông"
+                                message: 'Lỗi hệ thông',
                             });
                         }
                     }
@@ -482,7 +525,7 @@ const getMeShop = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
     catch (err) {
         res.json({
-            error: "Error"
+            error: 'Error',
         });
     }
 });

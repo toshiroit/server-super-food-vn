@@ -34,6 +34,8 @@ export const ROUTES_NAME = {
   },
   SEARCH: {
     SEARCH: '/search',
+    LIST_TEXT_SEARCH: '/text-search-product',
+    LIST_SHOP_NAME_OR_CODE: '/shop-by-name-or-code',
   },
   CART: {
     GET_CART: '/get-cart',
@@ -50,6 +52,9 @@ export const ROUTES_NAME = {
   ADDRESS: {
     HOME: '/address',
     GET_ADDRESS: '/get-address',
+    ADD_ADDRESS: '/add-address',
+    DETAIL_ADDRESS: '/detail-address',
+    UPDATE_ADDRESS_USER_BY_CODE: '/update-address-user-by-code',
   },
   CHECKOUT: '/checkout',
   PAYMENT: {
@@ -74,6 +79,14 @@ export const ROUTES_NAME = {
     HOME: '/messenger',
     SEND_CHAT: '/send-messenger',
     GET_ALL_CHAT: '/get-all-messenger',
+  },
+  EVALUATE: {
+    HOME: '/evaluate',
+    ADD_EVALUATE: '/add',
+    REMOVE_EVALUATE: '/remove',
+    GET_ALL_EVALUATE: '/get-all',
+    CHECK_EVALUATE: '/check-evaluate',
+    GET_EVALUATE: '/get-evaluate',
   },
 };
 
@@ -125,6 +138,7 @@ export const ROUTES_NAME_SHOP = {
     HOME: '/messenger',
     SEND_CHAT: '/send-messenger',
     GET_ALL_CHAT: '/get-all-messenger',
+    GET_ALL_USER_CHAT_BY_SHOP: '/get-all-user-messenger-by-shop',
   },
 };
 export const SOCKET_ROUTE = {

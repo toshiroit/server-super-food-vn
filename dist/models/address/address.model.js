@@ -15,9 +15,43 @@ var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AddressModel = void 0;
 const database_1 = __importDefault(require("../../database"));
+const make_id_1 = require("../../libs/make_id");
 const Model_1 = __importDefault(require("../Model"));
 const sql_1 = __importDefault(require("../sql"));
 class AddressModel extends Model_1.default {
+    static addAddressByUserModel(data, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const dataSQL = [
+                (0, make_id_1.makeId)(15),
+                data.item.data.code_user,
+                data.item.data.full_name,
+                data.item.data.phone,
+                data.item.data.detail_address,
+                data.item.data.status,
+                (0, make_id_1.makeId)(15),
+                data.item.data.phone,
+                data.item.data.email,
+                data.item.data.street,
+                data.item.data.village,
+                data.item.data.district,
+                data.item.data.city,
+            ];
+            database_1.default.query(sql_1.default.SQL_INSERT_ADDRESS_BY_USER(), dataSQL, callback);
+        });
+    }
+    static updateStatusAddressByUserModel(data) {
+        return database_1.default.query(sql_1.default.SQL_UPDATE_STATUS_ADDRESS_BY_USER(), [data.status, data.code_user, data.code_address]);
+    }
+    static checkPhoneAddressIsEmptyByUser(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.default.query(sql_1.default.SQL_CHECK_ADDRESS_PHONE_IS_EMPTY_BY_USER(), [data.phone, data.code_user]);
+        });
+    }
+    static checkCountAddressByUser(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.default.query(sql_1.default.SQL_CHECK_COUNT_ADDRESS_BY_USER(), [data.code_user]);
+        });
+    }
 }
 exports.AddressModel = AddressModel;
 _a = AddressModel;

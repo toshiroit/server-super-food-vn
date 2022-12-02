@@ -36,4 +36,6 @@ router.get(routes_name_1.ROUTES_NAME_SHOP.PRODUCT.GET_PRODUCT_BY_CODE, auth_midd
 router.get(routes_name_1.ROUTES_NAME_SHOP.PRODUCT.GET_ALL_TYPE_PRODUCT, auth_middleware_1.validateTokenAdminShopMiddleware, productShopController.getAllProductType);
 router.post(routes_name_1.ROUTES_NAME_SHOP.PRODUCT.ADD_TYPE_PRODUCT, auth_middleware_1.validateTokenAdminShopMiddleware, (0, validateResource_1.validateResource)(product_schema_1.addTypeProductSchema), productShopController.addTypeProductByShop);
 router.delete(routes_name_1.ROUTES_NAME_SHOP.PRODUCT.REMOVE_PRODUCT_BY_SHOP, auth_middleware_1.validateTokenAdminShopMiddleware, productShopController.removeProductByShop);
+router.post(routes_name_1.ROUTES_NAME_SHOP.PRODUCT.SEARCH_PRODUCT_BY_VALUE_AND_SHOP, auth_middleware_1.validateTokenAdminShopMiddleware);
+router.put(routes_name_1.ROUTES_NAME_SHOP.PRODUCT.UPDATE_PRODUCT_PRODUCT_BY_CODE_AND_SHOP, auth_middleware_1.validateTokenAdminShopMiddleware, (0, validateResource_1.validateResource)(product_schema_1.addProductShopSchema), productShopController.updateProductByCodeAndShop);
 exports.default = router;

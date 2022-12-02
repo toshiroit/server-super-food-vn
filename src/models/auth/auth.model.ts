@@ -11,10 +11,24 @@ import { Error } from '../../interfaces/error.interface';
 import { AuthLoginAdmin } from '../../types/auth/auth.type';
 
 export class AuthModel extends Model {
+  public static async saveCodeModel(data: { code: string; capCha: string; data_hash: string; createdAt: string; endTime: string }) {
+    return pool.query(SqlRoot.SQL_SEND_CODE(), [data.code, data.data_hash, true, data.createdAt, data.endTime]);
+  }
+
+  public static async checkCodeModel(data: { code: string; time: string }) {
+    return pool.query(SqlRoot.SQL_CHECK_CODE(), [data.time]);
+  }
+
+  public static async disableCodeModelByCode(data: { code: string }) {
+    return pool.query(SqlRoot.SQL_DISABLE_CODE(), [data.code]);
+  }
   public static async sendCodeModel(
     data: {
       phone: string;
+      code: string;
       capCha: string;
+      createdAt: string;
+      endTime: string;
     },
     callback: (err: any | null, result: any | null) => void
   ) {
@@ -22,9 +36,9 @@ export class AuthModel extends Model {
       lazyLoading: true,
     })
       .messages.create({
-        from: '19567585828',
+        from: config.twilio_phone,
         to: `+84${data.phone}`,
-        body: `Code verify phone account : ${data.capCha}`,
+        body: `Mã kích hoạt tài khoản của bạn : ${data.capCha}`,
       })
       .then(res => {
         return callback(null, res);
@@ -77,10 +91,12 @@ export class AuthModel extends Model {
         valueQuery.value.phone,
         new Date(Date.now()).toISOString(),
         false,
+        valueQuery.value.verification_code,
         valueQuery.value.full_name,
         valueQuery.value.sex,
         valueQuery.value.code_restpass,
         valueQuery.value.createdAtDetail,
+        valueQuery.value.email,
       ];
       const valueQueryRegister: modelQuery = {
         table: 'user_sp',

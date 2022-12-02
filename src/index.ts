@@ -27,7 +27,12 @@ app.use(
   })
 );
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-app.use(bodyParser.json());
+app.use(bodyParser());
+// app.use(
+//   bodyParser.json({
+//     limit: '500kb',
+//   })
+// );
 // HTTP request logger middleware
 app.use(morgan('common'));
 // HTTP Security middleware
@@ -42,16 +47,18 @@ app.use(express.static(__dirname));
 // Change domain cors
 app.use(
   cors({
-    origin: [
-      config.domain_admin,
-      config.domain_web_client,
-      config.domain_web_client_shop,
-      'https://super-food-vn.vercel.app',
-      'http://localhost:3001',
-      'http://localhost:4005',
-      'https://admin-super-food.vercel.app',
-    ],
-    methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH', 'OPTIONS'],
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3001'],
+    // origin: [
+    //   '*',
+    //   config.domain_admin,
+    //   config.domain_web_client,
+    //   config.domain_web_client_shop,
+    //   'https://super-food-vn.vercel.app',
+    //   'http://localhost:3001',
+    //   'http://localhost:4005',
+    //   'https://admin-super-food.vercel.app',
+    // ],
+    //   methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH', 'OPTIONS'],
     credentials: true,
     preflightContinue: false,
   })
@@ -84,6 +91,7 @@ origin: [
 
 app.use('/api', routes);
 app.use('/api/v1/sp-shop', shopRoutes);
+
 app.use(errorMiddleware);
 
 const server = app.listen(process.env.PORT || 8080, async () => {

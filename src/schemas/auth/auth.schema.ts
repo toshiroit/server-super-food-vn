@@ -41,16 +41,11 @@ export const registerAuthSchema = object({
   }),
 });
 export const verifyAuthSchema = object({
-  params: object({
-    id: string(),
-    verificationCode: string({
-      required_error: 'VerificationCode is required',
-    })
-      .min(10, 'Verification Code is too short - should be min 10 chars')
-      .trim()
-      .max(100, 'Verification Code is too short - should be max 100 chars')
-      .trim(),
-  }).required(),
+  query: object({
+    code: string({
+      required_error: 'Mã xác nhận không được trống',
+    }),
+  }),
 });
 
 export const phoneAuthSendCode = object({
@@ -126,14 +121,14 @@ export const checkPhoneAuthSchema = object({
 export const loginAuthAdminSchema = object({
   body: object({
     user_name: string({
-      required_error: "Không được bỏ trống tên tài khoản "
+      required_error: 'Không được bỏ trống tên tài khoản ',
     }),
     password: string({
-      required_error: "Không được bỏ trống mật khẩu "
-    })
-  })
-})
+      required_error: 'Không được bỏ trống mật khẩu ',
+    }),
+  }),
+});
 export type RegisterAuth = TypeOf<typeof registerAuthSchema>['body'];
-export type VerifyAuth = TypeOf<typeof verifyAuthSchema>['params'];
+export type VerifyAuth = TypeOf<typeof verifyAuthSchema>['query'];
 export type LoginAuth = TypeOf<typeof loginAuthSchema>['body'];
-export type LoginAuthAdmin = TypeOf<typeof loginAuthAdminSchema>['body']
+export type LoginAuthAdmin = TypeOf<typeof loginAuthAdminSchema>['body'];

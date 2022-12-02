@@ -44,16 +44,11 @@ exports.registerAuthSchema = (0, zod_1.object)({
     }),
 });
 exports.verifyAuthSchema = (0, zod_1.object)({
-    params: (0, zod_1.object)({
-        id: (0, zod_1.string)(),
-        verificationCode: (0, zod_1.string)({
-            required_error: 'VerificationCode is required',
-        })
-            .min(10, 'Verification Code is too short - should be min 10 chars')
-            .trim()
-            .max(100, 'Verification Code is too short - should be max 100 chars')
-            .trim(),
-    }).required(),
+    query: (0, zod_1.object)({
+        code: (0, zod_1.string)({
+            required_error: 'Mã xác nhận không được trống',
+        }),
+    }),
 });
 exports.phoneAuthSendCode = (0, zod_1.object)({
     body: (0, zod_1.object)({
@@ -127,10 +122,10 @@ exports.checkPhoneAuthSchema = (0, zod_1.object)({
 exports.loginAuthAdminSchema = (0, zod_1.object)({
     body: (0, zod_1.object)({
         user_name: (0, zod_1.string)({
-            required_error: "Không được bỏ trống tên tài khoản "
+            required_error: 'Không được bỏ trống tên tài khoản ',
         }),
         password: (0, zod_1.string)({
-            required_error: "Không được bỏ trống mật khẩu "
-        })
-    })
+            required_error: 'Không được bỏ trống mật khẩu ',
+        }),
+    }),
 });

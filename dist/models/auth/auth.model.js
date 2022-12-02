@@ -21,15 +21,30 @@ const database_1 = __importDefault(require("../../database"));
 const sql_1 = __importDefault(require("../sql"));
 const twilio_1 = __importDefault(require("twilio"));
 class AuthModel extends Model_1.default {
+    static saveCodeModel(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.default.query(sql_1.default.SQL_SEND_CODE(), [data.code, data.data_hash, true, data.createdAt, data.endTime]);
+        });
+    }
+    static checkCodeModel(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.default.query(sql_1.default.SQL_CHECK_CODE(), [data.time]);
+        });
+    }
+    static disableCodeModelByCode(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.default.query(sql_1.default.SQL_DISABLE_CODE(), [data.code]);
+        });
+    }
     static sendCodeModel(data, callback) {
         return __awaiter(this, void 0, void 0, function* () {
             (0, twilio_1.default)(config_1.default.twilio_account_sid, config_1.default.twilio_auth_token, {
                 lazyLoading: true,
             })
                 .messages.create({
-                from: '19567585828',
+                from: config_1.default.twilio_phone,
                 to: `+84${data.phone}`,
-                body: `Code verify phone account : ${data.capCha}`,
+                body: `Mã kích hoạt tài khoản của bạn : ${data.capCha}`,
             })
                 .then(res => {
                 return callback(null, res);
@@ -44,9 +59,6 @@ class AuthModel extends Model_1.default {
             const data = valueQuery.value;
             database_1.default.query(sql_1.default.SQL_GET_ONE(valueQuery.table, valueQuery.field), data, callback);
         });
-    }
-    static authenticateModel(valueQuery, callback) {
-        return __awaiter(this, void 0, void 0, function* () { });
     }
     /**
      * Register User
@@ -75,6 +87,12 @@ class AuthModel extends Model_1.default {
         return __awaiter(this, void 0, void 0, function* () {
             const dataResult = [data.code_user];
             database_1.default.query(sql_1.default.SQL_GET_ME_SHOP(), dataResult, callback);
+        });
+    }
+    static getMeUser(data, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('CODE USER : ', data.code_user);
+            database_1.default.query(sql_1.default.SQL_GET_ME_USER(), [data.code_user], callback);
         });
     }
 }
@@ -118,10 +136,12 @@ AuthModel.loginUserModel = (valueQuery, callback) => __awaiter(void 0, void 0, v
             valueQuery.value.phone,
             new Date(Date.now()).toISOString(),
             false,
+            valueQuery.value.verification_code,
             valueQuery.value.full_name,
             valueQuery.value.sex,
             valueQuery.value.code_restpass,
             valueQuery.value.createdAtDetail,
+            valueQuery.value.email,
         ];
         const valueQueryRegister = {
             table: 'user_sp',

@@ -8,69 +8,62 @@ import Model from '../../Model';
 import SqlRoot from '../../sql';
 
 export class InfoShopModel extends Model {
-  public static async getDetailShopInfoByCodeShop(data: { code_shop: string, code_user: string }, callback: CallbackHandler) {
-    console.log("CODE USER ", `'${data.code_user}'`)
-    pool.query(SqlRoot.SQL_GET_DETAIL_SHOP(), [data.code_shop.trim(), data.code_user.trim()], callback);
+  public static async getDetailShopInfoByCodeShop(data: { code_shop: string; code_user: string }, callback: CallbackHandler) {
+    pool.query(SqlRoot.SQL_GET_DETAIL_SHOP(), [data.code_shop.trim(), data.code_user ? data.code_user.trim() : null], callback);
   }
 
-
-  public static async getCountAllProductShopModel(data: { code_shop: string, q?: string }) {
-    const dataResult = [data.code_shop]
-    let querySearch = ''
+  public static async getCountAllProductShopModel(data: { code_shop: string; q?: string }) {
+    const dataResult = [data.code_shop];
+    let querySearch = '';
     if (data.q) {
-      querySearch += ` AND converttvkdau(p.name) ilike '%${toLowerCaseNonAccentVietnamese(data.q)}%' `
-      querySearch += ` OR p.code_product='${data.q}' `
+      querySearch += ` AND converttvkdau(p.name) ilike '%${toLowerCaseNonAccentVietnamese(data.q)}%' `;
+      querySearch += ` OR p.code_product='${data.q}' `;
     }
-    const queryResult = SqlRoot.SQL_GET_COUNT_PRODUCT_BY_SHOP() + querySearch
-    return pool.query(queryResult, dataResult)
-
+    const queryResult = SqlRoot.SQL_GET_COUNT_PRODUCT_BY_SHOP() + querySearch;
+    return pool.query(queryResult, dataResult);
   }
 
-  public static async getAllCategoryProductShopModel(data: { code_shop: string, q?: string, type?: 'top-pay' | 'new' }) {
-    let querySearch = ''
+  public static async getAllCategoryProductShopModel(data: { code_shop: string; q?: string; type?: 'top-pay' | 'new' }) {
+    let querySearch = '';
     if (data.q) {
-      querySearch += ` AND converttvkdau(p.name) ilike '%${toLowerCaseNonAccentVietnamese(data.q)}%' `
-      querySearch += ` OR p.code_product='${data.q}' `
+      querySearch += ` AND converttvkdau(p.name) ilike '%${toLowerCaseNonAccentVietnamese(data.q)}%' `;
+      querySearch += ` OR p.code_product='${data.q}' `;
     }
     if (data.type) {
       if (data.type === 'top-pay') {
-        querySearch += ' ORDER BY pd.purchase DESC '
-      }
-      else if (data.type === 'new') {
-        querySearch += ' ORDER BY pd."createdAt" DESC '
-      }
-      else {
-        querySearch += ' '
+        querySearch += ' ORDER BY pd.purchase DESC ';
+      } else if (data.type === 'new') {
+        querySearch += ' ORDER BY pd."createdAt" DESC ';
+      } else {
+        querySearch += ' ';
       }
     }
-    const queryResult = SqlRoot.SQL_GET_ALL_CATEGORY_BY_PRODUCT_SHOP() + querySearch
-    return pool.query(queryResult, [data.code_shop])
+    const queryResult = SqlRoot.SQL_GET_ALL_CATEGORY_BY_PRODUCT_SHOP() + querySearch;
+    return pool.query(queryResult, [data.code_shop]);
   }
-  public static async getAllProductShopModel(data: { code_shop: string, page: number, type?: string, q?: string }, callback: CallbackHandler) {
-    let querySearch = ''
-    const { offset, limit } = getPagination(data.page, 20)
+  public static async getAllProductShopModel(data: { code_shop: string; page: number; type?: string; q?: string }, callback: CallbackHandler) {
+    let querySearch = '';
+    const { offset, limit } = getPagination(data.page, 20);
     if (data.q) {
-      querySearch += ` AND converttvkdau(p.name) ilike '%${toLowerCaseNonAccentVietnamese(data.q)}%' `
-      querySearch += ` OR p.code_product='${data.q}' `
+      querySearch += ` AND converttvkdau(p.name) ilike '%${toLowerCaseNonAccentVietnamese(data.q)}%' `;
+      querySearch += ` OR p.code_product='${data.q}' `;
     }
     if (data.type) {
       if (data.type === 'top-pay') {
-        querySearch += ' ORDER BY pd.purchase DESC '
-      }
-      else if (data.type === 'new') {
-        querySearch += ' ORDER BY pd."createdAt" DESC '
-      }
-      else {
-        querySearch += ' '
+        querySearch += ' ORDER BY pd.purchase DESC ';
+      } else if (data.type === 'new') {
+        querySearch += ' ORDER BY pd."createdAt" DESC ';
+      } else {
+        querySearch += ' ';
       }
     }
-    const dataResult = [data.code_shop]
-    querySearch += ` LIMIT 20 OFFSET ${offset} `
-    const queryResult = SqlRoot.SQL_GET_PRODUCT_BY_SHOP() + querySearch
-    pool.query(queryResult, dataResult, callback)
+    const dataResult = [data.code_shop];
+    querySearch += ` LIMIT 20 OFFSET ${offset} `;
+    const queryResult = SqlRoot.SQL_GET_PRODUCT_BY_SHOP() + querySearch;
+    pool.query(queryResult, dataResult, callback);
   }
 
-  public static async followShopByUserModel(data: { code_shop: string, code_user: string }, callback: CallbackHandler) {
+  public static async followShopByUserModel(data: { code_shop: string; code_user: string }, callback: CallbackHandler) {
     const sqlFollow = `
     INSERT INTO follow_shop_sp(
 	    code_follow, code_user, code_shop
@@ -82,8 +75,8 @@ export class InfoShopModel extends Model {
 		  WHERE follow_shop_sp.code_user='${data.code_user.trim()}' and follow_shop_sp.code_shop='${data.code_shop.trim()}'
     )
     
-    `
-    console.log(sqlFollow)
-    pool.query(sqlFollow, [], callback)
+    `;
+    console.log(sqlFollow);
+    pool.query(sqlFollow, [], callback);
   }
 }

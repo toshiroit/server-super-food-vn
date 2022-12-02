@@ -47,7 +47,7 @@ const getOrderByUser = (req, res) => __awaiter(void 0, void 0, void 0, function*
                             count: Number(dataCount.rows[0].count || 0),
                             rows: result.rows
                         };
-                        const { tutorials, totalItems, totalPages, currentPage } = (0, getPagination_1.getPagingData)(dataPaging, Number(page) || 0, Number(config_1.default.order_user_limit_show) || 2);
+                        const { tutorials, totalItems, totalPages, currentPage } = (0, getPagination_1.getPagingData)(dataPaging, Number(page) || 0, Number(config_1.default.order_user_limit_show) || 10);
                         res.json({
                             totalItems,
                             totalPages,

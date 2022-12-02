@@ -84,7 +84,7 @@ routes.post(routes_name_1.ROUTES_NAME.AUTH.VERIFY_CODE, auth_middleware_2.valida
 routes.post(routes_name_1.ROUTES_NAME.AUTH.VERIFY_TOKEN, auth_middleware_2.validateTokenMiddleware, (0, validateResource_1.validateResource)(auth_schema_2.loginAuthSchema), AuthController.VerifyTokenUser);
 // Send code change phone user
 routes.post(routes_name_1.ROUTES_NAME.AUTH.SEND_CODE, auth_middleware_1.sendCodeLimiter, (0, validateResource_1.validateResource)(auth_schema_2.phoneAuthSendCode), AuthController.SendCodePhone);
-routes.post(routes_name_1.ROUTES_NAME.AUTH.CHECK_CODE, auth_middleware_1.sendCodeLimiter, (0, validateResource_1.validateResource)(auth_schema_1.verifyCodePhoneAuth), AuthController.verifyCodeAuth);
-routes.post(`${routes_name_1.ROUTES_NAME.AUTH.VERIFY_CODE}/:id/:verificationCode`, (0, validateResource_1.validateResource)(auth_schema_2.verifyAuthSchema), AuthController.verifyAuthMailer);
+routes.post(routes_name_1.ROUTES_NAME.AUTH.CHECK_CODE, auth_middleware_1.sendCodeLimiter, (0, validateResource_1.validateResource)(auth_schema_1.verifyCodePhoneAuth), AuthController.checkCodeOTP);
+// routes.post(`${ROUTES_NAME.AUTH.VERIFY_CODE}`, validateResource(verifyAuthSchema), AuthController.checkCodeOTP);
 routes.post(routes_name_1.ROUTES_NAME.AUTH.CHECK_PHONE, (0, validateResource_1.validateResource)(auth_schema_1.checkPhoneAuthSchema), AuthController.checkPhoneAuth);
 exports.default = routes;

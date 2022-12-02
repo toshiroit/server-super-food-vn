@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ROUTES_NAME_SHOP = exports.ROUTES_NAME = void 0;
+exports.SOCKET_ROUTE = exports.ROUTES_NAME_SHOP = exports.ROUTES_NAME = void 0;
 exports.ROUTES_NAME = {
     AUTH: {
         LOGIN: '/login',
@@ -21,7 +21,7 @@ exports.ROUTES_NAME = {
     },
     USER: {
         ADD_USER: '/add-user',
-        UPDATE_USER: '/update-user-w1'
+        UPDATE_USER: '/update-user-w1',
     },
     PRODUCT: {
         GET_ALL_PRODUCTS: '/get-all',
@@ -33,37 +33,71 @@ exports.ROUTES_NAME = {
     },
     COMMENT: {
         ADD_NEW_COMMENT: '/add-comment',
-        GET_COMMENT: '/get-comment'
+        GET_COMMENT: '/get-comment',
     },
     SEARCH: {
-        SEARCH: '/search'
+        SEARCH: '/search',
     },
     CART: {
         GET_CART: '/get-cart',
         ADD_CART: '/add-cart',
-        REMOVE_CART: '/remove-cart'
+        REMOVE_CART: '/remove-cart',
+        REMOVE_CART_BY_CODE: '/remove-cart-by-code-product',
     },
     ORDER: {
         HOME: '/order',
         GET_ORDER_DETAIL_BY_CODE: '/get-order',
         GET_ORDER_BY_USER: '/get-order-user',
-        GET_ORDER_BY_ALL_ADMIN: '/get-order-all'
+        GET_ORDER_BY_ALL_ADMIN: '/get-order-all',
     },
     ADDRESS: {
         HOME: '/address',
-        GET_ADDRESS: '/get-address'
-    }
+        GET_ADDRESS: '/get-address',
+        ADD_ADDRESS: '/add-address',
+    },
+    CHECKOUT: '/checkout',
+    PAYMENT: {
+        HOME: '/payment',
+        GET_ALL_PAYMENT: '/get-all-pay-ment',
+    },
+    NOTIFICATION: {
+        HOME: '/notification',
+        CHECKOUT: '/checkout',
+    },
+    SHOP: {
+        HOME: '/shop',
+        DETAIL_SHOP: '/detail-shop',
+        PRODUCT_SHOP: '/all-product',
+        FOLLOW_SHOP: '/follow-shop',
+    },
+    NOTIFY: {
+        HOME: '/notify',
+        ADD_NOTIFY_NEW_SHOP: '/add-new-notify-shop',
+    },
+    CHAT: {
+        HOME: '/messenger',
+        SEND_CHAT: '/send-messenger',
+        GET_ALL_CHAT: '/get-all-messenger',
+    },
+    EVALUATE: {
+        HOME: '/evaluate',
+        ADD_EVALUATE: '/add',
+        REMOVE_EVALUATE: '/remove',
+        GET_ALL_EVALUATE: '/get-all',
+        CHECK_EVALUATE: '/check-evaluate',
+    },
 };
 exports.ROUTES_NAME_SHOP = {
     AUTH: {
         LOGIN: '/login',
         GET_ME: '/getMe',
-        GET_ME_SHOP: '/getMeShop'
+        GET_ME_SHOP: '/getMeShop',
+        REGISTER: '/register',
     },
     CATEGORY: {
         HOME: '/category',
         CATEGORY_ALL: '/get-by-product-shop',
-        CATEGORY_ALL_BY_SHOP: '/get-all-category-by-shop'
+        CATEGORY_ALL_BY_SHOP: '/get-all-category-by-shop',
     },
     PRODUCT: {
         HOME: '/product',
@@ -72,14 +106,16 @@ exports.ROUTES_NAME_SHOP = {
         GET_ALL_PRODUCT: '/get-all-product',
         GET_ALL_TYPE_PRODUCT: '/get-all-type-product',
         ADD_TYPE_PRODUCT: '/add-type-product',
-        REMOVE_PRODUCT_BY_SHOP: '/remove-product-by-shop'
+        REMOVE_PRODUCT_BY_SHOP: '/remove-product-by-shop',
+        SEARCH_PRODUCT_BY_VALUE_AND_SHOP: '/searc-product-by-value-and-shop',
+        UPDATE_PRODUCT_PRODUCT_BY_CODE_AND_SHOP: '/update-product-by-code-and-shop',
     },
     UPLOAD: {
         home: '/upload',
         image: '/image',
         images: '/images',
         video: '/video',
-        videos: 'videos'
+        videos: 'videos',
     },
     ORDER: {
         HOME: '/order',
@@ -88,5 +124,23 @@ exports.ROUTES_NAME_SHOP = {
         REMOVE_ORDER_BY_SHOP: '/remove-order-by-shop',
         GET_ALL_ORDER_BY_SHOP: '/get-all-order-by-shop',
         GET_ALL_PRODUCT_BY_ORDER_AND_SHOP: '/get-all-product-by-order-and-shop',
-    }
+        GET_ORDER_DETAIL_BY_ORDER_AND_SHOP: '/get-order-detail-by-order-and-shop',
+        CONFIRM_ORDER_BY_CODE_ORDER: '/confirm-order-by-code-order',
+    },
+    NOTIFY: {
+        HOME: '/notify',
+        GET_ALL_NOTIFY_SHOP: '/get-all-notify-shop',
+    },
+    CHAT: {
+        HOME: '/messenger',
+        SEND_CHAT: '/send-messenger',
+        GET_ALL_CHAT: '/get-all-messenger',
+        GET_ALL_USER_CHAT_BY_SHOP: '/get-all-user-messenger-by-shop',
+    },
+};
+exports.SOCKET_ROUTE = {
+    NOTIFICATION: {
+        HOME: '/notification',
+        SEND: '/send',
+    },
 };

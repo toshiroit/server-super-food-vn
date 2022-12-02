@@ -35,4 +35,6 @@ router.get(routes_name_1.ROUTES_NAME_SHOP.ORDER.GET_ALL_PRODUCT_BY_ORDER_AND_SHO
 router.post(routes_name_1.ROUTES_NAME_SHOP.ORDER.ADD_ORDER_BY_SHOP, auth_middleware_1.validateTokenAdminShopMiddleware, orderController.addOrderByShop);
 router.post(routes_name_1.ROUTES_NAME_SHOP.ORDER.HIDE_ORDER_BY_SHOP, auth_middleware_1.validateTokenAdminShopMiddleware, (0, validateResource_1.validateResource)(order_schema_1.hideOrderByShopSchema), orderController.hideOrderByShop);
 router.delete(routes_name_1.ROUTES_NAME_SHOP.ORDER.REMOVE_ORDER_BY_SHOP, auth_middleware_1.validateTokenAdminShopMiddleware, (0, validateResource_1.validateResource)(order_schema_1.removeOrderByShopSchema), orderController.removeOrderByShop);
+router.get(routes_name_1.ROUTES_NAME_SHOP.ORDER.GET_ORDER_DETAIL_BY_ORDER_AND_SHOP, auth_middleware_1.validateTokenAdminShopMiddleware, orderController.getOrderDetailByOrderAndShop);
+router.put(routes_name_1.ROUTES_NAME_SHOP.ORDER.CONFIRM_ORDER_BY_CODE_ORDER, auth_middleware_1.validateTokenAdminShopMiddleware, orderController.confirmOrderByCodeOrder);
 exports.default = router;

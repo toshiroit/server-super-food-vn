@@ -31,4 +31,5 @@ const router = (0, express_1.Router)();
 router.get(routes_name_1.ROUTES_NAME.CART.GET_CART, auth_middleware_1.validateTokenMiddleware, cartController.getCart);
 router.post(routes_name_1.ROUTES_NAME.CART.ADD_CART, auth_middleware_1.validateTokenMiddleware, cartController.addCartByCodeUser);
 router.delete(routes_name_1.ROUTES_NAME.CART.REMOVE_CART, auth_middleware_1.validateTokenMiddleware, cartController.removeCart);
+router.delete(routes_name_1.ROUTES_NAME.CART.REMOVE_CART_BY_CODE, auth_middleware_1.validateTokenMiddleware, cartController.removeCartByCode);
 exports.default = router;

@@ -10,12 +10,15 @@ const multer_1 = __importDefault(require("multer"));
 const cloudinaryDB = cloudinary_1.default.v2.config({
     cloud_name: config_1.default.cloudinary_cloud_name,
     api_key: config_1.default.cloudinary_api_key,
-    api_secret: config_1.default.cloudinary_api_secret
+    api_secret: config_1.default.cloudinary_api_secret,
 });
 exports.cloudinaryDB = cloudinaryDB;
 const storage = multer_1.default.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './uploads/');
+    },
     filename(req, file, callback) {
-        callback(null, new Date().toISOString() + '-' + file.originalname);
+        callback(null, new Date().getTime() + '-' + file.originalname);
     },
 });
 const fileFilter = (req, file, callback) => {

@@ -13,4 +13,8 @@ export class ChatModelShop extends Model {
   public static async getAllMessengerChatByCodeUser(data: { code_user: string; code_shop: string; limit: number }, callback: CallbackHandler) {
     pool.query(SqlRoot.SQL_GET_ALL_MESSENGER_CHAT_SHOP_BY_CODE_USER(), [data.code_user, data.code_shop, data.limit], callback);
   }
+
+  public static async getAllUserMessengerByShopModel(data: { code_shop: string }, callback: CallbackHandler) {
+    pool.query(SqlRoot.SQL_GET_ALL_USER_MESSENGER_BY_SHOP(), [data.code_shop], callback);
+  }
 }

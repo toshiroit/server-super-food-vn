@@ -13,6 +13,12 @@ const search_route_1 = __importDefault(require("./api/search/search.route"));
 const order_route_1 = __importDefault(require("./api/order/order.route"));
 const address_route_1 = __importDefault(require("./api/address/address.route"));
 const routes_name_1 = require("../constants/routes_name");
+const checkout_route_1 = __importDefault(require("./api/checkout/checkout.route"));
+const payment_route_1 = __importDefault(require("./api/payment/payment.route"));
+const shop_route_1 = __importDefault(require("./api/shop/shop.route"));
+const notify_route_1 = __importDefault(require("./api/notify/notify.route"));
+const chat_route_1 = __importDefault(require("./api/chat/chat.route"));
+const evaluate_route_1 = __importDefault(require("./api/evaluate/evaluate.route"));
 const router = (0, express_1.Router)();
 /**
  *
@@ -33,6 +39,12 @@ router.use('/search', search_route_1.default);
 router.use('/user', user_route_1.default);
 router.use(routes_name_1.ROUTES_NAME.ADDRESS.HOME, address_route_1.default);
 router.use(routes_name_1.ROUTES_NAME.ORDER.HOME, order_route_1.default);
+router.use(routes_name_1.ROUTES_NAME.CHECKOUT, checkout_route_1.default);
+router.use(routes_name_1.ROUTES_NAME.PAYMENT.HOME, payment_route_1.default);
+router.use(routes_name_1.ROUTES_NAME.SHOP.HOME, shop_route_1.default);
+router.use(routes_name_1.ROUTES_NAME.NOTIFY.HOME, notify_route_1.default);
+router.use(routes_name_1.ROUTES_NAME.CHAT.HOME, chat_route_1.default);
+router.use(routes_name_1.ROUTES_NAME.EVALUATE.HOME, evaluate_route_1.default);
 router.get('/', (res) => {
     res.json({
         message: 'Hello world',

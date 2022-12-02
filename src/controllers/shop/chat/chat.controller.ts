@@ -34,6 +34,7 @@ export const sendMessengerChatShop = async (req: Request, res: Response) => {
         if (result) {
           if (result.rowCount > 0) {
             res.json({
+              dataSQL: dataSQL,
               messenger: 'Thành công',
             });
           }
@@ -68,6 +69,30 @@ export const getAllMessengerChatByCode = async (req: Request, res: Response) => 
   } catch (error) {
     res.json({
       error,
+    });
+  }
+};
+
+export const getAllUserMessengerChatByShop = async (req: Request, res: Response) => {
+  try {
+    const data_shop = dataUserTK(req);
+    const code_shop = data_shop?.payload.code_shop;
+    await ChatModelShop.getAllUserMessengerByShopModel({ code_shop: code_shop }, (err, result) => {
+      if (err) {
+        res.json({
+          error: err,
+        });
+      } else {
+        if (result) {
+          res.json({
+            data: result.rows,
+          });
+        }
+      }
+    });
+  } catch (err) {
+    res.json({
+      error: err,
     });
   }
 };

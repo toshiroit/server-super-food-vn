@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const routes_name_1 = require("../../../constants/routes_name");
@@ -6,8 +29,11 @@ const auth_controller_1 = require("../../../controllers/auth/auth.controller");
 const auth_middleware_1 = require("../../../middlewares/auth/auth.middleware");
 const validateResource_1 = require("../../../middlewares/validateResource");
 const auth_schema_1 = require("../../../schemas/auth/auth.schema");
+const auth_schema_2 = require("../../../schemas/shop/auth/auth.schema");
+const authShopController = __importStar(require("../../../controllers/shop/auth/auth.controller"));
 const router = (0, express_1.Router)();
 router.post('/login', (0, validateResource_1.validateResource)(auth_schema_1.loginAuthAdminSchema), auth_controller_1.loginAuthAdmin);
 router.get(routes_name_1.ROUTES_NAME_SHOP.AUTH.GET_ME, auth_middleware_1.validateTokenAdminShopMiddleware, auth_controller_1.getMe);
 router.get(routes_name_1.ROUTES_NAME_SHOP.AUTH.GET_ME_SHOP, auth_middleware_1.validateTokenAdminShopMiddleware, auth_controller_1.getMeShop);
+router.post(routes_name_1.ROUTES_NAME_SHOP.AUTH.REGISTER, (0, validateResource_1.validateResource)(auth_schema_2.authRegisterShop), authShopController.authReister);
 exports.default = router;

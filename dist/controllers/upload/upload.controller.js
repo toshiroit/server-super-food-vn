@@ -35,7 +35,7 @@ const uploadImage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     try {
         const localFilePath = ((_a = req.file) === null || _a === void 0 ? void 0 : _a.path) || '';
         yield cloudinary_1.default.uploader.upload(localFilePath, {
-            public_id: 'olympic_flag'
+        //     public_id: 'olympic_flag'
         }).then((result) => {
             res.json({
                 is_upload: true,
@@ -62,7 +62,7 @@ const uploadImages = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         if (images) {
             for (const file of images) {
                 yield cloudinary_1.default.uploader.upload(file.path, {
-                    public_id: 'olympic_flag'
+                //       public_id: 'olympic_flag'
                 }).then((result) => {
                     const data = {
                         is_upload: true,

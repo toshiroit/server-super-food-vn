@@ -33,6 +33,28 @@ class SqlRoot {
   public static SQL_GET_ONE = (table: string | null, field: string | null) => {
     return `select * from ${table} where ${field}=($1)`;
   };
+
+  public static SQL_SEND_CODE = () => {
+    return `
+      INSERT INTO 
+        otp
+         (code_otp, otp_text,status,"createdAt", "endTime")
+	      VALUES 
+        ($1,$2,$3,$4,$5)
+    `;
+  };
+
+  public static SQL_CHECK_CODE = () => {
+    return `
+      SELECT code_otp,otp_text from otp where status=true and "endTime" > ($1)
+    `;
+  };
+
+  public static SQL_DISABLE_CODE = () => {
+    return `
+      UPDATE otp SET status=false where code_otp=($1)
+    `;
+  };
   /**
    *
    * @param table table database insert
@@ -56,15 +78,15 @@ class SqlRoot {
     return `
         with ins as (
 	        INSERT INTO user_sp 
-        	  (code_user,code_user_detail,password,code_role,phone,"createdAt",status) 
+        	  (code_user,code_user_detail,password,code_role,phone,"createdAt",status,verification_code) 
 	          VALUES 
-	          ($1,$2,$3,$4,$5,$6,$7)
+	          ($1,$2,$3,$4,$5,$6,$7,$8)
 	        RETURNING code_user_detail
         )
           INSERT INTO user_detail_sp 
-          (code_user_detail, full_name, sex, code_restpass,"createdAT")
+          (code_user_detail, full_name, sex, code_restpass,"createdAT",email)
             VALUES
-          ((select code_user_detail from ins),$8,$9,$10,$11)
+          ((select code_user_detail from ins),$9,$10,$11,$12,$13)
     `;
   };
   /**
@@ -224,6 +246,12 @@ class SqlRoot {
 	        inner join product_sp p on p.code_product = al.code
  	        where ow.code_order= o.code_order
       ) as name_product,
+      (select json_agg((eps.code_product)) from order_sp ow
+	        cross join jsonb_to_recordset(ow.code_product) as al(code varchar)
+	        inner join product_sp p on p.code_product = al.code
+	  		inner join evaluate_product_sp eps on eps.code_product=al.code
+ 	        where ow.code_order= o.code_order
+      ) as check_evaluate,
       (select string_agg(p.image,' , ') from order_sp ow
 	        cross join jsonb_to_recordset(ow.code_product) as al(code varchar)
 	        inner join product_sp p on p.code_product = al.code
@@ -235,7 +263,7 @@ class SqlRoot {
         left join user_detail_sp ud  on ud.code_user_detail = u.code_user_detail
         join order_detail_sp od on od.code_order_detail = o.code_order_detail
         left join shop_sp s on s.code_shop = od.code_shop   
-        where u.code_user = ($1)
+        where u.code_user = ($1) ORDER BY o.date_order DESC
     `;
   };
   public static SQL_GET_COUNT_ORDER_BY_USER = () => {
@@ -259,6 +287,67 @@ class SqlRoot {
     `;
   };
 
+  public static SQL_CHECK_COUNT_ADDRESS_BY_USER = () => {
+    return `
+    select  count(*) from address_sp where code_user=($1)
+    `;
+  };
+
+  public static SQL_CHECK_ADDRESS_PHONE_IS_EMPTY_BY_USER = () => {
+    return `
+      select count(*) from address_sp where phone=($1) and code_user=($2)
+    `;
+  };
+  public static SQL_INSERT_ADDRESS_BY_USER = () => {
+    return `
+        with insAddress_address as (
+          INSERT INTO address_sp
+          (code_address, code_user, full_name, phone, detail_address, status, code_address_detail)
+            VALUES 
+          ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING code_address_detail
+        )
+        INSERT INTO address_detail_sp(
+	        code_address_detail, phone_w, email,street, village, district, city)
+	      VALUES ((select code_address_detail from insAddress_address), $4, $8, $9, $10, $11, $12);
+      `;
+  };
+
+  public static SQL_GET_DETAIL_ADDRESS_USER_BY_CODE = () => {
+    return `
+      select 
+          *
+        from 
+          address_sp a
+        join 
+          address_detail_sp ad on ad.code_address_detail = a.code_address_detail
+        where
+	        a.code_address=($1) and a.code_user=($2)
+    `;
+  };
+
+  public static SQL_UPDATE_ADDRESS_USER_BY_CODE = () => {
+    return `
+      with updateAddressSp_update as (
+        UPDATE address_sp
+          SET full_name=($3), phone=($4), detail_address=($5), status=($6)
+         WHERE code_address=($1) AND code_user=($2) 
+  	  RETURNING code_address_detail
+    )
+    UPDATE address_detail_sp
+        SET phone_w=($4), email=($7), street=($8), village=($9), district=($10), city=($11)
+      WHERE code_address_detail in (select code_address_detail from updateAddressSp_update);
+    `;
+  };
+
+  public static SQL_UPDATE_STATUS_ADDRESS_BY_USER = () => {
+    return `
+      UPDATE address_sp
+	      SET  status=($1)
+	    WHERE code_user=($2) AND code_address!=($3)
+    `;
+  };
+
   public static SQL_GET_ORDER_DETAIL_BY_USER = () => {
     //join product_sp p on p.code_product = ANY (o.code_product)
 
@@ -277,8 +366,12 @@ class SqlRoot {
       adt.street,
       adt.village,
       adt.district,
-      adt.province,
       adt.city,
+      (select json_agg((eps.code_product)) from order_sp ow
+	        cross join jsonb_to_recordset(ow.code_product) as al(code varchar)
+	  		  inner join evaluate_product_sp eps on trim(trailing  ' 'from eps.code_product)=al.code
+ 	        where eps.code_order=o.code_order
+      ) as check_evaluate,
       ( 
 	   select json_agg(row_to_json((p.*)))  AS product_order
       from order_sp ow
@@ -441,7 +534,6 @@ class SqlRoot {
       adt.street,
       adt.village,
       adt.district,
-      adt.province,
       adt.city,
       ( 
 	    select json_agg(row_to_json((p.*)))  AS product_order
@@ -486,7 +578,6 @@ class SqlRoot {
       adt.street,
       adt.village,
       adt.district,
-      adt.province,
       adt.city,
       ( 
 	    select json_agg(row_to_json((p.*)))  AS product_order
@@ -805,6 +896,140 @@ class SqlRoot {
       )
       select ROW_NUMBER() OVER (ORDER BY 1) AS id,s.*  FROM resultMess s ORDER BY id DESC
     `;
+  };
+
+  public static SQL_GET_ALL_USER_MESSENGER_BY_SHOP = () => {
+    return `
+    SELECT u.code_user,ud.full_name,u.avatar from chat_sp c
+    join user_sp u on u.code_user = c.code_user
+    join shop_sp s on s.code_shop = c.code_shop 
+    join user_detail_sp ud on ud.code_user_detail = u.code_user_detail
+    where c.code_shop = ($1)
+    GROUP BY u.code_user,ud.full_name,u.avatar
+    HAVING COUNT(*)>=1
+    `;
+  };
+
+  public static SQL_CHECK_EVALUATE_BY_PRODUCT_USER_ORDER = () => {
+    return `
+      select count(*) from evaluate_product_sp where code_user=($1) and code_product=($2) and code_order=($3)
+    `;
+  };
+
+  public static SQL_GET_NAME_PRODUCT_BY_TEXT = () => {
+    return `
+      select p.name,p.code_product,p.image from product_sp p
+    `;
+  };
+  public static SQL_GET_COUNT_SHOP_NAME_PRODUCT_BY_TEXT = () => {
+    return `
+      select count(*) from shop_sp s
+    `;
+  };
+  public static SQL_GET_SHOP_BY_NAME_OR_CODE = () => {
+    return `
+      select 
+        s.name_shop,
+        s.code_shop,
+        s.image_shop,
+        s.follow_shop,
+        s.evaluate,
+        s.type_shop,
+        sd."createdAt",
+         ((select count(*) from product_sp p where p.code_shop=s.code_shop)) as quatity_product
+      from 
+	      shop_sp s 
+        join shop_detail_sp sd on sd.code_shop_detail=s.code_shop_detail
+
+    `;
+  };
+
+  public static SQL_ADD_EVALUATE_BY_PRODUCT = () => {
+    return `
+       INSERT INTO evaluate_product_sp (
+        code_evaluate, code_user, code_product, evaluate_product, evaluate_ship, evaluate_progress, images, text, "createdAt", code_order
+      )
+      SELECT ($1)::varchar(15),
+             ($2)::varchar(15),
+             ($3)::varchar(15),
+             ($4)::bigint,
+             ($5)::bigint,
+             ($6)::bigint,
+             ($7)::jsonb,
+             ($8)::text,
+             ($9)::timestamp,
+             ($10)::varchar(15)
+ 	        WHERE NOT EXISTS (
+            SELECT 
+              code_evaluate::varchar(15), 
+              code_user::varchar(15), 
+              code_product::varchar(15), 
+              evaluate_product::bigint, 
+              evaluate_ship::bigint, 
+              evaluate_progress::bigint, 
+              images::jsonb, 
+              text::text, 
+              "createdAt"::timestamp,
+              code_order::varchar(15)
+            FROM 
+              evaluate_product_sp eps
+            WHERE 
+              eps.code_order=($10) and eps.code_product=($3) and eps.code_user=($2)
+	    )
+    `;
+  };
+  public static SQL_GET_COUNT_EVALUATE_BY_PRODUCT = () => {
+    return `
+    select count(*) from evaluate_product_sp ep 
+			join user_sp u on u.code_user = ep.code_user
+			join user_detail_sp ud on ud.code_user_detail = u.code_user_detail
+			 where ep.code_product=($1)
+  `;
+  };
+  public static SQL_GET_EVALUATE_BY_PRODUCT = () => {
+    return `
+    select ep.*,u.avatar,ud.full_name from evaluate_product_sp ep 
+			join user_sp u on u.code_user = ep.code_user
+			join user_detail_sp ud on ud.code_user_detail = u.code_user_detail 
+			where trim(trailing  ' 'from ep.code_product) =($1) LIMIT ($2)
+  `;
+  };
+
+  public static SQL_GET_EVALUATE_PRODUCT_5 = () => {
+    return `
+      	select count(*)  from evaluate_product_sp ep 
+        where trim(trailing ' ' from ep.code_product) =($1) and ep.evaluate_product = 5
+      `;
+  };
+  public static SQL_GET_COUNT_ALL_EVALUATE_PRODUCT = () => {
+    return `
+      	select count(*)  from evaluate_product_sp ep 
+        where trim(trailing ' ' from ep.code_product) =($1)
+      `;
+  };
+  public static SQL_GET_EVALUATE_PRODUCT_4 = () => {
+    return `
+      	select count(*)  from evaluate_product_sp ep 
+        where trim(trailing ' ' from ep.code_product) =($1) and ep.evaluate_product = 4
+      `;
+  };
+  public static SQL_GET_EVALUATE_PRODUCT_3 = () => {
+    return `
+      	select count(*)  from evaluate_product_sp ep 
+        where trim(trailing ' ' from ep.code_product) =($1) and ep.evaluate_product = 3
+      `;
+  };
+  public static SQL_GET_EVALUATE_PRODUCT_2 = () => {
+    return `
+      	select count(*)  from evaluate_product_sp ep 
+        where trim(trailing ' ' from ep.code_product) =($1) and ep.evaluate_product = 2
+      `;
+  };
+  public static SQL_GET_EVALUATE_PRODUCT_1 = () => {
+    return `
+      	select count(*)  from evaluate_product_sp ep 
+        where trim(trailing ' ' from ep.code_product) =($1) and ep.evaluate_product = 1
+      `;
   };
 }
 export default SqlRoot;

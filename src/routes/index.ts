@@ -13,6 +13,7 @@ import paymentRoute from './api/payment/payment.route';
 import shopRoute from './api/shop/shop.route';
 import notifyRoute from './api/notify/notify.route';
 import messengerRoute from './api/chat/chat.route';
+import evaluateRouter from './api/evaluate/evaluate.route';
 const router = Router();
 
 /**
@@ -40,6 +41,7 @@ router.use(ROUTES_NAME.PAYMENT.HOME, paymentRoute);
 router.use(ROUTES_NAME.SHOP.HOME, shopRoute);
 router.use(ROUTES_NAME.NOTIFY.HOME, notifyRoute);
 router.use(ROUTES_NAME.CHAT.HOME, messengerRoute);
+router.use(ROUTES_NAME.EVALUATE.HOME, evaluateRouter);
 router.get('/', (res: Response) => {
   res.json({
     message: 'Hello world',

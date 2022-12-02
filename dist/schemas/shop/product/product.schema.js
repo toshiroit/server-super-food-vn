@@ -98,8 +98,8 @@ exports.addProductShopSchema = (0, zod_1.object)({
         order_max: (0, zod_1.number)({
             required_error: 'Trường này không được bỏ trống'
         }),
-        date_start: (0, zod_1.string)(),
-        date_end: (0, zod_1.string)(),
+        date_start: (0, zod_1.string)().nullable(),
+        date_end: (0, zod_1.string)().nullable(),
         status: (0, zod_1.number)({
             required_error: 'Trường này không được bỏ trống'
         }),
@@ -112,7 +112,6 @@ exports.addProductShopSchema = (0, zod_1.object)({
         free_ship: (0, zod_1.number)({
             required_error: 'Trường này không được bỏ trống'
         }),
-        product_date: dateSchema,
         type_product: jsonSchema,
         images: jsonSchema,
         code_product_type: (0, zod_1.string)({

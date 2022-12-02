@@ -11,7 +11,10 @@ import { comparePassword, hasPassword } from '../../libs/hash_password';
 import { AuthLoginAdmin, CheckCodeAuth, CheckPhoneAuth } from '../../types/auth/auth.type';
 import { GetCAPTCHACode } from '../../libs/capcha_number';
 import { getDataUser } from '../../libs/getUserToken';
-
+import nodemailer from 'nodemailer';
+import { sendMail } from '../../helpers/mail';
+import { RegisterSuccess } from '../../libs/theme_mailer';
+import { endtenMinute, timeVietNameYesterday } from '../../libs/timeVietNam';
 const getAllUsers = async (req: Request, res: Response) => {
   try {
     const valueQuery: modelQuery = {
@@ -54,6 +57,8 @@ const getMe = async (req: Request, res: Response) => {
           });
         } else {
           if (result) {
+            const data_user = result.rows[0];
+            delete data_user.password;
             res.json({
               data: result.rows,
             });
@@ -78,6 +83,36 @@ const loginPhone = async (req: Request, res: Response, next: NextFunction) => {
     data: res.locals,
   });
   // await AuthModel.loginUserModel();
+};
+
+const checkCodeOTP = async (req: Request, res: Response) => {
+  try {
+    const { code } = req.query;
+    const is_check = await AuthModel.checkCodeModel({ code: (code as string) || '', time: timeVietNameYesterday() });
+    if (is_check.rows.length > 0) {
+      const is_otp = comparePassword((code as string) || '', (is_check.rows[0]?.otp_text as string) || '');
+      if (is_otp) {
+        const is_disable = await AuthModel.disableCodeModelByCode({ code: is_check.rows[0]?.code_otp || '' });
+        if (is_disable.rowCount > 0) {
+          res.status(200).json({
+            message: 'Xác nhận thành công ',
+          });
+        }
+      } else {
+        res.status(400).json({
+          message: 'Mã xác nhận không chính xác ',
+        });
+      }
+    } else {
+      res.status(400).json({
+        message: 'Mã xác nhận không chính xác ',
+      });
+    }
+  } catch (error) {
+    res.json({
+      error: error,
+    });
+  }
 };
 const VerifyTokenUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -107,21 +142,29 @@ const VerifyTokenUser = async (req: Request, res: Response, next: NextFunction) 
 // eslint-disable-next-line @typescript-eslint/ban-types
 const SendCodePhone = async (req: Request<{}, {}, PhoneSendCodeAuth>, res: Response) => {
   try {
+    const capCha_hash = GetCAPTCHACode();
     const data = {
       phone: req.body.phone,
-      capCha: GetCAPTCHACode(),
+      code: makeId(15),
+      capCha: capCha_hash,
+      data_hash: hasPassword(capCha_hash),
+      createdAt: timeVietNameYesterday(),
+      endTime: endtenMinute(),
     };
-    await AuthModel.sendCodeModel(data, (err, result) => {
-      if (err) {
-        res.status(500).json({
-          error: err,
-        });
-      } else {
-        res.status(200).json({
-          message: 'Gửi mã thành công - vui lòng kiểm tra ',
-        });
-      }
-    });
+    const is_check = await AuthModel.saveCodeModel(data);
+    if (is_check.rowCount > 0) {
+      await AuthModel.sendCodeModel(data, (err, result) => {
+        if (err) {
+          res.status(500).json({
+            error: err,
+          });
+        } else {
+          res.status(200).json({
+            message: 'Gửi mã thành công - vui lòng kiểm tra ',
+          });
+        }
+      });
+    }
   } catch (error) {
     res.status(401).json({
       error: error,
@@ -146,6 +189,8 @@ const loginUser = async (req: Request, res: Response) => {
         sex: false,
         code_restpass: makeId(14),
         createdAtDetail: new Date(Date.now()).toISOString(),
+        email: req.body.email,
+        verification_code: makeId(50),
       },
       field: null,
       obj: {
@@ -177,17 +222,35 @@ const loginUser = async (req: Request, res: Response) => {
           });
         } else {
           if (result?.command === 'INSERT') {
-            if (result.rowCount === 1) {
-              res.status(200).json({
-                status: 200,
-                message: 'Đăng kí tài khoản thành công ',
+            const data_sendMaik = sendMail({
+              from: config.node_mailer_user,
+              to: valueQuery.value.email,
+              subject: `Đăng kí tài khoản thành công - ${timeVietNameYesterday()}`,
+              html: RegisterSuccess(valueQuery.value.verification_code, (config.domain_web_client as string) || ''),
+            });
+            data_sendMaik
+              .then(result2 => {
+                if (result2) {
+                  if (result2.response) {
+                    if (result.rowCount === 1) {
+                      res.status(200).json({
+                        status: 200,
+                        message: 'Đăng kí tài khoản thành công ',
+                      });
+                    } else {
+                      res.status(400).json({
+                        status: 400,
+                        message: 'Đăng kí tài khoản không thành công ',
+                      });
+                    }
+                  }
+                }
+              })
+              .catch(err => {
+                res.json({
+                  error: err,
+                });
               });
-            } else {
-              res.status(400).json({
-                status: 400,
-                message: 'Đăng kí tài khoản không thành công ',
-              });
-            }
           } else if (result?.command) {
             res.json({
               message: result,
@@ -283,35 +346,11 @@ const registerUser = async (req: Request<{}, {}, RegisterAuth>, res: Response, n
     console.log('Error', error);
   }
 };
-const verifyAuthMailer = async (req: Request<VerifyAuth>, res: Response, next: NextFunction) => {
-  const id = req.params.id;
-  const verificationCode = req.params.verificationCode;
-  const valueQuery: modelQuery = {
-    table: 'users',
-    obj: {
-      condition: null,
-    },
-    field: 'id',
-    value: [Number(id), verificationCode],
-  };
-  AuthModel.verifyAuthMailerModel(valueQuery, (err, result) => {
-    if (err) {
-      res.status(400).json({
-        message: 'Error',
-      });
-    } else {
-      if (!result?.rows || result?.rows.length === 0) {
-        res.status(203).json({
-          status: 203,
-          message: 'Error account verify code',
-        });
-      } else {
-        res.status(200).json({
-          status: 200,
-          data: result.rows,
-        });
-      }
-    }
+
+const verifyAccountByCode = async (req: Request, res: Response) => {
+  const { code } = await req.query;
+  res.json({
+    code: code,
   });
 };
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -441,7 +480,6 @@ export {
   getMeShop,
   loginUser,
   loginPhone,
-  verifyAuthMailer,
   refreshToken,
   registerUser,
   getAllUsers,
@@ -451,4 +489,6 @@ export {
   SendCodePhone,
   checkPhoneAuth,
   verifyCodeAuth,
+  verifyAccountByCode,
+  checkCodeOTP,
 };

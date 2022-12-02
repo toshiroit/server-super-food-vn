@@ -12,29 +12,37 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeCart = exports.addCartByCodeUser = exports.getCart = void 0;
+exports.removeCartByCode = exports.removeCart = exports.addCartByCodeUser = exports.getCart = void 0;
 const config_1 = __importDefault(require("../../config/config"));
+const getUserToken_1 = require("../../libs/getUserToken");
 const cart_model_1 = require("../../models/cart/cart.model");
 const jwt_token_1 = require("../../utils/jwt/jwt-token");
+const dataUserTK = (req) => {
+    const { cookie } = req.headers;
+    const bearer = cookie === null || cookie === void 0 ? void 0 : cookie.split('=')[0].toLowerCase();
+    const token = cookie === null || cookie === void 0 ? void 0 : cookie.split('=')[1];
+    const data_user = (0, getUserToken_1.getDataUser)(token, bearer);
+    return data_user;
+};
 const getCart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield cart_model_1.CartModel.getCartModel(req.query.code_user, (err, result) => {
             if (err) {
                 res.json({
-                    error: err
+                    error: err,
                 });
             }
             else {
                 res.json({
                     mess: 'suceess',
-                    data: result
+                    data: result,
                 });
             }
         });
     }
     catch (err) {
         res.json({
-            error: err
+            error: err,
         });
     }
 });
@@ -52,31 +60,31 @@ const addCartByCodeUser = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 field: null,
                 value: [req.body, user.payload.code_user],
                 obj: {
-                    condition: null
-                }
+                    condition: null,
+                },
             };
             try {
                 cart_model_1.CartModel.addCartByCodeUserModel(dataQuery, (err, result) => {
                     if (err) {
                         if (err.code === '23505') {
                             res.json({
-                                message: 'Sản phẩm trong giỏ hàng đã tồn tại '
+                                message: 'Sản phẩm trong giỏ hàng đã tồn tại ',
                             });
                         }
                         res.json({
-                            error: err
+                            error: err,
                         });
                     }
                     else {
                         res.json({
-                            data: result
+                            data: result,
                         });
                     }
                 });
             }
             catch (err) {
                 res.json({
-                    error: err
+                    error: err,
                 });
             }
         }
@@ -88,7 +96,7 @@ const addCartByCodeUser = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
     catch (err) {
         res.json({
-            error: err
+            error: err,
         });
     }
 });
@@ -106,28 +114,28 @@ const removeCart = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 field: null,
                 value: [req.query.code_cart, user.payload.code_user],
                 obj: {
-                    condition: null
-                }
+                    condition: null,
+                },
             };
             try {
-                cart_model_1.CartModel.removeCartByCodeCartModel(dataQuery, ((err, result) => {
+                cart_model_1.CartModel.removeCartByCodeCartModel(dataQuery, (err, result) => {
                     if (err) {
                         res.json({
-                            error: err
+                            error: err,
                         });
                     }
                     else {
                         if (result === null || result === void 0 ? void 0 : result.rowCount) {
                             res.json({
-                                message: result
+                                message: result,
                             });
                         }
                     }
-                }));
+                });
             }
             catch (err) {
                 res.json({
-                    error: err
+                    error: err,
                 });
             }
         }
@@ -139,8 +147,39 @@ const removeCart = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
     catch (err) {
         res.json({
-            error: err
+            error: err,
         });
     }
 });
 exports.removeCart = removeCart;
+const removeCartByCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const data = dataUserTK(req);
+        const dataSQL = {
+            code_user: data === null || data === void 0 ? void 0 : data.payload.code_user,
+            code_product: JSON.parse(req.query.code_product || ''),
+        };
+        cart_model_1.CartModel.removeCartByCodeProduct(dataSQL, (err, result) => {
+            if (err) {
+                res.json({
+                    error: err,
+                });
+            }
+            else {
+                if (result) {
+                    if (result.rowCount > 0) {
+                        res.json({
+                            message: 'Xóa sản phẩm trong giỏ hàng thành công',
+                        });
+                    }
+                }
+            }
+        });
+    }
+    catch (err) {
+        res.json({
+            error: err,
+        });
+    }
+});
+exports.removeCartByCode = removeCartByCode;
