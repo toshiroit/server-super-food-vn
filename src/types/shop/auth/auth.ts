@@ -1,6 +1,9 @@
 export type AuthRegisterShopTP = {
   code_user: string;
   code_shop: string;
+  code_type_login: string | null;
+  verification_code: string;
+  avatar: string;
   code_shop_detail: string;
   username: string;
   name_shop: string;
@@ -9,7 +12,7 @@ export type AuthRegisterShopTP = {
   code_role: string;
   phone: string;
   createdAt: string;
-  status: boolean;
+  status: -1 | 0 | 1 | 2;
   full_name: string;
   sex: boolean;
   code_restpass: string;
@@ -23,6 +26,6 @@ export type AuthRegisterShopTP = {
   street: string;
   village: string;
   district: string;
-  province: string;
   city: string;
-}
+  description: string;
+};

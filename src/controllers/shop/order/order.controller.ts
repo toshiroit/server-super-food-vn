@@ -86,18 +86,24 @@ export const getAllOrderByShop = async (req: Request, res: Response) => {
         } else {
           if (result) {
             if (result.rows && result.rows.length !== 0) {
-              const dataPaging = {
-                count: Number(data_count.rows[0].count) || 0,
-                rows: result.rows,
-              };
-              const { tutorials, totalItems, totalPages, currentPage } = getPagingData(dataPaging, Number(page) || 1, 10);
-              res.json({
-                page: page,
-                totalItems,
-                totalPages,
-                currentPage,
-                data: result.rows,
-              });
+              if (type === 'all') {
+                res.json({
+                  data: result.rows,
+                });
+              } else {
+                const dataPaging = {
+                  count: Number(data_count.rows[0].count) || 0,
+                  rows: result.rows,
+                };
+                const { tutorials, totalItems, totalPages, currentPage } = getPagingData(dataPaging, Number(page) || 1, 10);
+                res.json({
+                  page: page,
+                  totalItems,
+                  totalPages,
+                  currentPage,
+                  data: result.rows,
+                });
+              }
             } else if (result.rows.length === 0) {
               res.status(203).json({
                 status: 203,

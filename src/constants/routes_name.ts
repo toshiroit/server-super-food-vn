@@ -96,7 +96,9 @@ export const ROUTES_NAME_SHOP = {
     GET_ME: '/getMe',
     GET_ME_SHOP: '/getMeShop',
     REGISTER: '/register',
+    VERIFICATION_ACCOUNT: '/verification-active',
   },
+
   CATEGORY: {
     HOME: '/category',
     CATEGORY_ALL: '/get-by-product-shop',

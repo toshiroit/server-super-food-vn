@@ -184,7 +184,7 @@ const loginUser = async (req: Request, res: Response) => {
         phone: req.body.phone,
         hashPassword: hasPassword(req.body.password),
         createdAt: new Date(Date.now()).toISOString(),
-        status: false,
+        status: 0,
         full_name: (req.body.fullName as string) || '',
         sex: false,
         code_restpass: makeId(14),
@@ -406,26 +406,34 @@ const loginAuthAdmin = async (req: Request, res: Response) => {
       password: password,
     };
     const dataUserModel = await AuthModel.getUserAdminModel(dataSQL);
+    const isCheckVerification = await AuthModel.checkLoginVerificationCode(dataSQL);
     if (dataUserModel.rows.length > 0) {
       const isPassword = comparePassword(password, dataUserModel.rows[0].password.trim());
       if (isPassword) {
-        delete dataUserModel.rows[0].password;
-        delete dataUserModel.rows[0].passwordResetCode;
-        delete dataUserModel.rows[0].refresh_token;
-        delete dataUserModel.rows[0].verification_code;
-        const tokens = jwtTokens(dataUserModel.rows[0]);
-        res.cookie('jwt', tokens.refreshToken, {
-          expires: new Date(Date.now() + 900000),
-          httpOnly: true,
-          path: '/',
-          maxAge: 24 * 60 * 60 * 1000,
-          sameSite: 'strict',
-        });
-        res.json({
-          token: tokens.accessToken,
-          message: 'Đăng nhập thành công ',
-          data: dataUserModel.rows,
-        });
+        if (isCheckVerification.rows.length === 0) {
+          delete dataUserModel.rows[0].password;
+          delete dataUserModel.rows[0].passwordResetCode;
+          delete dataUserModel.rows[0].refresh_token;
+          delete dataUserModel.rows[0].verification_code;
+          const tokens = jwtTokens(dataUserModel.rows[0]);
+          res.cookie('jwt', tokens.refreshToken, {
+            expires: new Date(Date.now() + 900000),
+            httpOnly: true,
+            path: '/',
+            maxAge: 24 * 60 * 60 * 1000,
+            sameSite: 'strict',
+          });
+          res.json({
+            token: tokens.accessToken,
+            message: 'Đăng nhập thành công ',
+            data: dataUserModel.rows,
+          });
+        } else {
+          res.status(400).json({
+            type: -1,
+            message: 'Tải khoản của bạn chưa được kích hoạt',
+          });
+        }
       } else {
         res.status(400).json({
           message: 'Tên tài khoản hoặc mật khẩu không đúng',

@@ -1,112 +1,168 @@
-import { Request, Response } from "express";
-import { hasPassword } from "../../../libs/hash_password";
-import { makeId } from "../../../libs/make_id";
-import { AuthModel } from "../../../models/shop/auth/auth.model";
-import { AuthRegisterShop } from "../../../schemas/shop/auth/auth.schema";
-import { AuthRegisterShopTP } from "../../../types/shop/auth/auth";
+import { Request, Response } from 'express';
+import config from '../../../config/config';
+import { sendMail } from '../../../helpers/mail';
+import { hasPassword } from '../../../libs/hash_password';
+import { makeId } from '../../../libs/make_id';
+import { timeVietNameYesterday } from '../../../libs/timeVietNam';
+import { AuthModel } from '../../../models/shop/auth/auth.model';
+import { AuthRegisterShop } from '../../../schemas/shop/auth/auth.schema';
+import { AuthRegisterShopTP } from '../../../types/shop/auth/auth';
 
-export const authReister = async (req: Request<any, any, AuthRegisterShop>, res: Response) => {
+export const activeAccountRegister = async (req: Request, res: Response) => {
+  const { verification_code, user_name } = req.body;
+  try {
+    const dataSQLActive = {
+      user_name,
+      verification_code,
+    };
+    const data_check = await AuthModel.authCheckVerificationCode(dataSQLActive);
+    if (data_check.rows[0] && data_check.rows[0].count > 0) {
+      const data_isCheck = await AuthModel.authIsCheckVerification(dataSQLActive);
+      if (data_isCheck.rows[0] && data_isCheck.rows[0].count === 0) {
+        await AuthModel.authActiveAccountShopByUser({ user_name: dataSQLActive.user_name }, (err, result) => {
+          if (err) {
+            res.json({
+              error: err,
+            });
+          } else {
+            if (result && result.rowCount > 0) {
+              res.json({
+                message: 'Kích hoạt thành công',
+              });
+            } else {
+              res.status(400).json({
+                message: 'Kích hoạt không thành công',
+              });
+            }
+          }
+        });
+      } else {
+        res.status(400).json({
+          code: 123,
+          message: 'Tài khoản nãy đã được kích hoạt',
+        });
+      }
+    } else {
+      res.status(400).json({
+        message: 'Tải khoản không tồn tại ',
+      });
+    }
+  } catch (error) {
+    res.json({
+      error: error,
+    });
+  }
+};
+
+export const authRegister = async (req: Request<unknown, unknown, AuthRegisterShop>, res: Response) => {
   try {
     const dataRegister: AuthRegisterShopTP = {
       code_user: makeId(15),
       code_user_detail: makeId(15),
       code_shop_detail: makeId(15),
+      code_type_login: req.body.type_login === 1 ? 'CHECK-LOGIN-P' : req.body.type_login === 2 ? 'CHECK-LOGIN-E' : req.body.type_login === -1 ? null : null,
+      verification_code: makeId(50),
+      avatar: req.body.avatar,
       code_shop: makeId(15),
       password: hasPassword(req.body.password),
       code_role: 'ROLE-WIXX-SHOP',
       phone: req.body.phone,
       username: req.body.username,
       createdAt: new Date(Date.now()).toISOString(),
-      status: false,
-      full_name: req.body.name,
+      status: -1,
+      full_name: req.body.full_name,
       sex: req.body.gender === 1 ? false : true,
       code_restpass: makeId(15),
       date_birth: req.body.birth_date,
       code_address: makeId(15),
-      detail_address: '',
+      detail_address: req.body.detail_address,
       status_address: false,
       code_address_detail: makeId(15),
       phone_w: req.body.phone_shop,
       name_shop: req.body.name_shop,
       email: req.body.email,
-      street: '',
-      village: '',
-      district: '',
-      province: '',
-      city: ''
-    }
+      street: req.body.street,
+      village: req.body.village,
+      district: req.body.district,
+      city: req.body.city,
+      description: req.body.description,
+    };
     const dataCheckRegister = {
       user_name: req.body.username,
-      phone: req.body.phone
-    }
+      phone: req.body.phone,
+    };
     const dataRegisterShopSQL = [
-      dataRegister.code_user,
-      dataRegister.code_user_detail,
-      '',
-      dataRegister.username,
-      dataRegister.password,
-      dataRegister.code_role,
-      dataRegister.phone,
-      dataRegister.createdAt,
-      dataRegister.status,
-      dataRegister.full_name,
-      dataRegister.sex,
-      dataRegister.code_restpass,
-      dataRegister.date_birth,
-      dataRegister.createdAt,
-      dataRegister.code_address,
-      dataRegister.full_name,
-      dataRegister.phone,
-      dataRegister.detail_address,
-      dataRegister.status_address,
-      dataRegister.code_user_detail,
-      dataRegister.phone_w,
-      dataRegister.email,
-      dataRegister.street,
-      dataRegister.village,
-      dataRegister.district,
-      dataRegister.province,
-      dataRegister.city,
-      dataRegister.code_shop,
-      dataRegister.name_shop,
-      dataRegister.code_shop_detail,
-    ]
-    const dataUser = await AuthModel.authCheckUser(dataCheckRegister)
-    console.log(dataUser.rows)
+      dataRegister.code_user, //1
+      dataRegister.code_user_detail, //2
+      dataRegister.avatar, //3
+      dataRegister.username, //4
+      dataRegister.password, //5
+      dataRegister.code_role, //6
+      dataRegister.phone, //7
+      dataRegister.createdAt, //8
+      dataRegister.status, //9
+      dataRegister.verification_code, //10
+      dataRegister.code_type_login, //11
+      dataRegister.full_name, //12
+      dataRegister.sex, //13
+      dataRegister.code_restpass, //14
+      dataRegister.date_birth, //15
+      dataRegister.createdAt, //16
+      dataRegister.code_address, //17
+      dataRegister.full_name, //18
+      dataRegister.phone, //19
+      dataRegister.detail_address, //20
+      dataRegister.status_address, //21
+      dataRegister.code_address_detail, //22
+      dataRegister.phone_w, //23
+      dataRegister.email, //24
+      dataRegister.street, //25
+      dataRegister.village, //26
+      dataRegister.district, //27
+      dataRegister.city, //28
+      dataRegister.code_shop, //29
+      dataRegister.name_shop, //30
+      dataRegister.code_shop_detail, //31
+      dataRegister.description, // 32
+    ];
+    const dataUser = await AuthModel.authCheckUser(dataCheckRegister);
     if (dataUser.rows) {
-      const countUser = dataUser.rows[0].count
+      const countUser = dataUser.rows[0].count;
       if (countUser) {
         if (Number(countUser) === 0) {
           await AuthModel.authRegisterModel(dataRegisterShopSQL, (err, result) => {
             if (err) {
               res.json({
-                error: err
-              })
-            }
-            else {
+                error: err,
+              });
+            } else {
               if (result) {
                 if (result.rowCount === 1) {
+                  sendMail({
+                    from: config.node_mailer_user,
+                    to: dataRegister.email,
+                    subject: `Xác thực tài khoản của bạn ${dataRegister.username} - ${timeVietNameYesterday()}`,
+                    html: `Mã xác nhận tài khoản của bạn ${dataRegister.username} là <b>${dataRegister.verification_code}</b>`,
+                  });
                   res.json({
-                    message: 'Đăng kí tài khoản thành công'
-                  })
+                    message: 'Đăng kí tài khoản thành công',
+                  });
                 }
               }
             }
-          })
-        }
-        else {
-          res.json({
-            status: 203,
-            message: 'Tài khoản đã được đăng kí'
-          })
+          });
+        } else {
+          res.status(400).json({
+            status: 400,
+            error_type: 1,
+            message: 'Tài khoản hoặc số điện thoại đã được đăng kí',
+          });
         }
       }
-
     }
-
   } catch (err) {
     res.json({
-      error: err
-    })
+      error: err,
+    });
   }
-}
+};

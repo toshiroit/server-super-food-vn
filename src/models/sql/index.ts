@@ -401,6 +401,17 @@ class SqlRoot {
     `;
   };
 
+  public static SQL_GET_CHECK_VERIFICATION_LOGIN_ADMIN = () => {
+    return `
+          SELECT u.*,ud.* FROM user_sp u 
+          left 
+          join user_detail_sp ud 
+          on u.code_user_detail=ud.code_user_detail 
+          join role_sp r on r.code_role = u.code_role
+          where u.user_name = ($1) AND r.code_role='ROLE-WIXX-SHOP' and u.status=-1
+
+    `;
+  };
   public static SQL_GET_ME_SHOP = () => {
     return `
     SELECT s.*,sd.* FROM user_sp u
@@ -700,37 +711,37 @@ class SqlRoot {
     return `
           with ins_userSP as (
 	          INSERT INTO user_sp 
-		          (code_user,code_user_detail,avatar,user_name,password,code_role,phone,"createdAt",status,code_shop)
+		          (code_user,code_user_detail,avatar,user_name,password,code_role,phone,"createdAt",status,code_shop,verification_code,code_type_login)
 	          VALUES
-		          ($1,$2,$3,$4,$5,$6,$7,$8,$9,$28)
+		          ($1,$2,$3,$4,$5,$6,$7,$8,$9,$29,$10,$11)
 	          RETURNING code_user_detail,code_user
           ),ins_userDetailSP as (
             INSERT INTO user_detail_sp
-		          (code_user_detail, full_name, sex, code_restpass, date_birth, "createdAT")
+		          (code_user_detail, full_name, sex, code_restpass, date_birth, "createdAT",email)
 	        VALUES 
-		        ((select code_user_detail from ins_userSP),$10,$11,$12,$13,$14) 
+		        ((select code_user_detail from ins_userSP),$12,$13,$14,$15,$16,$24) 
           ),ins_addressSP as (
 	          INSERT INTO address_sp 
 		          (code_address, code_user, full_name, phone, detail_address, status, code_address_detail)
 	          VALUES 
-		          ($15,(select code_user from ins_userSP ),$16,$17,$18,$19,$20)
+		          ($17,(select code_user from ins_userSP),$18,$19,$20,$21,$22)
 	          RETURNING code_address_detail
           ),ins_addressDetailSP as (
             INSERT INTO address_detail_sp 
-		          (code_address_detail, phone_w, email, street, village, district, province, city)
+		          (code_address_detail, phone_w, email, street, village, district, city)
 	          VALUES 
-		          ((select code_address_detail from ins_addressSP),$21,$22,$23,$24,$25,$26,$27)
+		          ((select code_address_detail from ins_addressSP),$23,$24,$25,$26,$27,$28)
           ),ins_shopSP as (
 	          INSERT INTO shop_sp 
 	            (code_shop, image_shop, name_shop, evaluate, follow_shop, code_shop_detail, type_shop)
 	          VALUES
-	            ($28,$3,$29,0,0,$30,2)
+	            ($29,$3,$30,0,0,$31,2)
             RETURNING code_shop_detail
           )
             INSERT INTO shop_detail_sp
               (code_shop_detail,full_name,email,date,phone,description,"createdAt",status,check_shop,censorship_shop)
 	          VALUES 
-              ((select code_shop_detail from ins_shopSP),$29,$22,$13,$7,'2',$8,false,1,1)
+              ((select code_shop_detail from ins_shopSP),$18,$24,$15,$7,$32,$8,false,1,1)
       `;
   };
 
@@ -1030,6 +1041,30 @@ class SqlRoot {
       	select count(*)  from evaluate_product_sp ep 
         where trim(trailing ' ' from ep.code_product) =($1) and ep.evaluate_product = 1
       `;
+  };
+
+  public static SQL_INSERT_CODE_VERIFICATION_TABLE_OTP = () => {
+    return `
+        insert into otp (code_otp , otp_text,status,"createAt","endTime",type)
+        VALUES ($1,$2,$3,$4,$5,2)
+      `;
+  };
+
+  public static SQL_AUTH_CHECK_VERIFICATION_BY_USER = () => {
+    return `
+      select count(*) from user_sp  where user_name=($1) and verification_code=($2) and code_role='ROLE-WIXX-SHOP'
+    `;
+  };
+
+  public static SQL_AUTH_IS_VERIFICATION_BY_USER = () => {
+    return `
+          select count(*) from user_sp  where user_name=($1) and verification_code=($2) and code_role='ROLE-WIXX-SHOP' and status=1
+    `;
+  };
+  public static SQL_ACTIVE_ACCOUNT_SHOP_BY_USER = () => {
+    return `
+      UPDATE user_sp SET status=1 WHERE user_name=($1)
+    `;
   };
 }
 export default SqlRoot;

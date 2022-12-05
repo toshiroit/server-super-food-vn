@@ -193,17 +193,10 @@ export const removeProductByShop = async (req: Request, res: Response) => {
             });
           } else {
             if (result) {
-              if (result.rowCount === 1) {
-                res.json({
-                  success: true,
-                  message: 'Xóa dữ liệu thành công ',
-                });
-              } else {
-                res.json({
-                  success: false,
-                  message: 'Xóa dữ liệu không thành công ',
-                });
-              }
+              res.json({
+                success: true,
+                message: 'Xóa dữ liệu thành công ',
+              });
             }
           }
         }

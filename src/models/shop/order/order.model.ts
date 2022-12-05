@@ -14,6 +14,8 @@ export class OrderModel extends Model {
       sql_result += 'AND od.progress = 1 or od.progress=2  and od.progress > -2 ';
     } else if (data.type === 'ship') {
       sql_result += 'AND od.progress = 3  and od.progress > -2 ';
+    } else if (data.type === 'all') {
+      sql_result += ' ';
     } else {
       sql_result += ' and od.progress > -2 ';
     }

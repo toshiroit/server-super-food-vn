@@ -130,7 +130,10 @@ export class AuthModel extends Model {
     const dataResult = [data.user_name];
     return pool.query(SqlRoot.SQL_GET_USER_ADMIN(), dataResult);
   }
-
+  public static async checkLoginVerificationCode(data: AuthLoginAdmin) {
+    const dataSQL = [data.user_name];
+    return pool.query(SqlRoot.SQL_GET_CHECK_VERIFICATION_LOGIN_ADMIN(), dataSQL);
+  }
   public static async getMeShopModel(data: { code_user: string }, callback: CallbackHandler) {
     const dataResult = [data.code_user];
     pool.query(SqlRoot.SQL_GET_ME_SHOP(), dataResult, callback);
