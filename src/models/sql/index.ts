@@ -1066,5 +1066,18 @@ class SqlRoot {
       UPDATE user_sp SET status=1 WHERE user_name=($1)
     `;
   };
+
+  public static SQL_AUTH_GET_VERIFICATION_ACCOUNT_BY_USER_NAME = () => {
+    return `
+      select 
+        u.verification_code,
+        ud.email
+      from 
+        user_sp u 
+      join 
+        user_detail_sp ud on ud.code_user_detail = u.code_user_detail
+      where user_name=($1) and u.code_role='ROLE-WIXX-SHOP'
+    `;
+  };
 }
 export default SqlRoot;

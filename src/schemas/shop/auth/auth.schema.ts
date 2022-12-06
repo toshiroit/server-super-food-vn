@@ -1,5 +1,12 @@
 import { number, object, string, TypeOf } from 'zod';
 const regexPhoneVN = /(03|05|07|08|09|01[2|6|8|9])+([0-9]{8})\b/;
+export const authVerificationCode = object({
+  body: object({
+    username: string({
+      required_error: 'Không được bỏ trống tài khoản của bạn',
+    }),
+  }),
+});
 export const authRegisterShop = object({
   body: object({
     name_shop: string({

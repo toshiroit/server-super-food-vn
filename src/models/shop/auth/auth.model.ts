@@ -21,4 +21,8 @@ export class AuthModel extends Model {
   public static async authActiveAccountShopByUser(data: { user_name: string }, callback: CallbackHandler) {
     pool.query(SqlRoot.SQL_ACTIVE_ACCOUNT_SHOP_BY_USER(), [data.user_name], callback);
   }
+
+  public static async authGetVerificationCodeByUserName(data: { user_name: string }) {
+    return pool.query(SqlRoot.SQL_AUTH_GET_VERIFICATION_ACCOUNT_BY_USER_NAME(), [data.user_name]);
+  }
 }

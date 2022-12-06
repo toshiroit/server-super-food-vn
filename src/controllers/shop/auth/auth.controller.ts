@@ -8,6 +8,31 @@ import { AuthModel } from '../../../models/shop/auth/auth.model';
 import { AuthRegisterShop } from '../../../schemas/shop/auth/auth.schema';
 import { AuthRegisterShopTP } from '../../../types/shop/auth/auth';
 
+export const getCodeVerificationAccount = async (req: Request, res: Response) => {
+  try {
+    const { username } = req.body;
+    if (username) {
+      const dataVerification = await AuthModel.authGetVerificationCodeByUserName({ user_name: (username as string) || '' });
+      if (dataVerification.rows.length > 0 && dataVerification.rows[0] && dataVerification.rows[0].verification_code && dataVerification.rows[0].email) {
+        const adata = await sendMail({
+          from: config.node_mailer_user,
+          to: dataVerification.rows[0].email,
+          subject: `Xác thực tài khoản của bạn ${username} - ${timeVietNameYesterday()}`,
+          html: `Mã xác nhận tài khoản của bạn ${username} là : <b>${dataVerification.rows[0].verification_code}</b>`,
+        });
+        res.json({
+          data: adata,
+          message: 'Thành công',
+        });
+      }
+    }
+  } catch (error) {
+    res.json({
+      error: error,
+    });
+  }
+};
+
 export const activeAccountRegister = async (req: Request, res: Response) => {
   const { verification_code, user_name } = req.body;
   try {
@@ -18,7 +43,8 @@ export const activeAccountRegister = async (req: Request, res: Response) => {
     const data_check = await AuthModel.authCheckVerificationCode(dataSQLActive);
     if (data_check.rows[0] && data_check.rows[0].count > 0) {
       const data_isCheck = await AuthModel.authIsCheckVerification(dataSQLActive);
-      if (data_isCheck.rows[0] && data_isCheck.rows[0].count === 0) {
+      console.log('CHECK ', data_isCheck.rows);
+      if (data_isCheck.rows[0] && data_isCheck.rows[0].count === '0') {
         await AuthModel.authActiveAccountShopByUser({ user_name: dataSQLActive.user_name }, (err, result) => {
           if (err) {
             res.json({
@@ -44,7 +70,7 @@ export const activeAccountRegister = async (req: Request, res: Response) => {
       }
     } else {
       res.status(400).json({
-        message: 'Tải khoản không tồn tại ',
+        message: 'Tải khoản không tồn tại hoặc mã kích hoạt không tòn tại ',
       });
     }
   } catch (error) {

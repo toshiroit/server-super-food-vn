@@ -16,6 +16,7 @@ export const ROUTES_NAME = {
     CHECK_PHONE: '/check-phone',
     LOGOUT: '/logout',
   },
+
   USER: {
     ADD_USER: '/add-user',
     UPDATE_USER: '/update-user-w1',
@@ -98,7 +99,10 @@ export const ROUTES_NAME_SHOP = {
     REGISTER: '/register',
     VERIFICATION_ACCOUNT: '/verification-active',
   },
-
+  VERIFICATION: {
+    HOME: '/verification',
+    GET_VERIFICATION: '/get-code-verification',
+  },
   CATEGORY: {
     HOME: '/category',
     CATEGORY_ALL: '/get-by-product-shop',
