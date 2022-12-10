@@ -67,15 +67,6 @@ app.use(
 // Setup socketio
 
 /*
-origin: [
-      config.domain_admin, config.domain_web_client, config.domain_web_client_shop,
-      'https://super-food-vn.vercel.app',
-      'http://localhost:3001',
-      'https://admin-super-food.vercel.app'
-    ]
-
-*/
-
 // Apply the rate limiting middleware to all request
 // app.use(
 //   ratelimit({
@@ -85,10 +76,9 @@ origin: [
 //     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
 //     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 //   })
-// );
+// );*/
 
 // Add routing for / path
-
 app.use('/api', routes);
 app.use('/api/v1/sp-shop', shopRoutes);
 
@@ -100,7 +90,7 @@ const server = app.listen(process.env.PORT || 8080, async () => {
 });
 const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(server, {
   cors: {
-    origin: '*',
+    origin: ['http://localhost:3001', 'http://localhost:3000'],
     methods: ['GET', 'POST'],
   },
 });
@@ -109,6 +99,7 @@ io.use((socket, next) => {
   try {
     socket.data.auth_isLogin = false;
     const { cookie } = socket.request.headers;
+
     const bearer = cookie?.split('=')[0].toLowerCase();
     const token = cookie?.split('=')[1];
     if (token && bearer === 'jwt') {
@@ -116,6 +107,7 @@ io.use((socket, next) => {
         if (err) {
           next(new Error(' Please try again'));
         } else {
+          console.log('LOG : ', decoded);
           if (decoded) {
             socket.data.auth_isLogin = true;
             socket.data.auth_data = decoded;

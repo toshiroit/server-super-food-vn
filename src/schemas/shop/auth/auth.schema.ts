@@ -7,6 +7,34 @@ export const authVerificationCode = object({
     }),
   }),
 });
+
+export const authUpdateUserByShopSchema = object({
+  body: object({
+    full_name: string({
+      required_error: 'Không được bổ trống trường này',
+    }).max(150, 'Chỉ chưa tối đa 150 kí tự'),
+    email: string({
+      required_error: 'Không được bỏ trống trường này',
+    }).email('Email không đúng định dạng'),
+    date: string({
+      required_error: 'Không được bỏ trống trường này',
+    }),
+    phone: string({
+      required_error: 'Không được bỏ trống trường này',
+    }).regex(regexPhoneVN, {
+      message: 'Không được bỏ trống trường này',
+    }),
+    name_shop: string({
+      required_error: 'Không được bỏ trống trường này',
+    }).max(100, {
+      message: 'Tên Shop quá dài',
+    }),
+    avatar: string({
+      required_error: 'Hình ảnh không được bỏ trống',
+    }),
+  }),
+});
+
 export const authRegisterShop = object({
   body: object({
     name_shop: string({

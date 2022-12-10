@@ -97,7 +97,7 @@ export const addEvaluateByProduct = async (req: Request, res: Response) => {
       evaluate_product,
       evaluate_ship,
       evaluate_progress,
-      images,
+      images: JSON.stringify(images),
       text,
       createdAt: timeVietNameYesterday(),
       code_order,

@@ -33,11 +33,16 @@ export const searchProductByType = async (req: Request<null, null, null, SearchP
       q: req.query.q.toLowerCase(),
       typeShow: req.query.typeShow,
       listShop: req.query.listShop,
-      sort: req.query.sort,
+      sort: Number(req.query.sort),
       page: req.query.page,
       size: req.query.size,
+      open_shop: Boolean(req.query.open_shop),
+      discount: Boolean(req.query.discount),
+      free_ship: Boolean(req.query.free_ship),
+      evaluate_top: Boolean(req.query.type_show),
+      type_show: Number(req.query.type_show),
     };
-
+    console.log('data : ', dataQuery);
     const dataCount = await ProductModel.getCountProduct(dataQuery);
     await ProductModel.getProductByQueryModel(dataQuery, (err, result) => {
       if (err) {
@@ -67,7 +72,7 @@ export const searchProductByType = async (req: Request<null, null, null, SearchP
     });
   } catch (error) {
     res.json({
-      error: 'Error ',
+      error,
     });
   }
 };

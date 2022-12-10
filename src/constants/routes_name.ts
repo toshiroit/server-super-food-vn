@@ -71,6 +71,8 @@ export const ROUTES_NAME = {
     DETAIL_SHOP: '/detail-shop',
     PRODUCT_SHOP: '/all-product',
     FOLLOW_SHOP: '/follow-shop',
+    DISABLE_FOLLOW_SHOP: '/disable-follow-shop',
+    CATEGORY_SHOP: '/all-category-shop',
   },
   NOTIFY: {
     HOME: '/notify',
@@ -98,6 +100,12 @@ export const ROUTES_NAME_SHOP = {
     GET_ME_SHOP: '/getMeShop',
     REGISTER: '/register',
     VERIFICATION_ACCOUNT: '/verification-active',
+    UPDATE_USER: '/update-user',
+    LOGOUT: '/logout',
+    CHECK_PASSWORD: '/check-password',
+  },
+  GET_INDEX_DATA: {
+    DATA: '/get-data',
   },
   VERIFICATION: {
     HOME: '/verification',
@@ -107,6 +115,9 @@ export const ROUTES_NAME_SHOP = {
     HOME: '/category',
     CATEGORY_ALL: '/get-by-product-shop',
     CATEGORY_ALL_BY_SHOP: '/get-all-category-by-shop',
+    ADD_NEW_CATEGORY: '/add-new-category',
+    REMOVE_CATEGORY: '/remove-category',
+    UPDATE_CATEGORY: '/update-category',
   },
   PRODUCT: {
     HOME: '/product',
@@ -145,6 +156,10 @@ export const ROUTES_NAME_SHOP = {
     SEND_CHAT: '/send-messenger',
     GET_ALL_CHAT: '/get-all-messenger',
     GET_ALL_USER_CHAT_BY_SHOP: '/get-all-user-messenger-by-shop',
+  },
+  VOUCHER: {
+    HOME: '/voucher',
+    GET_ALL_VOUCHER: '/get-all-voucher',
   },
 };
 export const SOCKET_ROUTE = {

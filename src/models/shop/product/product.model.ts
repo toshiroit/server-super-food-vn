@@ -21,7 +21,6 @@ export class ProductShopModel extends Model {
     let querySearch = '';
     const { offset, limit } = getPagination(data.page, Number(config.table_product_shop_limit_show));
     if (data.q) {
-      console.log(data.q);
       querySearch += ` AND converttvkdau(p.name) ilike '%${toLowerCaseNonAccentVietnamese(data.q)}%' `;
       querySearch += ` OR p.code_product='${data.q}' `;
     }

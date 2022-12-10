@@ -430,9 +430,24 @@ class SqlRoot {
     where u.code_user = ($1) AND r.code_role='ROLE-WIXO-USER'
     `;
   };
+
+  public static SQL_GET_ALL_CATEGORY_PRODUCT_BY_SHOP = () => {
+    return ` 
+    select 
+      json_agg(row_to_json(pt.*)) as category_product
+    from 
+      product_type_sp pt  
+    join 
+      product_sp p on p.code_product_type=pt.code_product_type
+    and  
+      p.code_shop=($1)
+    `;
+  };
+
   public static SQL_GET_PRODUCT_BY_SHOP = () => {
     return `
-      select * from product_sp p join product_detail_sp pd on 
+      select *  
+      from product_sp p join product_detail_sp pd on 
       p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
       on pg.code_product_guide=pd.code_product_guide
       left join shop_sp s on s.code_shop = p.code_shop 
@@ -539,7 +554,7 @@ class SqlRoot {
       ud.full_name,
       ud.date_birth,
       ud.sex,
-      ad.full_name,
+      ad.full_name as full_name_address,
       ad.detail_address,
       adt.phone_w as phone_w_detail,
       adt.street,
@@ -806,6 +821,7 @@ class SqlRoot {
 	      s.type_shop,
 	      s.video_shop,
 	      sd.facebook,
+        s.image_shop,
 	      sd.phone,
 	      sd.youtube,
 	      sd.description,
@@ -1077,6 +1093,151 @@ class SqlRoot {
       join 
         user_detail_sp ud on ud.code_user_detail = u.code_user_detail
       where user_name=($1) and u.code_role='ROLE-WIXX-SHOP'
+    `;
+  };
+
+  public static SQL_GET_DATA_HOME_STATISTICAL = () => {
+    return `
+      with count_product as (
+        select 
+          count(p.*) as count_all_product
+        from 
+          shop_sp s 
+        join 
+          product_sp p on p.code_shop = s.code_shop
+        where 
+          s.code_shop=($1)
+      ), count_order as (
+        select 
+          count(od.*) as count_order
+        from 
+          shop_sp s 
+          join 
+            order_detail_sp od on od.code_shop = s.code_shop
+          join 
+            order_sp o on o.code_order_detail = od.code_order_detail
+        where 
+          s.code_shop=($1)
+      ),count_order_ship as (
+        select 
+          count(od.*) as count_order_ship
+        from 
+          shop_sp s 
+          join 
+            order_detail_sp od on od.code_shop = s.code_shop
+          join 
+            order_sp o on o.code_order_detail = od.code_order_detail
+        where 
+          s.code_shop=($1) and od.progress =3
+      ),count_order_notShip as (
+        select 
+          count(od.*) as count_order_not_ship
+        from 
+          shop_sp s 
+          join 
+            order_detail_sp od on od.code_shop = s.code_shop
+          join 
+            order_sp o on o.code_order_detail = od.code_order_detail
+        where 
+          s.code_shop=($1) and od.progress = 8 
+      ),count_order_successShip as (
+        select 
+          count(od.*) as count_order_success_ship
+        from 
+          shop_sp s 
+          join 
+            order_detail_sp od on od.code_shop = s.code_shop
+          join 
+            order_sp o on o.code_order_detail = od.code_order_detail
+        where 
+          s.code_shop=($1) and od.progress = 7
+      ),count_product_evaluateTop as (
+        select 
+          count(p.*) as count_product_evaluateTop
+        from 
+          shop_sp s 
+          join 
+            product_sp p on p.code_shop = s.code_shop
+        where 
+          s.code_shop=($1) and p.evaluate  < 5
+      ),count_product_evaluateLeast as (
+        select 
+          count(p.*) as count_product_evaluateLeast
+        from 
+          shop_sp s 
+          join 
+            product_sp p on p.code_shop = s.code_shop
+        where 
+          s.code_shop=($1) and p.evaluate  > 6
+      )
+        select * from count_product,count_order,count_order_ship,count_order_notShip,count_order_successShip,count_product_evaluateTop,count_product_evaluateLeast
+    `;
+  };
+
+  public static SQL_AUTH_UPDATE_USER_SHOP_BY_CODE = () => {
+    return `
+      with shop_sp_UpdateShop as (
+        UPDATE shop_sp SET image_shop=($2),name_shop=($3) where code_shop=($1)
+        RETURNING code_shop_detail 
+      )
+      UPDATE shop_detail_sp SET full_name=($4),email=($5),phone=($6),facebook=($7),background_shop=($8),description=($9),youtube=($10)
+        WHERE code_shop_detail in (select code_shop_detail from shop_sp_UpdateShop)
+    `;
+  };
+
+  public static SQL_ADD_CATEGORY_BY_SHOP = () => {
+    return `
+      INSERT INTO category_sp(
+         category_code, category_name, category_image, category_info, status, code_shop)
+      VALUES ($1, $2, $3, $4, $5, $6);
+    `;
+  };
+
+  public static SQL_CHECK_NAME_CATEGORY_BY_SHOP = () => {
+    return `
+      SELECT count(*) from category_sp where  lower(converttvkdau(category_name))= ($1) and code_shop=($2)
+    `;
+  };
+
+  public static SQL_REMOVE_CATEGORY_BY_SHOP = () => {
+    return `
+      DELETE FROM category_sp WHERE category_code=($1) and code_shop=($2)
+    `;
+  };
+
+  public static SQL_UPDATE_CATEGORY_BY_SHOP = () => {
+    return `
+      UPDATE category_sp SET category_name=($3),category_image=($4),category_info=($5),status=($6) WHERE category_code =($1) and code_shop =($2)
+    `;
+  };
+
+  public static SQL_DISABLE_FOLLOW_SHOP_BY_USER = () => {
+    return `
+      DELETE FROM follow_shop_sp where code_user=($1) AND code_shop=($2)
+    `;
+  };
+
+  public static SQL_GET_ALL_VOUCHER_BY_SHOP = () => {
+    return `
+      select 
+        * 
+      from 
+        voucher_sp v 
+      join 
+        voucher_type_sp vt on vt.code_type_voucher = v.code_type_voucher 
+      where 
+        v.code_shop=($1)
+    `;
+  };
+
+  public static SQL_GET_DATA_USER_BY_CODE_USER_SHOP = () => {
+    return `
+      select 
+        *
+      from 
+        user_sp u
+      where 
+        u.code_shop=($1) and u.user_name=($2)
     `;
   };
 }

@@ -63,6 +63,10 @@ export class InfoShopModel extends Model {
     pool.query(queryResult, dataResult, callback);
   }
 
+  public static async getAllCategoryProductShopModel2(data: { code_shop: string }) {
+    return pool.query(SqlRoot.SQL_GET_ALL_CATEGORY_PRODUCT_BY_SHOP(), [data.code_shop]);
+  }
+
   public static async followShopByUserModel(data: { code_shop: string; code_user: string }, callback: CallbackHandler) {
     const sqlFollow = `
     INSERT INTO follow_shop_sp(
@@ -74,9 +78,15 @@ export class InfoShopModel extends Model {
 		  FROM follow_shop_sp
 		  WHERE follow_shop_sp.code_user='${data.code_user.trim()}' and follow_shop_sp.code_shop='${data.code_shop.trim()}'
     )
-    
     `;
-    console.log(sqlFollow);
     pool.query(sqlFollow, [], callback);
+  }
+
+  public static async disableFollowShopByUserModel(data: { code_shop: string; code_user: string }, callback: CallbackHandler) {
+    pool.query(SqlRoot.SQL_DISABLE_FOLLOW_SHOP_BY_USER(), [data.code_user, data.code_shop], callback);
+  }
+
+  public static async getAllCategoryShopModel(data: { code_shop: string }, callback: CallbackHandler) {
+    pool.query(SqlRoot.SQL_GET_ALL_CATEGORY_BY_SHOP(), [data.code_shop], callback);
   }
 }

@@ -1,12 +1,47 @@
 import { Request, Response } from 'express';
 import config from '../../../config/config';
 import { sendMail } from '../../../helpers/mail';
-import { hasPassword } from '../../../libs/hash_password';
+import { getDataUser } from '../../../libs/getUserToken';
+import { comparePassword, hasPassword } from '../../../libs/hash_password';
 import { makeId } from '../../../libs/make_id';
 import { timeVietNameYesterday } from '../../../libs/timeVietNam';
 import { AuthModel } from '../../../models/shop/auth/auth.model';
 import { AuthRegisterShop } from '../../../schemas/shop/auth/auth.schema';
+import { UserDataUpdate } from '../../../types/auth/auth.type';
 import { AuthRegisterShopTP } from '../../../types/shop/auth/auth';
+
+const dataUserTK = (req: Request) => {
+  const { cookie } = req.headers;
+  const bearer = cookie?.split('=')[0].toLowerCase();
+  const token = cookie?.split('=')[1];
+  const data_user = getDataUser(token, bearer);
+  return data_user;
+};
+
+export const authUpdateUserByShop = async (req: Request, res: Response) => {
+  try {
+    const data_user = dataUserTK(req)?.payload;
+    const dataSQL: UserDataUpdate = req.body;
+    dataSQL.code_shop = data_user.code_shop;
+    await AuthModel.authUpdateUserByShopModel(dataSQL, (err, result) => {
+      if (err) {
+        res.json({
+          error: err,
+        });
+      } else {
+        if (result) {
+          res.json({
+            message: result.rows[0],
+          });
+        }
+      }
+    });
+  } catch (error) {
+    res.json({
+      error,
+    });
+  }
+};
 
 export const getCodeVerificationAccount = async (req: Request, res: Response) => {
   try {
@@ -189,6 +224,42 @@ export const authRegister = async (req: Request<unknown, unknown, AuthRegisterSh
   } catch (err) {
     res.json({
       error: err,
+    });
+  }
+};
+
+export const authCheckPasswordByUserShop = async (req: Request, res: Response) => {
+  try {
+    const data_user = await dataUserTK(req);
+    const dataSQL = {
+      code_shop: data_user?.payload.code_shop,
+      user_name: data_user?.payload.user_name,
+      password: req.query.password,
+    };
+    await AuthModel.authCheckPasswordByShop(dataSQL, (err, result) => {
+      if (err) {
+        res.json({
+          error: err,
+        });
+      } else {
+        if (result) {
+          const password_user = result.rows[0].password;
+          const isPassword = comparePassword(dataSQL.password as string, password_user.trim() || '');
+          if (isPassword) {
+            res.json({
+              message: 'Mật khẩu chính xác',
+            });
+          } else {
+            res.status(400).json({
+              message: 'Mật khẩu không chính xác',
+            });
+          }
+        }
+      }
+    });
+  } catch (error) {
+    res.json({
+      error,
     });
   }
 };

@@ -14,6 +14,7 @@ export class ProductModel extends Model {
    */
   public static async getAllProductModel(data: GetAllProductTp, callback: CallbackHandler) {
     let queryGetProduct = ' WHERE is_show=1 and pd.date_end >= now() ';
+    console.log('VO DAY');
     if (data) {
       if (data.typeSort === 'new-product') {
         queryGetProduct += ` ORDER BY pd."createdAt" DESC `;
@@ -44,11 +45,9 @@ export class ProductModel extends Model {
       and pd.is_show=1 
       and pd.date_end IS NULL 
       or pd.date_end is NOT null and pd.date_end < now()
-
       `;
       dataQ.push(`%${data.q}%`);
     }
-
     const resultSQL = SqlRoot.SQL_GET_COUNT_PRODUCT() + queryCount;
     return pool.query(resultSQL, dataQ);
   }
@@ -102,11 +101,20 @@ export class ProductModel extends Model {
      pd.is_show=1 
     and pd.date_end IS NULL 
     or pd.date_end is NOT null and pd.date_end < now() `;
-    if (data.sort) {
-      if (data.sort.trim() === '0') {
-        querySearch += ' ORDER BY p.name ASC ';
-      } else if (data.sort.trim() === '1') {
-        querySearch += ' ORDER BY p.name DESC ';
+
+    if (data.sort || data.type_show) {
+      if (data.sort === 0) {
+        querySearch += ` ORDER BY p."name" DESC `;
+      } else if (data.sort === 1) {
+        querySearch += ` ORDER BY p."name" ASC `;
+      } else if (data.sort === 2) {
+        querySearch += ` ORDER BY (p.price - (price * (pd.discount::decimal/100))) ASC `;
+      } else if (data.sort === 3) {
+        querySearch += ` ORDER BY  (p.price - (price * (pd.discount::decimal/100))) DESC `;
+      } else if (data.type_show === 0) {
+        querySearch += ` ORDER BY p.evaluate DESC `;
+      } else if (data.type_show === 1) {
+        querySearch += ` ORDER BY pd.purchase `;
       }
     }
 
@@ -115,6 +123,7 @@ export class ProductModel extends Model {
     }
 
     const queryResult = SqlRoot.SQL_GET_PRODUCT_BY_QUERY() + querySearch;
+
     //queryResult = queryResult
     return pool.query(queryResult, dataSql, callback);
   }

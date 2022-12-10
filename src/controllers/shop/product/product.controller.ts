@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import config from '../../../config/config';
+import { checkTextBadWord } from '../../../helpers/check-name';
 import { getPagination, getPagingData } from '../../../libs/getPagination';
 import { getDataUser } from '../../../libs/getUserToken';
 import { makeId } from '../../../libs/make_id';
@@ -72,46 +73,52 @@ export const addProductShop = async (req: Request<any, null, AddProductShop>, re
     const bearer = cookie?.split('=')[0].toLowerCase();
     const token = cookie?.split('=')[1];
     const data_user = getDataUser(token, bearer);
-    const dataAddProductSQL = [
-      makeId(15),
-      data_user?.payload.code_shop,
-      req.body.image,
-      req.body.name_product,
-      req.body.price,
-      req.body.quantity,
-      0,
-      makeId(15),
-      req.body.code_product_type,
-      0,
-      req.body.discount,
-      makeId(15),
-      new Date(Date.now()).toISOString(),
-      JSON.stringify(req.body.type_product),
-      null,
-      req.body.date_start || null,
-      req.body.date_end || null,
-      req.body.isShow,
-      JSON.stringify(req.body.images),
-      req.body.free_ship === 1 ? false : true,
-      req.body.description,
-      req.body.guide,
-      req.body.return,
-      req.body.note,
-    ];
-    await ProductShopModel.addProductShopModel(dataAddProductSQL, (err, result) => {
-      if (err) {
-        res.json({
-          error: err,
-        });
-      } else {
-        if (result) {
+    if (checkTextBadWord(req.body.name_product || '')) {
+      const dataAddProductSQL = [
+        makeId(15),
+        data_user?.payload.code_shop,
+        req.body.image,
+        req.body.name_product,
+        req.body.price,
+        req.body.quantity,
+        0,
+        makeId(15),
+        req.body.code_product_type,
+        0,
+        req.body.discount,
+        makeId(15),
+        new Date(Date.now()).toISOString(),
+        JSON.stringify(req.body.type_product),
+        null,
+        req.body.date_start || null,
+        req.body.date_end || null,
+        req.body.isShow,
+        JSON.stringify(req.body.images),
+        req.body.free_ship === 1 ? false : true,
+        req.body.description,
+        req.body.guide,
+        req.body.return,
+        req.body.note,
+      ];
+      await ProductShopModel.addProductShopModel(dataAddProductSQL, (err, result) => {
+        if (err) {
           res.json({
-            data: result,
-            message: 'Đăng sản phẩm thành công',
+            error: err,
           });
+        } else {
+          if (result) {
+            res.json({
+              data: result,
+              message: 'Đăng sản phẩm thành công',
+            });
+          }
         }
-      }
-    });
+      });
+    } else {
+      res.status(400).json({
+        message: 'Tên sản phẩm không được chứa ngôn ngữ lạ',
+      });
+    }
   } catch (err) {
     res.json({
       error: 'Error',

@@ -5,7 +5,7 @@ export type EvaluateData = {
   evaluate_product: number;
   evaluate_ship: number;
   evaluate_progress: number;
-  images: ImageEvaluate[] | null;
+  images: any;
   text: string;
   createdAt: string;
   code_order: string;

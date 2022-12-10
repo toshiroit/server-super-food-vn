@@ -7,13 +7,14 @@ import cartRoute from './api/cart/cart.route';
 import searchRoute from './api/search/search.route';
 import orderRoute from './api/order/order.route';
 import addressRoute from './api/address/address.route';
-import { ROUTES_NAME } from '../constants/routes_name';
+import { ROUTES_NAME, ROUTES_NAME_SHOP } from '../constants/routes_name';
 import checkoutRoute from './api/checkout/checkout.route';
 import paymentRoute from './api/payment/payment.route';
 import shopRoute from './api/shop/shop.route';
 import notifyRoute from './api/notify/notify.route';
 import messengerRoute from './api/chat/chat.route';
 import evaluateRouter from './api/evaluate/evaluate.route';
+import uploadRoute from './api/upload/upload.route';
 const router = Router();
 
 /**
@@ -34,6 +35,7 @@ router.use('/comment', commentRoute);
 router.use('/cart', cartRoute);
 router.use('/search', searchRoute);
 router.use('/user', userRoute);
+router.use(ROUTES_NAME_SHOP.UPLOAD.home, uploadRoute);
 router.use(ROUTES_NAME.ADDRESS.HOME, addressRoute);
 router.use(ROUTES_NAME.ORDER.HOME, orderRoute);
 router.use(ROUTES_NAME.CHECKOUT, checkoutRoute);

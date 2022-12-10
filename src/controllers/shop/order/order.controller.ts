@@ -3,6 +3,7 @@ import { getPagingData } from '../../../libs/getPagination';
 import { getDataUser } from '../../../libs/getUserToken';
 import { OrderModel } from '../../../models/shop/order/order.model';
 import { HideOrderByShopTypeZod } from '../../../schemas/shop/order/order.schema';
+import { OrderValueSearch } from '../../../types/order/order';
 import { HideOrderByShopTp, RemoveOrderByShopTp } from '../../../types/shop/order/order';
 export const dataUserTK = (req: Request) => {
   const { cookie } = req.headers;
@@ -73,12 +74,22 @@ export const getAllOrderByShop = async (req: Request, res: Response) => {
     const bearer = cookie?.split('=')[0].toLowerCase();
     const token = cookie?.split('=')[1];
     const data_user = getDataUser(token, bearer);
+    const { name_search, date_start, date_end, status_order, type_payment } = req.query;
     if (data_user) {
       const code_shop = data_user?.payload.code_shop;
       const type = req.query.type;
       const page = req.query.page;
-      const data_count = await OrderModel.getCountOrderByShop({ code_shop: code_shop, type: type });
-      await OrderModel.getAllOrderByShop({ code_shop: code_shop, type: type }, (err, result) => {
+
+      const value_search: OrderValueSearch = {
+        name_search: (name_search as string) || null,
+        date_start: (date_start as string) || null,
+        status_order: Number(status_order) || null,
+        type_payment: Number(type_payment) || null,
+        date_end: (date_end as string) || null,
+      };
+      console.log('value : ', value_search);
+      const data_count = await OrderModel.getCountOrderByShop({ code_shop: code_shop, type: type, page: Number(page) || 1, value_search: value_search });
+      await OrderModel.getAllOrderByShop({ code_shop: code_shop, type: type, page: Number(page) || 1, value_search: value_search }, (err, result) => {
         if (err) {
           res.json({
             error: err,

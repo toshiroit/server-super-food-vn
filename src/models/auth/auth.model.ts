@@ -90,7 +90,7 @@ export class AuthModel extends Model {
         'ROLE-WIXO-USER',
         valueQuery.value.phone,
         new Date(Date.now()).toISOString(),
-        false,
+        1,
         valueQuery.value.verification_code,
         valueQuery.value.full_name,
         valueQuery.value.sex,

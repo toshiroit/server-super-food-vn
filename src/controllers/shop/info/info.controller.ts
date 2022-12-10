@@ -44,7 +44,7 @@ export const getAllProductByShop = async (req: Request, res: Response) => {
   try {
     const { code_shop, page, q } = req.query;
     const dataCountProductShop = await InfoShopModel.getCountAllProductShopModel({ code_shop: (code_shop as string) || '', q: (q as string) || '' });
-    const dataCategoryProductShop = await InfoShopModel.getAllCategoryProductShopModel({ code_shop: (code_shop as string) || '', q: (q as string) || '' });
+    const dataCategoryProductShop = await InfoShopModel.getAllCategoryProductShopModel2({ code_shop: (code_shop as string) || '' });
     await InfoShopModel.getAllProductShopModel(
       {
         code_shop: (code_shop as string) || '',
@@ -110,6 +110,59 @@ export const followShopByUser = async (req: Request, res: Response) => {
   } catch (err) {
     res.json({
       error: err,
+    });
+  }
+};
+
+export const disableFollowShopByUser = async (req: Request, res: Response) => {
+  try {
+    const { code_shop } = req.query;
+    const data_user = dataUserTK(req);
+    if (data_user) {
+      const dataSQL = {
+        code_user: data_user?.payload.code_user?.trim(),
+        code_shop: (code_shop as string) || '',
+      };
+      await InfoShopModel.disableFollowShopByUserModel(dataSQL, (err, result) => {
+        if (err) {
+          res.json({
+            error: err,
+          });
+        } else {
+          if (result) {
+            res.json({
+              message: 'Success',
+            });
+          }
+        }
+      });
+    }
+  } catch (error) {
+    res.json({
+      error,
+    });
+  }
+};
+
+export const getAllCategoryShop = async (req: Request, res: Response) => {
+  try {
+    const code_shop = (req.query.code_shop as string) || '';
+    await InfoShopModel.getAllCategoryShopModel({ code_shop: code_shop }, (err, result) => {
+      if (err) {
+        res.json({
+          error: err,
+        });
+      } else {
+        if (result) {
+          res.json({
+            data: result.rows,
+          });
+        }
+      }
+    });
+  } catch (error) {
+    res.json({
+      error: error,
     });
   }
 };
