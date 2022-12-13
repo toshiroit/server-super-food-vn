@@ -1240,5 +1240,23 @@ class SqlRoot {
         u.code_shop=($1) and u.user_name=($2)
     `;
   };
+
+  public static SQL_ADD_NEW_VOUCHER_BY_SHOP = () => {
+    return `
+        INSERT INTO voucher_sp 
+          (code_voucher,name_voucher,
+          price_voucher,code_type_voucher,
+          description,code_w_voucher,
+          time_start,time_end,
+          createdat,
+          quality,code_shop,
+          code_product,type_price
+          )
+        VALUES
+          (
+            $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13
+          )
+    `;
+  };
 }
 export default SqlRoot;

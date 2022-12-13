@@ -160,6 +160,7 @@ export const ROUTES_NAME_SHOP = {
   VOUCHER: {
     HOME: '/voucher',
     GET_ALL_VOUCHER: '/get-all-voucher',
+    ADD_NEW_VOUCHER: '/add-new-voucher',
   },
 };
 export const SOCKET_ROUTE = {
