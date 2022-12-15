@@ -42,11 +42,8 @@ routes.get(ROUTES_NAME.AUTH.USER, validateTokenMiddleware, AuthController.getMe)
  * Rest password user
  * Login => true of false => role admin - shop - user
  */
-routes.post(ROUTES_NAME.AUTH.REST_PASSWORD, validateTokenMiddleware, (err, res) => {
-  res.send({
-    data: res.locals,
-  });
-});
+routes.post(ROUTES_NAME.AUTH.REST_PASSWORD, AuthController.authRestPassword);
+routes.put(ROUTES_NAME.AUTH.UPDATE_PASSWORD, validateTokenMiddleware, AuthController.authUpdatePassword);
 
 /**
  * Verify code

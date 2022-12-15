@@ -130,6 +130,11 @@ export class AuthModel extends Model {
     const dataResult = [data.user_name];
     return pool.query(SqlRoot.SQL_GET_USER_ADMIN(), dataResult);
   }
+
+  public static async getUserWModel(data: { code_user: string }) {
+    return pool.query(SqlRoot.SQL_GET_USER_W(), [data.code_user]);
+  }
+
   public static async checkLoginVerificationCode(data: AuthLoginAdmin) {
     const dataSQL = [data.user_name];
     return pool.query(SqlRoot.SQL_GET_CHECK_VERIFICATION_LOGIN_ADMIN(), dataSQL);
@@ -140,7 +145,35 @@ export class AuthModel extends Model {
   }
 
   public static async getMeUser(data: { code_user: string }, callback: CallbackHandler) {
-    console.log('CODE USER : ', data.code_user);
     pool.query(SqlRoot.SQL_GET_ME_USER(), [data.code_user], callback);
+  }
+  public static async authUpdatePassword(data: { password: string; code_user: string }, callback: CallbackHandler) {
+    pool.query(SqlRoot.SQL_UPDATE_USER_PASSWORD(), [data.password, data.code_user], callback);
+  }
+  public static async authRestPassword(data: { phone: string; password: string }, callback: CallbackHandler) {
+    pool.query(SqlRoot.SQL_UPDATE_USER_NEW_PASSWORD(), [data.password, data.phone], callback);
+  }
+
+  public static async sendNewPassModel(
+    data: {
+      phone: string;
+      new_password: string;
+    },
+    callback: (err: any | null, result: any | null) => void
+  ) {
+    twilio(config.twilio_account_sid, config.twilio_auth_token, {
+      lazyLoading: true,
+    })
+      .messages.create({
+        from: config.twilio_phone,
+        to: `+84${data.phone}`,
+        body: `Mật khẩu mới của bạn là : ${data.new_password}`,
+      })
+      .then(res => {
+        return callback(null, res);
+      })
+      .catch(err => {
+        return callback(err, null);
+      });
   }
 }

@@ -15,6 +15,7 @@ import nodemailer from 'nodemailer';
 import { sendMail } from '../../helpers/mail';
 import { RegisterSuccess } from '../../libs/theme_mailer';
 import { endtenMinute, timeVietNameYesterday } from '../../libs/timeVietNam';
+import { dataUserTK } from '../../libs/data_user';
 const getAllUsers = async (req: Request, res: Response) => {
   try {
     const valueQuery: modelQuery = {
@@ -484,7 +485,90 @@ const getMeShop = async (req: Request, res: Response) => {
     });
   }
 };
+
+const authUpdatePassword = async (req: Request, res: Response) => {
+  try {
+    const { phone, password, new_password } = req.body;
+    const data_user = await dataUserTK(req);
+    const dataSQL_get = {
+      code_user: data_user?.payload.code_user,
+    };
+    const dataUserModel = await AuthModel.getUserWModel(dataSQL_get);
+    if (dataUserModel.rows && dataUserModel.rows.length > 0) {
+      const isPassword = comparePassword(password, dataUserModel.rows[0].password?.trim());
+      if (isPassword) {
+        const dataSQLUpdate = {
+          password: hasPassword(new_password),
+          code_user: dataSQL_get.code_user,
+        };
+        AuthModel.authUpdatePassword(dataSQLUpdate, (err, result) => {
+          if (err) {
+            res.json({
+              error: err,
+            });
+          } else {
+            if (result) {
+              if (result.rowCount > 0) {
+                res.json({
+                  message: 'Thay đổi thành công',
+                });
+              } else {
+                res.status(400).json({
+                  message: 'Lỗi',
+                });
+              }
+            }
+          }
+        });
+      } else {
+        res.status(400).json({
+          message: 'Mật khẩu gốc không chính xác',
+        });
+      }
+    }
+  } catch (error) {
+    res.json({ error });
+  }
+};
+const authRestPassword = async (req: Request, res: Response) => {
+  try {
+    const { phone } = req.body;
+    const password = makeId(12);
+    AuthModel.authRestPassword({ phone: (phone as string) || '', password: hasPassword(password) || '' }, (err, result) => {
+      if (err) {
+        res.json({
+          error: err,
+        });
+      } else {
+        if (result) {
+          if (result.rowCount > 0) {
+            AuthModel.sendNewPassModel({ new_password: password as string, phone: phone as string }, (err, result) => {
+              if (err) {
+                res.json({
+                  error_new: err,
+                });
+              } else {
+                res.json({
+                  message: 'Thay đổi mật khẩu thành công',
+                });
+              }
+            });
+          } else {
+            res.status(400).json({
+              message: 'Thay đổi mật khẩu không thành công',
+            });
+          }
+        }
+      }
+    });
+  } catch (error) {
+    res.json({
+      error,
+    });
+  }
+};
 export {
+  authRestPassword,
   getMeShop,
   loginUser,
   loginPhone,
@@ -499,4 +583,5 @@ export {
   verifyCodeAuth,
   verifyAccountByCode,
   checkCodeOTP,
+  authUpdatePassword,
 };

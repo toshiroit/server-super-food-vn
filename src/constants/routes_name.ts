@@ -5,6 +5,7 @@ export const ROUTES_NAME = {
     CHECK_CODE: '/check-code',
     REGISTER: '/register',
     REST_PASSWORD: '/rest-password',
+    UPDATE_PASSWORD: '/update-password',
     VERIFY_USER: '/verify-user',
     VERIFY_CODE: '/verify-code',
     AUTHENTICATE: '/authenticate',
@@ -77,6 +78,7 @@ export const ROUTES_NAME = {
   NOTIFY: {
     HOME: '/notify',
     ADD_NOTIFY_NEW_SHOP: '/add-new-notify-shop',
+    GET_ALL_NOTIFY_USER: '/get-all-notify-user',
   },
   CHAT: {
     HOME: '/messenger',
@@ -90,6 +92,10 @@ export const ROUTES_NAME = {
     GET_ALL_EVALUATE: '/get-all',
     CHECK_EVALUATE: '/check-evaluate',
     GET_EVALUATE: '/get-evaluate',
+  },
+  VOUCHER: {
+    HOME: '/voucher',
+    CHECK_VOUCHER: '/check-voucher',
   },
 };
 
@@ -150,6 +156,7 @@ export const ROUTES_NAME_SHOP = {
   NOTIFY: {
     HOME: '/notify',
     GET_ALL_NOTIFY_SHOP: '/get-all-notify-shop',
+    GET_DETAIL_NOTIFY: '/notify-detail',
   },
   CHAT: {
     HOME: '/messenger',
@@ -160,7 +167,10 @@ export const ROUTES_NAME_SHOP = {
   VOUCHER: {
     HOME: '/voucher',
     GET_ALL_VOUCHER: '/get-all-voucher',
+    GET_DETAIL_VOUCHER: '/get-detail-voucher',
     ADD_NEW_VOUCHER: '/add-new-voucher',
+    UPDATE_VOUCHER: '/update-voucher',
+    REMOVE_VOUCHER: '/remove-voucher',
   },
 };
 export const SOCKET_ROUTE = {

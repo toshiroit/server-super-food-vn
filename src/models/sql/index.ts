@@ -145,6 +145,7 @@ class SqlRoot {
 
   public static SQL_GET_PRODUCT_BY_NAME_OR_CODE = () => {
     return `select p.*,pd.*,pg.*,
+            pt.name_product_type,
             (select count(*) from product_sp where code_shop=p.code_shop) as shop_quatity_product,
             s.follow_shop,
             s.evaluate as evaluate_shop,
@@ -152,7 +153,8 @@ class SqlRoot {
             s.name_shop
             from product_sp p
             join product_detail_sp pd on p.code_product_detail=pd.code_product_detail 
-            join product_guide_sp pg on pg.code_product_guide=pd.code_product_guide 
+            join product_guide_sp pg on pg.code_product_guide=pd.code_product_guide
+            left join product_type_sp pt on pt.code_product_type=p.code_product_type 
             left join shop_sp s on s.code_shop=p.code_shop
             left join shop_detail_sp sd on sd.code_shop_detail=s.code_shop_detail
             where p.code_product=($1) OR name like ($2)`;
@@ -231,7 +233,10 @@ class SqlRoot {
 
   public static SQL_UPDATE_USER_W1 = () => {
     return `
-        UPDATE user_detail_sp SET full_name=($1),sex=($2),date_birth=($3) where code_user_detail=($4)
+       with update_userSp as (
+          UPDATE user_sp SET avatar=($1) where code_user=($2) RETURNING code_user_detail
+       )
+       UPDATE user_detail_sp SET full_name=($3),sex=($4),date_birth=($5) WHERE code_user_detail in (select code_user_detail from update_userSP)
     `;
   };
 
@@ -398,6 +403,12 @@ class SqlRoot {
           join role_sp r on r.code_role = u.code_role
           where u.user_name = ($1) AND r.code_role='ROLE-WIXX-SHOP'
 
+    `;
+  };
+
+  public static SQL_GET_USER_W = () => {
+    return `
+      select * from user_sp u where u.code_user=($1)
     `;
   };
 
@@ -875,7 +886,13 @@ class SqlRoot {
 
   public static SQL_GET_ALL_NOTIFY_SHOP = () => {
     return `
-      select * from notify_shop_sp where code_shop=($1) LIMIT ($2)
+      select * from notify_shop_sp where code_shop=($1) 
+    `;
+  };
+
+  public static SQL_GET_DETAIL_NOTIFY_SHOP = () => {
+    return `
+      select * from notify_shop_sp where code_shop=($1) and code_notifiy_shop=($2)
     `;
   };
 
@@ -1241,6 +1258,18 @@ class SqlRoot {
     `;
   };
 
+  public static SQL_CHECK_VOUCHER_PRODUCT_BY_SHOP = (code_product: string) => {
+    return `
+      select distinct
+        v.price_voucher
+      from 
+        voucher_sp v
+      cross join jsonb_to_recordset('${code_product}') as al(code_product varchar)
+      inner join product_sp p on trim(trailing ' 'from p.code_product)=al.code_product
+      where v.code_w_voucher=($1)
+      `;
+  };
+
   public static SQL_ADD_NEW_VOUCHER_BY_SHOP = () => {
     return `
         INSERT INTO voucher_sp 
@@ -1256,6 +1285,62 @@ class SqlRoot {
           (
             $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13
           )
+    `;
+  };
+
+  public static SQL_UPDATE_VOUCHER_BY_CODE_VOUCHER_AND_SHOP = () => {
+    return `
+        UPDATE voucher_sp SET 
+          name_voucher=($1),
+          price_voucher=($2),
+          code_type_voucher=($3),
+          description=($4),
+          code_w_voucher=($5),
+          time_start=($6),
+          time_end=($7),
+          updatedat=($8),
+          quality=($9),
+          code_product=($10),
+          type_price=($11)
+          WHERE code_shop=($12) AND code_voucher=($13)
+    `;
+  };
+  public static SQL_REMOVE_VOUCHER_BY_SHOP_AND_VOUCHER = () => {
+    return `
+      DELETE FROM voucher_sp where code_shop=($1) AND code_voucher=($2)
+    `;
+  };
+
+  public static SQL_GET_DETAIL_VOUCHER_SHOP_BY_CODE = () => {
+    return `
+       select 
+        * 
+      from 
+        voucher_sp v 
+      join 
+        voucher_type_sp vt on vt.code_type_voucher = v.code_type_voucher 
+      where 
+        v.code_shop=($1) and v.code_voucher=($2)
+    `;
+  };
+
+  public static SQL_UPDATE_USER_PASSWORD = () => {
+    return `
+    UPDATE user_sp
+    SET password=($1)
+    WHERE code_user=($2)
+    `;
+  };
+  public static SQL_UPDATE_USER_NEW_PASSWORD = () => {
+    return `
+    UPDATE user_sp
+    SET password=($1)
+    WHERE phone=($2)
+    `;
+  };
+  public static SQL_GET_ALL_NOTIFY_USER = () => {
+    return `
+        select * from notify_sp where code_user=($1)
     `;
   };
 }

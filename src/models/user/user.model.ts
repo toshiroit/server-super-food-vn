@@ -3,7 +3,7 @@ import pool from '../../database';
 import { User } from '../../types/user.type';
 import Model from '../Model';
 import SqlRoot from '../sql';
-import { UserUpdateW1Info, UserUpdateW1InfoIO } from '../../types/user/user';
+import { UserUpdateData, UserUpdateW1Info, UserUpdateW1InfoIO } from '../../types/user/user';
 class UserModel extends Model {
   private model = new Model();
 
@@ -18,11 +18,10 @@ class UserModel extends Model {
     }
   }
 
-  public static async updateUserW1(data: UserUpdateW1Info & UserUpdateW1InfoIO, callback: CallbackHandler) {
-    const code_user_detail_ds = data.dataUserLogin.payload.code_user_detail as string
-    const resultData = [data.fullName, data.sex, data.date, code_user_detail_ds]
-    pool.query(SqlRoot.SQL_UPDATE_USER_W1(), resultData, callback)
+  public static async updateUserW1(data: UserUpdateData, callback: CallbackHandler) {
+    //const resultData = [data.fullName, data.sex, data.date, code_user_detail_ds];
+    const dataSQL = [data.avatar, data.code_user, data.full_name, data.sex, data.date];
+    pool.query(SqlRoot.SQL_UPDATE_USER_W1(), dataSQL, callback);
   }
-
 }
 export default UserModel;

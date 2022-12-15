@@ -8,6 +8,7 @@ export type VoucherDataAddNew = {
   time_start: string;
   time_end: string;
   createdat: string;
+  updatedat?: string;
   quality: number;
   code_shop: string;
   code_product: Array<VoucherCodeProductType>;
@@ -29,4 +30,14 @@ export type VoucherDataFilter = {
   time_start: string | null;
   time_end: string | null;
   status: boolean | null;
+};
+
+export type VoucherDataCheck = {
+  code_product: any;
+  code_voucher: string;
+};
+
+export type VoucherRemoveData = {
+  code_shop: string;
+  code_voucher: string;
 };
