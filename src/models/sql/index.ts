@@ -457,11 +457,11 @@ class SqlRoot {
 
   public static SQL_GET_PRODUCT_BY_SHOP = () => {
     return `
-      select *  
+      select *,(select MAX(pm.price) from product_sp pm where pm.code_shop=p.code_shop) as max_price  
       from product_sp p join product_detail_sp pd on 
       p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
       on pg.code_product_guide=pd.code_product_guide
-      left join shop_sp s on s.code_shop = p.code_shop 
+      left join shop_sp s on s.code_shop = p.code_shop
       where p.code_shop=($1) 
     `;
   };
@@ -507,7 +507,11 @@ class SqlRoot {
 
   public static SQL_GET_CATEGORY_PRODUCT_BY_SHOP = () => {
     return `
-      select c.*
+      select DISTINCT c.*,(select count(*) from product_detail_sp pd  
+      join product_sp p on p.code_product_detail = pd.code_product_detail
+      cross join jsonb_to_recordset(pd.category_code) as al(code varchar)
+      inner join category_sp cd on cd.category_code=al.code
+      where p.code_shop=($1) and cd.category_code=c.category_code) as quality_product_category
         from product_detail_sp pd  
         join product_sp p on p.code_product_detail = pd.code_product_detail
         cross join jsonb_to_recordset(pd.category_code) as al(code varchar)

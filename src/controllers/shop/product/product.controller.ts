@@ -19,47 +19,49 @@ export const dataUserTK = (req: Request) => {
 
 export const getAllProductShop = async (req: Request, res: Response) => {
   try {
-    const { page, type, q } = req.query;
+    const { page, type, q, code_category, code_product_type, price_min, price_max, type_filter } = req.query;
     const { cookie } = req.headers;
     const bearer = cookie?.split('=')[0].toLowerCase();
     const token = cookie?.split('=')[1];
     const data_user = getDataUser(token, bearer);
     const code_shop = (data_user?.payload.code_shop as string) || '';
-    const dataCountProductShop = await ProductShopModel.getCountAllProductShopModel({ code_shop: code_shop, q: (q as string) || '' });
-    await ProductShopModel.getAllProductShopModel(
-      {
-        code_shop: code_shop,
-        page: Number(page) || 1,
-        type: (type as string) || '',
-        q: (q as string) || '',
-      },
-      (err, result) => {
-        if (err) {
+    const dataSQL: TypeProduct.GetALlProductTp = {
+      code_shop,
+      q: (q as string) || '',
+      code_category: (code_category as string) || '',
+      code_product_type: (code_product_type as string) || '',
+      page: Number(page) || 1,
+      price_min: Number(price_min) || 0,
+      price_max: Number(price_max) || 1,
+      type_filter: type_filter as TypeProduct.DataTypeShow,
+    };
+    const dataCountProductShop = await ProductShopModel.getCountAllProductShopModel(dataSQL);
+    await ProductShopModel.getAllProductShopModel(dataSQL, (err, result) => {
+      if (err) {
+        res.json({
+          err: err,
+        });
+      } else {
+        if (result) {
+          const dataPaging = {
+            count: Number(dataCountProductShop.rows[0].count) || 0,
+            rows: result.rows,
+          };
+          const { tutorials, totalItems, totalPages, currentPage } = getPagingData(
+            dataPaging,
+            Number(page) || 0,
+            Number(config.table_product_shop_limit_show) || 10
+          );
           res.json({
-            err: err,
+            totalPages,
+            totalItems,
+            limit: Number(config.table_product_shop_limit_show),
+            currentPage,
+            data: tutorials,
           });
-        } else {
-          if (result) {
-            const dataPaging = {
-              count: Number(dataCountProductShop.rows[0].count) || 0,
-              rows: result.rows,
-            };
-            const { tutorials, totalItems, totalPages, currentPage } = getPagingData(
-              dataPaging,
-              Number(page) || 0,
-              Number(config.table_product_shop_limit_show) || 10
-            );
-            res.json({
-              totalPages,
-              totalItems,
-              limit: Number(config.table_product_shop_limit_show),
-              currentPage,
-              data: tutorials,
-            });
-          }
         }
       }
-    );
+    });
   } catch (err) {
     res.json({
       error: err,
@@ -88,7 +90,7 @@ export const addProductShop = async (req: Request<any, null, AddProductShop>, re
       makeId(15),
       new Date(Date.now()).toISOString(),
       JSON.stringify(req.body.type_product),
-      null,
+      JSON.stringify(req.body.category),
       req.body.date_start || null,
       req.body.date_end || null,
       req.body.isShow,
@@ -214,7 +216,6 @@ export const addTypeProductByShop = async (req: Request, res: Response) => {
   try {
     const data = req.body;
     const dataUser = dataUserTK(req);
-    console.log(dataUser);
     const dataSQL: TypeProduct.AddTypeProductByShop = {
       code_product_type: makeId(15),
       name_product_type: data.name_product_type,

@@ -4,26 +4,64 @@ import pool from '../../../database';
 import { CallbackHandler } from '../../../interfaces/model_query/modelQuery';
 import { getPagination } from '../../../libs/getPagination';
 import { toLowerCaseNonAccentVietnamese } from '../../../libs/nonAccentVietnamese';
-import { AddTypeProductByShop, GetProductByCodeAndShop } from '../../../types/shop/product/product';
+import { AddTypeProductByShop, DataTypeShow, GetALlProductTp, GetProductByCodeAndShop } from '../../../types/shop/product/product';
 import Model from '../../Model';
 import SqlRoot from '../../sql';
 
 export class ProductShopModel extends Model {
-  public static async getCountAllProductShopModel(data: { code_shop: string; q?: string }) {
+  public static async getCountAllProductShopModel(data: GetALlProductTp) {
     const dataResult = [data.code_shop];
     let sql_result = SqlRoot.SQL_GET_COUNT_PRODUCT_BY_SHOP();
-    if (data.q) {
+    if (data.q && data.q.length > 0) {
       sql_result += ` AND converttvkdau(p.name) ilike '%${toLowerCaseNonAccentVietnamese(data.q)}%'  OR p.code_product='${data.q}' `;
+    }
+    if (data.code_category) {
+      // sql_result += ` and jsonb_array_elements.value ->>'code' IN ('${data.code_category}')`;
+    }
+    if (data.price_min && data.price_min >= 1000 && data.price_max) {
+      sql_result += ` and p.price BETWEEN ${data.price_min} AND ${data.price_max} `;
+    }
+    if (data.code_product_type) {
+      sql_result += ` AND p.code_product_type='${data.code_product_type}' `;
+    }
+    if (data.type_filter === 'ALL') {
+      sql_result += ` `;
+    } else if (data.type_filter === 'SELL') {
+      sql_result += ` `;
+    } else if (data.type_filter === 'BLOCK') {
+      sql_result += ` AND pd.is_show=-2 `;
+    } else if (data.type_filter === 'HIDE') {
+      sql_result += ` AND pd.is_show=-1 `;
     }
     return pool.query(sql_result, dataResult);
   }
-  public static async getAllProductShopModel(data: { code_shop: string; page: number; type?: string; q?: string }, callback: CallbackHandler) {
+  public static async getAllProductShopModel(data: GetALlProductTp, callback: CallbackHandler) {
     let querySearch = '';
-    const { offset, limit } = getPagination(data.page, Number(config.table_product_shop_limit_show));
+    const { offset, limit } = getPagination(data.page || 1, Number(config.table_product_shop_limit_show));
     if (data.q) {
       querySearch += ` AND converttvkdau(p.name) ilike '%${toLowerCaseNonAccentVietnamese(data.q)}%' `;
       querySearch += ` OR p.code_product='${data.q}' `;
     }
+    if (data.code_product_type) {
+      querySearch += `  AND p.code_product_type='${data.code_product_type}' `;
+    }
+
+    if (data.code_category) {
+      // querySearch += ` and jsonb_array_elements.value ->>'code' IN ('${data.code_category}')`;
+    }
+    if (data.type_filter === 'ALL') {
+      querySearch += ` `;
+    } else if (data.type_filter === 'SELL') {
+      querySearch += ` `;
+    } else if (data.type_filter === 'BLOCK') {
+      querySearch += ` AND pd.is_show=-2 `;
+    } else if (data.type_filter === 'HIDE') {
+      querySearch += ` AND pd.is_show=-1 `;
+    }
+    if (data.price_min && data.price_min >= 0 && data.price_max && data.price_max !== 0) {
+      querySearch += ` and p.price BETWEEN ${data.price_min} AND ${data.price_max} `;
+    }
+
     if (data.type) {
       if (data.type === 'top-pay') {
         querySearch += ' ORDER BY pd.purchase DESC ';

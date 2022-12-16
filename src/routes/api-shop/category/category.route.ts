@@ -5,7 +5,7 @@ import { validateTokenAdminShopMiddleware } from '../../../middlewares/auth/auth
 
 const router = Router();
 
-router.get(ROUTES_NAME_SHOP.CATEGORY.CATEGORY_ALL, categoryController.getCategoryProductShop);
+router.get(ROUTES_NAME_SHOP.CATEGORY.CATEGORY_BY_PRODUCT_SHOP, validateTokenAdminShopMiddleware, categoryController.getCategoryProductShop);
 router.get(ROUTES_NAME_SHOP.CATEGORY.CATEGORY_ALL_BY_SHOP, validateTokenAdminShopMiddleware, categoryController.getAllCategoryByShop);
 
 router.post(ROUTES_NAME_SHOP.CATEGORY.ADD_NEW_CATEGORY, validateTokenAdminShopMiddleware, categoryController.addNewCategoryByShop);

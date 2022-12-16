@@ -119,7 +119,7 @@ export const ROUTES_NAME_SHOP = {
   },
   CATEGORY: {
     HOME: '/category',
-    CATEGORY_ALL: '/get-by-product-shop',
+    CATEGORY_BY_PRODUCT_SHOP: '/get-by-product-shop',
     CATEGORY_ALL_BY_SHOP: '/get-all-category-by-shop',
     ADD_NEW_CATEGORY: '/add-new-category',
     REMOVE_CATEGORY: '/remove-category',

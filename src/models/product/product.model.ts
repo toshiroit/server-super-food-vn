@@ -14,7 +14,6 @@ export class ProductModel extends Model {
    */
   public static async getAllProductModel(data: GetAllProductTp, callback: CallbackHandler) {
     let queryGetProduct = ' WHERE is_show=1 and pd.date_end >= now() ';
-    console.log('VO DAY');
     if (data) {
       if (data.typeSort === 'new-product') {
         queryGetProduct += ` ORDER BY pd."createdAt" DESC `;

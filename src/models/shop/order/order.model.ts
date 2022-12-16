@@ -48,6 +48,7 @@ export class OrderModel extends Model {
         sql_result += ` and od.code_payment = '${code_payment}'`;
       }
     }
+    sql_result += ` and od.code_shop=($1) `;
     sql_result += 'ORDER BY o.date_order DESC ';
     sql_result += ` LIMIT ${10} OFFSET ${offset} `;
     pool.query(sql_result, [data.code_shop], callback);
