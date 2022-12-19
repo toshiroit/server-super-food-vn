@@ -1,4 +1,5 @@
 import express, { Application, Request, Response } from 'express';
+import cookie from 'cookie';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
 import helmet from 'helmet';
@@ -97,16 +98,12 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEve
 io.use((socket, next) => {
   try {
     socket.data.auth_isLogin = false;
-    const { cookie } = socket.request.headers;
-
-    const bearer = cookie?.split('=')[0].toLowerCase();
-    const token = cookie?.split('=')[1];
-    if (token && bearer === 'jwt') {
-      jwt.verify(token, config.refresh_token_secret as unknown as string, (err, decoded) => {
+    const cookies = cookie.parse(socket.request.headers.cookie || '');
+    if (cookies.jwt) {
+      jwt.verify(cookies.jwt, config.refresh_token_secret as unknown as string, (err, decoded) => {
         if (err) {
           next(new Error(' Please try again'));
         } else {
-          console.log('LOG : ', decoded);
           if (decoded) {
             socket.data.auth_isLogin = true;
             socket.data.auth_data = decoded;

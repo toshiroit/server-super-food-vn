@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import config from '../../../config/config';
 import { sendMail } from '../../../helpers/mail';
+import { dataUserTK } from '../../../libs/data_user';
 import { getDataUser } from '../../../libs/getUserToken';
 import { comparePassword, hasPassword } from '../../../libs/hash_password';
 import { makeId } from '../../../libs/make_id';
@@ -10,17 +11,9 @@ import { AuthRegisterShop } from '../../../schemas/shop/auth/auth.schema';
 import { UserDataUpdate } from '../../../types/auth/auth.type';
 import { AuthRegisterShopTP } from '../../../types/shop/auth/auth';
 import { loginAuthAdmin2 } from '../../auth/auth.controller';
-const dataUserTK = (req: Request) => {
-  const { cookie } = req.headers;
-  const bearer = cookie?.split('=')[0].toLowerCase();
-  const token = cookie?.split('=')[1];
-  const data_user = getDataUser(token, bearer);
-  return data_user;
-};
-
 export const authUpdateUserByShop = async (req: Request, res: Response) => {
   try {
-    const data_user = dataUserTK(req)?.payload;
+    const data_user = await dataUserTK(req)?.payload;
     const dataSQL: UserDataUpdate = req.body;
     dataSQL.code_shop = data_user.code_shop;
     await AuthModel.authUpdateUserByShopModel(dataSQL, (err, result) => {
@@ -339,7 +332,7 @@ export const authRestNewPassword = async (req: Request, res: Response) => {
         subject: `Xác nhận thay đổi mật khẩu tài khoản`,
         html: `Nếu bạn là người muốn đổi mật khẩu tài khoản này hãy nhấn vào đây  <a href="${config.domain_web_client_shop}/rest-pass?token=${capChaRestPass}&email=${dataSQL.email}">Đổi mật khẩu ngay</a>`,
       });
-      res.cookie('cap-cha', capChaRestPass, {
+      res.cookie('cap_cha', capChaRestPass, {
         expires: new Date(Date.now() + 6000 * 3000),
         httpOnly: true,
         path: '/',
@@ -365,11 +358,8 @@ export const authConfirmRestPassword = async (req: Request, res: Response) => {
   try {
     const { token, email } = req.query;
     const { password } = req.body;
-    const { cookie } = req.headers;
-    const bearer = cookie?.split('=')[0].toLowerCase();
-    const token2 = cookie?.split('=')[1];
-    console.log(bearer, '===', token2);
-    if (cookie && token2 && bearer === 'cap-cha' && token2 === token) {
+    const { cap_cha } = req.cookies;
+    if (cap_cha && cap_cha === token) {
       const dataSQL = {
         email: email as string,
         password: hasPassword(password as string),
@@ -381,7 +371,7 @@ export const authConfirmRestPassword = async (req: Request, res: Response) => {
           });
         } else {
           if (result) {
-            res.clearCookie('cap-cha');
+            res.clearCookie('cap_cha');
             res.json({
               message: 'Thay đổi mật khẩu thành công ',
             });

@@ -1,15 +1,9 @@
 import { Request, Response } from 'express';
+import { dataUserTK } from '../../../libs/data_user';
 import { getDataUser } from '../../../libs/getUserToken';
 import { makeId } from '../../../libs/make_id';
 import { CategoryModel } from '../../../models/shop/category/category.model';
 import { CategoryData, CategoryRemove, GetCategoryProductByShop } from '../../../types/shop/category/category';
-const dataUserTK = (req: Request) => {
-  const { cookie } = req.headers;
-  const bearer = cookie?.split('=')[0].toLowerCase();
-  const token = cookie?.split('=')[1];
-  const data_user = getDataUser(token, bearer);
-  return data_user;
-};
 
 export const removeCategoryByShop = async (req: Request, res: Response) => {
   try {
@@ -128,10 +122,8 @@ export const addNewCategoryByShop = async (req: Request, res: Response) => {
 export const getCategoryProductShop = async (req: Request, res: Response) => {
   try {
     const { page } = req.query;
-    const { cookie } = req.headers;
-    const bearer = cookie?.split('=')[0].toLowerCase();
-    const token = cookie?.split('=')[1];
-    const data_user = getDataUser(token, bearer);
+    const data_user = await dataUserTK(req);
+
     const dataSQL: GetCategoryProductByShop = {
       code_shop: (data_user?.payload.code_shop as string) || '',
       page: page as string,
@@ -163,9 +155,7 @@ export const getCategoryProductShop = async (req: Request, res: Response) => {
 export const getAllCategoryByShop = async (req: Request, res: Response) => {
   try {
     const { cookie } = req.headers;
-    const bearer = cookie?.split('=')[0].toLowerCase();
-    const token = cookie?.split('=')[1];
-    const data_user = getDataUser(token, bearer);
+    const data_user = await dataUserTK(req);
     const code_shop = (data_user?.payload.code_shop as string) || '';
     await CategoryModel.getAllCategoryByShopModel({ code_shop: code_shop }, (err, result) => {
       if (err)

@@ -74,37 +74,31 @@ export const validateCapChaMiddleware = (req: Request, res: Response, next: Next
 };
 export const validateTokenAdminShopMiddleware = (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authHeader = req.get('cookie');
-    if (authHeader) {
-      const bearer = authHeader.split('=')[0].toLowerCase();
-      const token = authHeader.split('=')[1];
-      if (token && bearer === 'jwt') {
-        jwt.verify(token, config.refresh_token_secret as unknown as string, (err, decoded) => {
-          if (err) {
-            handleUnauthorizedError(next);
-          } else {
-            if (decoded) {
-              res.locals.jwt = decoded;
-              const data = decoded as JwtPayload;
-              if (data.code_role) {
-                if (data.code_role.trim() === 'ROLE-WIXX-SHOP') {
-                  next();
-                } else if (data.code_role.trim() === 'ROLE-WIXO-USER') {
-                  handlePermissionDenied(next);
-                } else {
-                  handlePermissionDenied(next);
-                }
+    const data = (req.cookies?.jwt as string) || '';
+    if (data) {
+      jwt.verify(data, config.refresh_token_secret as unknown as string, (err, decoded) => {
+        if (err) {
+          handleUnauthorizedError(next);
+        } else {
+          if (decoded) {
+            res.locals.jwt = decoded;
+            const data = decoded as JwtPayload;
+            if (data.code_role) {
+              if (data.code_role.trim() === 'ROLE-WIXX-SHOP') {
+                next();
+              } else if (data.code_role.trim() === 'ROLE-WIXO-USER') {
+                handlePermissionDenied(next);
               } else {
                 handlePermissionDenied(next);
               }
+            } else {
+              handlePermissionDenied(next);
             }
-            res.locals.jwt = decoded;
-            //next();
           }
-        });
-      } else {
-        handleUnauthorizedError(next);
-      }
+          res.locals.jwt = decoded;
+          //next();
+        }
+      });
     } else {
       handleUnauthorizedError(next);
     }
@@ -115,31 +109,25 @@ export const validateTokenAdminShopMiddleware = (req: Request, res: Response, ne
 export const validateTokenMiddleware = (req: Request, res: Response, next: NextFunction) => {
   try {
     // Get Header Authorization
-    const authHeader = req.get('cookie');
-    if (authHeader) {
-      const bearer = authHeader.split('=')[0].toLowerCase();
-      const token = authHeader.split('=')[1];
-      if (token && bearer === 'jwt') {
-        jwt.verify(token, config.refresh_token_secret as unknown as string, (err, decoded) => {
-          if (err) {
-            handleUnauthorizedError(next);
-          } else {
-            res.locals.jwt = decoded;
-            const data = decoded as JwtPayload;
-            if (data.code_role) {
-              if (data.code_role.trim() === 'ROLE-WIXO-USER') {
-                next();
-              } else {
-                handlePermissionDenied(next);
-              }
+    const data = (req.cookies?.jwt as string) || '';
+    if (data) {
+      jwt.verify(data, config.refresh_token_secret as unknown as string, (err, decoded) => {
+        if (err) {
+          handleUnauthorizedError(next);
+        } else {
+          res.locals.jwt = decoded;
+          const data = decoded as JwtPayload;
+          if (data.code_role) {
+            if (data.code_role.trim() === 'ROLE-WIXO-USER') {
+              next();
             } else {
               handlePermissionDenied(next);
             }
+          } else {
+            handlePermissionDenied(next);
           }
-        });
-      } else {
-        handleUnauthorizedError(next);
-      }
+        }
+      });
     } else {
       handleUnauthorizedError(next);
     }

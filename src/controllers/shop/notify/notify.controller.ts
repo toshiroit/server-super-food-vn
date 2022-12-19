@@ -1,14 +1,9 @@
 import { Request, Response } from 'express';
+import { dataUserTK } from '../../../libs/data_user';
 import { getDataUser } from '../../../libs/getUserToken';
 import { NotifyShopModel } from '../../../models/shop/notify/notify.model';
 import { NotifyType } from '../../../types/notify/notify';
-const dataUserTK = (req: Request) => {
-  const { cookie } = req.headers;
-  const bearer = cookie?.split('=')[0].toLowerCase();
-  const token = cookie?.split('=')[1];
-  const data_user = getDataUser(token, bearer);
-  return data_user;
-};
+
 export const getDetailNotifyByShop = async (req: Request, res: Response) => {
   try {
     const data_user = await dataUserTK(req);
@@ -39,7 +34,7 @@ export const getDetailNotifyByShop = async (req: Request, res: Response) => {
 export const getAllNotifyByShop = async (req: Request, res: Response) => {
   try {
     const { limit, type } = req.query;
-    const data_user = dataUserTK(req);
+    const data_user = await dataUserTK(req);
     const code_shop = data_user?.payload.code_shop;
     await NotifyShopModel.getAllNotifyByShopModel({ code_shop, limit: Number(limit) || 15, type: Number(type) }, (err, result) => {
       if (err) {

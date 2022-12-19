@@ -5,17 +5,12 @@ import { ChatModel } from '.././../../models/chat/chat.model';
 import { Request, Response } from 'express';
 import { getDataUser } from '../../../libs/getUserToken';
 import { ChatModelShop } from '../../../models/shop/chat/chat.model';
-const dataUserTK = (req: Request) => {
-  const { cookie } = req.headers;
-  const bearer = cookie?.split('=')[0].toLowerCase();
-  const token = cookie?.split('=')[1];
-  const data_user = getDataUser(token, bearer);
-  return data_user;
-};
+import { dataUserTK } from '../../../libs/data_user';
+
 export const sendMessengerChatShop = async (req: Request, res: Response) => {
   try {
     const data = req.body;
-    const data_user = dataUserTK(req);
+    const data_user = await dataUserTK(req);
     const dataSQL: ChatDataSQL = {
       code_chat: makeId(100),
       code_user: data.code_user,
@@ -50,7 +45,7 @@ export const sendMessengerChatShop = async (req: Request, res: Response) => {
 
 export const getAllMessengerChatByCode = async (req: Request, res: Response) => {
   try {
-    const data_user = dataUserTK(req);
+    const data_user = await dataUserTK(req);
     const code_shop = data_user?.payload.code_shop;
     const { code_user } = req.query;
     await ChatModelShop.getAllMessengerChatByCodeUser({ code_user: (code_user as string) || '', code_shop: code_shop, limit: 20 }, (err, result) => {
@@ -75,7 +70,7 @@ export const getAllMessengerChatByCode = async (req: Request, res: Response) => 
 
 export const getAllUserMessengerChatByShop = async (req: Request, res: Response) => {
   try {
-    const data_shop = dataUserTK(req);
+    const data_shop = await dataUserTK(req);
     const code_shop = data_shop?.payload.code_shop;
     await ChatModelShop.getAllUserMessengerByShopModel({ code_shop: code_shop }, (err, result) => {
       if (err) {

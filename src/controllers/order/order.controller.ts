@@ -89,10 +89,7 @@ export const confirmOrderSuccessUser = async (req: Request, res: Response) => {
 export const getOrderDetailByCodeOrder = async (req: Request, res: Response) => {
   try {
     const { code_order } = req.query;
-    const { cookie } = req.headers;
-    const bearer = cookie?.split('=')[0].toLowerCase();
-    const token = cookie?.split('=')[1];
-    const resultUser = getDataUser(token, bearer);
+    const resultUser = await dataUserTK(req);
     const dataSQL: DataGetOrdeDetailByUser = {
       code_order: (code_order as string) || '',
       code_user: resultUser?.payload.code_user,

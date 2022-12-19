@@ -45,32 +45,22 @@ const getAllUsers = async (req: Request, res: Response) => {
 };
 const getMe = async (req: Request, res: Response) => {
   try {
-    const { cookie } = req.headers;
-    const bearer = cookie?.split('=')[0].toLowerCase();
-    const token = cookie?.split('=')[1];
-    if (token && bearer === 'jwt') {
-      const user = (await verifyJWT(token, config.refresh_token_secret as string)) as JwtPayload;
-
-      await AuthModel.getMeUser({ code_user: user.payload.code_user }, (err, result) => {
-        if (err) {
+    const dataUser = await dataUserTK(req);
+    await AuthModel.getMeUser({ code_user: dataUser?.payload.code_user }, (err, result) => {
+      if (err) {
+        res.json({
+          error: err,
+        });
+      } else {
+        if (result) {
+          const data_user = result.rows[0];
+          delete data_user.password;
           res.json({
-            error: err,
+            data: result.rows,
           });
-        } else {
-          if (result) {
-            const data_user = result.rows[0];
-            delete data_user.password;
-            res.json({
-              data: result.rows,
-            });
-          }
         }
-      });
-    } else {
-      res.json({
-        error: '12412',
-      });
-    }
+      }
+    });
   } catch (error) {
     res.json({
       error: error,
@@ -516,10 +506,7 @@ const loginAuthAdmin2 = async (req: Request, res: Response) => {
 
 const getMeShop = async (req: Request, res: Response) => {
   try {
-    const { cookie } = req.headers;
-    const bearer = cookie?.split('=')[0].toLowerCase();
-    const token = cookie?.split('=')[1];
-    const dataUser = getDataUser(token, bearer);
+    const dataUser = await dataUserTK(req);
     if (dataUser) {
       const data = dataUser.payload;
       await AuthModel.getMeShopModel({ code_user: data.code_user.trim() || '' }, (err, result) => {

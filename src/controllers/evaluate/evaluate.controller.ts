@@ -1,22 +1,16 @@
 import { Request, Response } from 'express';
+import { dataUserTK } from '../../libs/data_user';
 import { getPagingData } from '../../libs/getPagination';
 import { getDataUser } from '../../libs/getUserToken';
 import { makeId } from '../../libs/make_id';
 import { timeVietNameYesterday } from '../../libs/timeVietNam';
 import { EvaluateModel } from '../../models/evaluate/evaluate.model';
 import { EvaluateCheck, EvaluateData } from '../../types/evaluate/evaluate';
-const dataUserTK = (req: Request) => {
-  const { cookie } = req.headers;
-  const bearer = cookie?.split('=')[0].toLowerCase();
-  const token = cookie?.split('=')[1];
-  const data_user = getDataUser(token, bearer);
-  return data_user;
-};
 
 export const checkEvaluateByProductUserOrder = async (req: Request, res: Response) => {
   try {
     const { code_order, code_product } = req.query;
-    const data_user = dataUserTK(req);
+    const data_user = await dataUserTK(req);
     const dataSQL: EvaluateCheck = {
       code_order: (code_order as string) || '',
       code_product: (code_product as string) || '',

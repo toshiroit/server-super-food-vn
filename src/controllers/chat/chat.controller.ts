@@ -4,17 +4,12 @@ import { makeId } from './../../libs/make_id';
 import { ChatModel } from './../../models/chat/chat.model';
 import { Request, Response } from 'express';
 import { getDataUser } from '../../libs/getUserToken';
-const dataUserTK = (req: Request) => {
-  const { cookie } = req.headers;
-  const bearer = cookie?.split('=')[0].toLowerCase();
-  const token = cookie?.split('=')[1];
-  const data_user = getDataUser(token, bearer);
-  return data_user;
-};
+import { dataUserTK } from '../../libs/data_user';
+
 export const sendMessengerChat = async (req: Request, res: Response) => {
   try {
     const { text_chat, type_chat, code_shop } = req.body;
-    const data_user = dataUserTK(req);
+    const data_user = await dataUserTK(req);
     const dataSQL: ChatDataSQL = {
       code_chat: makeId(100),
       code_user: data_user?.payload.code_user,

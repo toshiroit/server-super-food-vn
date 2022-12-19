@@ -52,7 +52,7 @@ export const updateVoucherByShop = async (req: Request, res: Response) => {
 
 export const addNewVoucherByShop = async (req: Request, res: Response) => {
   try {
-    const data_user = dataUserTK(req);
+    const data_user = await dataUserTK(req);
     const dataSQL: VoucherDataAddNew = {
       code_voucher: makeId(15),
       name_voucher: req.body.name_voucher,

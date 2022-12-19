@@ -2,9 +2,7 @@ import { Request } from 'express';
 import { getDataUser } from './getUserToken';
 
 export const dataUserTK = (req: Request) => {
-  const { cookie } = req.headers;
-  const bearer = cookie?.split('=')[0].toLowerCase();
-  const token = cookie?.split('=')[1];
-  const data_user = getDataUser(token, bearer);
+  const data = (req.cookies?.jwt as string) || '';
+  const data_user = getDataUser(data, 'jwt');
   return data_user;
 };

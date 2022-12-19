@@ -1,21 +1,11 @@
 import { Request, Response, query } from 'express';
-import { getDataUser } from '../../libs/getUserToken';
+import { dataUserTK } from '../../libs/data_user';
 import { AddressModel } from '../../models/address/address.model';
 import { DataAddressSQL, GetAddressByUser } from '../../types/address/address';
 
-const dataUserTK = (req: Request) => {
-  const { cookie } = req.headers;
-  const bearer = cookie?.split('=')[0].toLowerCase();
-  const token = cookie?.split('=')[1];
-  const data_user = getDataUser(token, bearer);
-  return data_user;
-};
 export const getAddressByUser = async (req: Request, res: Response) => {
   try {
-    const { cookie } = req.headers;
-    const bearer = cookie?.split('=')[0].toLowerCase();
-    const token = cookie?.split('=')[1];
-    const dataUser = getDataUser(token, bearer);
+    const dataUser = await dataUserTK(req);
     if (dataUser) {
       const dataSQL: GetAddressByUser = {
         code_user: dataUser.payload.code_user,

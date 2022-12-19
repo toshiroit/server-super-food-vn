@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import config from '../../../config/config';
 import { checkTextBadWord } from '../../../helpers/check-name';
+import { dataUserTK } from '../../../libs/data_user';
 import { getPagination, getPagingData } from '../../../libs/getPagination';
 import { getDataUser } from '../../../libs/getUserToken';
 import { makeId } from '../../../libs/make_id';
@@ -9,21 +10,10 @@ import { ProductShopModel } from '../../../models/shop/product/product.model';
 import { AddProductShop, GetProductByCodeAndShop } from '../../../schemas/shop/product/product.schema';
 import * as TypeProduct from '../../../types/shop/product/product';
 
-export const dataUserTK = (req: Request) => {
-  const { cookie } = req.headers;
-  const bearer = cookie?.split('=')[0].toLowerCase();
-  const token = cookie?.split('=')[1];
-  const data_user = getDataUser(token, bearer);
-  return data_user;
-};
-
 export const getAllProductShop = async (req: Request, res: Response) => {
   try {
     const { page, type, q, code_category, code_product_type, price_min, price_max, type_filter } = req.query;
-    const { cookie } = req.headers;
-    const bearer = cookie?.split('=')[0].toLowerCase();
-    const token = cookie?.split('=')[1];
-    const data_user = getDataUser(token, bearer);
+    const data_user = await dataUserTK(req);
     const code_shop = (data_user?.payload.code_shop as string) || '';
     const dataSQL: TypeProduct.GetALlProductTp = {
       code_shop,
@@ -71,10 +61,7 @@ export const getAllProductShop = async (req: Request, res: Response) => {
 
 export const addProductShop = async (req: Request<any, null, AddProductShop>, res: Response) => {
   try {
-    const { cookie } = req.headers;
-    const bearer = cookie?.split('=')[0].toLowerCase();
-    const token = cookie?.split('=')[1];
-    const data_user = getDataUser(token, bearer);
+    const data_user = await dataUserTK(req);
     const dataAddProductSQL = [
       makeId(15),
       data_user?.payload.code_shop,
@@ -123,10 +110,7 @@ export const addProductShop = async (req: Request<any, null, AddProductShop>, re
 };
 export const getProductByCodeAndShop = async (req: Request<any, any, any, GetProductByCodeAndShop>, res: Response) => {
   try {
-    const { cookie } = req.headers;
-    const bearer = cookie?.split('=')[0].toLowerCase();
-    const token = cookie?.split('=')[1];
-    const data_user = getDataUser(token, bearer);
+    const data_user = await dataUserTK(req);
     const dataQuery: TypeProduct.GetProductByCodeAndShop = {
       code_product: req.query.code_product,
       code_shop: data_user?.payload.code_shop,
@@ -154,7 +138,7 @@ export const getProductByCodeAndShop = async (req: Request<any, any, any, GetPro
 
 export const getAllProductType = async (req: Request, res: Response) => {
   try {
-    const dataUser = dataUserTK(req);
+    const dataUser = await dataUserTK(req);
     if (dataUser) {
       const code_shop = dataUser.payload.code_shop;
       await ProductModel.getAllTypeProductByShopModel({ code_shop: code_shop }, (err, result) => {
@@ -181,7 +165,7 @@ export const getAllProductType = async (req: Request, res: Response) => {
 export const removeProductByShop = async (req: Request, res: Response) => {
   try {
     const { code_product } = req.query;
-    const dataUser = dataUserTK(req);
+    const dataUser = await dataUserTK(req);
     const code_shop = dataUser?.payload.code_shop;
     if (code_product) {
       await ProductShopModel.removeProductByShop(
@@ -215,7 +199,7 @@ export const removeProductByShop = async (req: Request, res: Response) => {
 export const addTypeProductByShop = async (req: Request, res: Response) => {
   try {
     const data = req.body;
-    const dataUser = dataUserTK(req);
+    const dataUser = await dataUserTK(req);
     const dataSQL: TypeProduct.AddTypeProductByShop = {
       code_product_type: makeId(15),
       name_product_type: data.name_product_type,
@@ -245,7 +229,7 @@ export const addTypeProductByShop = async (req: Request, res: Response) => {
 export const searchProductByValueAndShop = async (req: Request, res: Response) => {
   try {
     const { page } = req.query;
-    const dataUser = dataUserTK(req);
+    const dataUser = await dataUserTK(req);
     const dataSQL = {
       code_shop: dataUser?.payload.code_shop,
       value: req.body.value,
@@ -277,7 +261,7 @@ export const searchProductByValueAndShop = async (req: Request, res: Response) =
 
 export const updateProductByCodeAndShop = async (req: Request, res: Response) => {
   try {
-    const data_user = dataUserTK(req);
+    const data_user = await dataUserTK(req);
     const dataEditProductSQL = [
       req.query.code_product,
       data_user?.payload.code_shop,
