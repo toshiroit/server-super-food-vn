@@ -1462,7 +1462,7 @@ class SqlRoot {
               JOIN 
                 order_detail_sp od2 on od2.code_order_detail = o2.code_order_detail 
               WHERE 
-                od2.progress=6 and od2.code_shop=($1) and o2.date_order::date=($3)
+                od2.progress=5 or od2.progress=6 and od2.code_shop=($1) and o2.date_order::date=($3)
               
             ),(
               SELECT 
@@ -1473,7 +1473,7 @@ class SqlRoot {
                 order_detail_sp od2 on od2.code_order_detail = o2.code_order_detail 
               
               WHERE 
-                od2.progress=6 	
+                od2.progress=6
                 and od2.code_shop=($1)
                 and o2.date_order::date >= ($3)
             )
@@ -1482,7 +1482,7 @@ class SqlRoot {
             JOIN 
               order_detail_sp od on od.code_order_detail = o.code_order_detail 
             WHERE 
-              od.progress=6 and od.code_shop=($1) and o.date_order::date=($2)
+              od.progress=5 or od.progress=6 and od.code_shop=($1) and o.date_order::date=($2)
         ), statisticalPrice_month as (
           SELECT 
             SUM(od.total_order) as statisticalPrice_month,(
