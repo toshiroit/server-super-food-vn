@@ -9,7 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addEvaluateByProduct = exports.checkEvaluateByProductUserOrder = void 0;
+exports.addEvaluateByProduct = exports.getEvaluateByProduct = exports.checkEvaluateByProductUserOrder = void 0;
+const getPagination_1 = require("../../libs/getPagination");
 const getUserToken_1 = require("../../libs/getUserToken");
 const make_id_1 = require("../../libs/make_id");
 const timeVietNam_1 = require("../../libs/timeVietNam");
@@ -51,7 +52,55 @@ const checkEvaluateByProductUserOrder = (req, res) => __awaiter(void 0, void 0, 
     }
 });
 exports.checkEvaluateByProductUserOrder = checkEvaluateByProductUserOrder;
-const addEvaluateByProduct = (req, res) => {
+const getEvaluateByProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { code_product, limit, page } = req.query;
+        const data_count = yield evaluate_model_1.EvaluateModel.getCountEvaluateByProduct({ code_product: code_product || '' });
+        const evaluate_5 = yield evaluate_model_1.EvaluateModel.getCountEvaluate5Model({ code_product: code_product || '' });
+        const evaluate_4 = yield evaluate_model_1.EvaluateModel.getCountEvaluate4Model({ code_product: code_product || '' });
+        const evaluate_3 = yield evaluate_model_1.EvaluateModel.getCountEvaluate3Model({ code_product: code_product || '' });
+        const evaluate_2 = yield evaluate_model_1.EvaluateModel.getCountEvaluate2Model({ code_product: code_product || '' });
+        const evaluate_1 = yield evaluate_model_1.EvaluateModel.getCountEvaluate1Model({ code_product: code_product || '' });
+        const evaluate_all = yield evaluate_model_1.EvaluateModel.getCountAllEvaluateModel({ code_product: code_product || '' });
+        yield evaluate_model_1.EvaluateModel.getEvaluateByProduct({ code_product: code_product || '', limit: Number(limit) || 5 }, (err, result) => {
+            if (err) {
+                res.json({
+                    err,
+                });
+            }
+            else {
+                if (result) {
+                    const dataPaging = {
+                        count: data_count.rows[0].count || 0,
+                        rows: result.rows,
+                    };
+                    const { tutorials, totalItems, totalPages, currentPage } = (0, getPagination_1.getPagingData)(dataPaging, Number(page) || 1, 5);
+                    res.json({
+                        totalItems,
+                        totalPages,
+                        currentPage,
+                        evaluate: {
+                            evaluate_all: evaluate_all.rows.length > 0 ? evaluate_all.rows[0].count : 0,
+                            evaluate_1: evaluate_1.rows.length > 0 ? evaluate_1.rows[0].count : 0,
+                            evaluate_2: evaluate_2.rows.length > 0 ? evaluate_2.rows[0].count : 0,
+                            evaluate_3: evaluate_3.rows.length > 0 ? evaluate_3.rows[0].count : 0,
+                            evaluate_4: evaluate_4.rows.length > 0 ? evaluate_4.rows[0].count : 0,
+                            evaluate_5: evaluate_5.rows.length > 0 ? evaluate_5.rows[0].count : 0,
+                        },
+                        data: tutorials,
+                    });
+                }
+            }
+        });
+    }
+    catch (error) {
+        res.json({
+            error,
+        });
+    }
+});
+exports.getEvaluateByProduct = getEvaluateByProduct;
+const addEvaluateByProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { code_product, evaluate_product, evaluate_ship, evaluate_progress, text, images, code_order } = req.body;
         const data_user = dataUserTK(req);
@@ -62,12 +111,12 @@ const addEvaluateByProduct = (req, res) => {
             evaluate_product,
             evaluate_ship,
             evaluate_progress,
-            images,
+            images: JSON.stringify(images),
             text,
             createdAt: (0, timeVietNam_1.timeVietNameYesterday)(),
             code_order,
         };
-        evaluate_model_1.EvaluateModel.addEvaluateByProductModel(dataSQL, (err, result) => {
+        yield evaluate_model_1.EvaluateModel.addEvaluateByProductModel(dataSQL, (err, result) => {
             if (err) {
                 res.json({
                     error: err,
@@ -94,5 +143,5 @@ const addEvaluateByProduct = (req, res) => {
             error: err,
         });
     }
-};
+});
 exports.addEvaluateByProduct = addEvaluateByProduct;

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.followShopByUser = exports.getAllProductByShop = exports.shopInfoDetailByCodeShop = void 0;
+exports.getAllCategoryShop = exports.disableFollowShopByUser = exports.followShopByUser = exports.getAllProductByShop = exports.shopInfoDetailByCodeShop = void 0;
 const getPagination_1 = require("../../../libs/getPagination");
 const getUserToken_1 = require("../../../libs/getUserToken");
 const info_model_1 = require("../../../models/shop/info/info.model");
@@ -54,7 +54,7 @@ const getAllProductByShop = (req, res) => __awaiter(void 0, void 0, void 0, func
     try {
         const { code_shop, page, q } = req.query;
         const dataCountProductShop = yield info_model_1.InfoShopModel.getCountAllProductShopModel({ code_shop: code_shop || '', q: q || '' });
-        const dataCategoryProductShop = yield info_model_1.InfoShopModel.getAllCategoryProductShopModel({ code_shop: code_shop || '', q: q || '' });
+        const dataCategoryProductShop = yield info_model_1.InfoShopModel.getAllCategoryProductShopModel2({ code_shop: code_shop || '' });
         yield info_model_1.InfoShopModel.getAllProductShopModel({
             code_shop: code_shop || '',
             page: Number(page) || 1,
@@ -126,3 +126,61 @@ const followShopByUser = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.followShopByUser = followShopByUser;
+const disableFollowShopByUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { code_shop } = req.query;
+        const data_user = dataUserTK(req);
+        if (data_user) {
+            const dataSQL = {
+                code_user: (_a = data_user === null || data_user === void 0 ? void 0 : data_user.payload.code_user) === null || _a === void 0 ? void 0 : _a.trim(),
+                code_shop: code_shop || '',
+            };
+            yield info_model_1.InfoShopModel.disableFollowShopByUserModel(dataSQL, (err, result) => {
+                if (err) {
+                    res.json({
+                        error: err,
+                    });
+                }
+                else {
+                    if (result) {
+                        res.json({
+                            message: 'Success',
+                        });
+                    }
+                }
+            });
+        }
+    }
+    catch (error) {
+        res.json({
+            error,
+        });
+    }
+});
+exports.disableFollowShopByUser = disableFollowShopByUser;
+const getAllCategoryShop = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const code_shop = req.query.code_shop || '';
+        yield info_model_1.InfoShopModel.getAllCategoryShopModel({ code_shop: code_shop }, (err, result) => {
+            if (err) {
+                res.json({
+                    error: err,
+                });
+            }
+            else {
+                if (result) {
+                    res.json({
+                        data: result.rows,
+                    });
+                }
+            }
+        });
+    }
+    catch (error) {
+        res.json({
+            error: error,
+        });
+    }
+});
+exports.getAllCategoryShop = getAllCategoryShop;

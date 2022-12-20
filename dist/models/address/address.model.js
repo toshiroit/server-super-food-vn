@@ -29,7 +29,6 @@ class AddressModel extends Model_1.default {
                 data.item.data.detail_address,
                 data.item.data.status,
                 (0, make_id_1.makeId)(15),
-                data.item.data.phone,
                 data.item.data.email,
                 data.item.data.street,
                 data.item.data.village,
@@ -50,6 +49,29 @@ class AddressModel extends Model_1.default {
     static checkCountAddressByUser(data) {
         return __awaiter(this, void 0, void 0, function* () {
             return database_1.default.query(sql_1.default.SQL_CHECK_COUNT_ADDRESS_BY_USER(), [data.code_user]);
+        });
+    }
+    static getDetailAddressUserByCode(data, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            database_1.default.query(sql_1.default.SQL_GET_DETAIL_ADDRESS_USER_BY_CODE(), [data.code_address, data.code_user], callback);
+        });
+    }
+    static updateAddressUserByCodeModel(data, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const dataSQL = [
+                data.data.code_address,
+                data.data.code_user,
+                data.data.full_name,
+                data.data.phone,
+                data.data.detail_address,
+                data.data.status,
+                data.data.email,
+                data.data.street,
+                data.data.village,
+                data.data.district,
+                data.data.city,
+            ];
+            database_1.default.query(sql_1.default.SQL_UPDATE_ADDRESS_USER_BY_CODE(), dataSQL, callback);
         });
     }
 }

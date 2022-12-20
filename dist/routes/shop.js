@@ -12,12 +12,16 @@ const upload_route_1 = __importDefault(require("./api-shop/upload/upload.route")
 const order_route_1 = __importDefault(require("./api-shop/order/order.route"));
 const notify_route_1 = __importDefault(require("./api-shop/notify/notify.route"));
 const chat_route_1 = __importDefault(require("./api-shop/chat/chat.route"));
+const index_route_1 = __importDefault(require("./api-shop/index/index.route"));
+const voucher_route_1 = __importDefault(require("./api-shop/voucher/voucher.route"));
 const router = (0, express_1.Router)();
 router.use('/auth', auth_route_1.default);
 router.use('/product', product_route_1.default);
 router.use('/category', category_route_1.default);
+router.use('/index', index_route_1.default);
 router.use(routes_name_1.ROUTES_NAME_SHOP.UPLOAD.home, upload_route_1.default);
 router.use(routes_name_1.ROUTES_NAME_SHOP.ORDER.HOME, order_route_1.default);
 router.use(routes_name_1.ROUTES_NAME_SHOP.NOTIFY.HOME, notify_route_1.default);
 router.use(routes_name_1.ROUTES_NAME_SHOP.CHAT.HOME, chat_route_1.default);
+router.use(routes_name_1.ROUTES_NAME_SHOP.VOUCHER.HOME, voucher_route_1.default);
 exports.default = router;

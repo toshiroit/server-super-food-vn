@@ -84,6 +84,11 @@ class InfoShopModel extends Model_1.default {
             database_1.default.query(queryResult, dataResult, callback);
         });
     }
+    static getAllCategoryProductShopModel2(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.default.query(sql_1.default.SQL_GET_ALL_CATEGORY_PRODUCT_BY_SHOP(), [data.code_shop]);
+        });
+    }
     static followShopByUserModel(data, callback) {
         return __awaiter(this, void 0, void 0, function* () {
             const sqlFollow = `
@@ -96,10 +101,18 @@ class InfoShopModel extends Model_1.default {
 		  FROM follow_shop_sp
 		  WHERE follow_shop_sp.code_user='${data.code_user.trim()}' and follow_shop_sp.code_shop='${data.code_shop.trim()}'
     )
-    
     `;
-            console.log(sqlFollow);
             database_1.default.query(sqlFollow, [], callback);
+        });
+    }
+    static disableFollowShopByUserModel(data, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            database_1.default.query(sql_1.default.SQL_DISABLE_FOLLOW_SHOP_BY_USER(), [data.code_user, data.code_shop], callback);
+        });
+    }
+    static getAllCategoryShopModel(data, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            database_1.default.query(sql_1.default.SQL_GET_ALL_CATEGORY_BY_SHOP(), [data.code_shop], callback);
         });
     }
 }

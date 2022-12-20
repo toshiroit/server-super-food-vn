@@ -42,14 +42,19 @@ export const shopInfoDetailByCodeShop = async (req: Request, res: Response) => {
 
 export const getAllProductByShop = async (req: Request, res: Response) => {
   try {
-    const { code_shop, page, q } = req.query;
-    const dataCountProductShop = await InfoShopModel.getCountAllProductShopModel({ code_shop: (code_shop as string) || '', q: (q as string) || '' });
+    const { code_shop, page, q, code_type } = req.query;
+    const dataCountProductShop = await InfoShopModel.getCountAllProductShopModel({
+      code_shop: (code_shop as string) || '',
+      q: (q as string) || '',
+      code_type: code_type as string,
+    });
     const dataCategoryProductShop = await InfoShopModel.getAllCategoryProductShopModel2({ code_shop: (code_shop as string) || '' });
     await InfoShopModel.getAllProductShopModel(
       {
         code_shop: (code_shop as string) || '',
         page: Number(page) || 1,
         q: (q as string) || '',
+        code_type: code_type as string,
       },
       (err, result) => {
         if (err) {

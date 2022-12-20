@@ -23,8 +23,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const routes_name_1 = require("./../../../constants/routes_name");
 const express_1 = require("express");
 const searchController = __importStar(require("./../../../controllers/search/search.controller"));
+const search_controller_1 = require("../../../controllers/shop/search/search.controller");
 const router = (0, express_1.Router)();
-router.get('', searchController.searchProductByType);
+router.get('/', searchController.searchProductByType);
+router.get(routes_name_1.ROUTES_NAME.SEARCH.LIST_TEXT_SEARCH, searchController.listTextSearchProduct);
+router.get(routes_name_1.ROUTES_NAME.SEARCH.LIST_SHOP_NAME_OR_CODE, search_controller_1.getShopByNameAndCode);
 exports.default = router;

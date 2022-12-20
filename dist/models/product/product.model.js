@@ -62,7 +62,6 @@ class ProductModel extends Model_1.default {
       and pd.is_show=1 
       and pd.date_end IS NULL 
       or pd.date_end is NOT null and pd.date_end < now()
-
       `;
                 dataQ.push(`%${data.q}%`);
             }
@@ -124,12 +123,24 @@ class ProductModel extends Model_1.default {
      pd.is_show=1 
     and pd.date_end IS NULL 
     or pd.date_end is NOT null and pd.date_end < now() `;
-            if (data.sort) {
-                if (data.sort.trim() === '0') {
-                    querySearch += ' ORDER BY p.name ASC ';
+            if (data.sort || data.type_show) {
+                if (data.sort === 0) {
+                    querySearch += ` ORDER BY p."name" DESC `;
                 }
-                else if (data.sort.trim() === '1') {
-                    querySearch += ' ORDER BY p.name DESC ';
+                else if (data.sort === 1) {
+                    querySearch += ` ORDER BY p."name" ASC `;
+                }
+                else if (data.sort === 2) {
+                    querySearch += ` ORDER BY (p.price - (price * (pd.discount::decimal/100))) ASC `;
+                }
+                else if (data.sort === 3) {
+                    querySearch += ` ORDER BY  (p.price - (price * (pd.discount::decimal/100))) DESC `;
+                }
+                else if (data.type_show === 0) {
+                    querySearch += ` ORDER BY p.evaluate DESC `;
+                }
+                else if (data.type_show === 1) {
+                    querySearch += ` ORDER BY pd.purchase `;
                 }
             }
             if (limit !== null && offset !== null) {
@@ -143,6 +154,11 @@ class ProductModel extends Model_1.default {
     static getAllTypeProductByShopModel(data, callback) {
         return __awaiter(this, void 0, void 0, function* () {
             database_1.default.query(sql_1.default.SQL_GET_ALL_PRODUCT_TYPE(), [data.code_shop], callback);
+        });
+    }
+    static getCountEvaluate5Model(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.default.query(sql_1.default.SQL_GET_EVALUATE_PRODUCT_5(), [data.code_product]);
         });
     }
 }

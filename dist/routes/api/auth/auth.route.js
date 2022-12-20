@@ -64,11 +64,8 @@ routes.get(routes_name_1.ROUTES_NAME.AUTH.USER, auth_middleware_2.validateTokenM
  * Rest password user
  * Login => true of false => role admin - shop - user
  */
-routes.post(routes_name_1.ROUTES_NAME.AUTH.REST_PASSWORD, auth_middleware_2.validateTokenMiddleware, (err, res) => {
-    res.send({
-        data: res.locals,
-    });
-});
+routes.post(routes_name_1.ROUTES_NAME.AUTH.REST_PASSWORD, AuthController.authRestPassword);
+routes.put(routes_name_1.ROUTES_NAME.AUTH.UPDATE_PASSWORD, auth_middleware_2.validateTokenMiddleware, AuthController.authUpdatePassword);
 /**
  * Verify code
  * Verify user by code save database

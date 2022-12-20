@@ -51,7 +51,7 @@ app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.static(__dirname));
 // Change domain cors
 app.use((0, cors_1.default)({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3001', 'http://localhost:4005'],
     // origin: [
     //   '*',
     //   config.domain_admin,
@@ -68,14 +68,6 @@ app.use((0, cors_1.default)({
 }));
 // Setup socketio
 /*
-origin: [
-      config.domain_admin, config.domain_web_client, config.domain_web_client_shop,
-      'https://super-food-vn.vercel.app',
-      'http://localhost:3001',
-      'https://admin-super-food.vercel.app'
-    ]
-
-*/
 // Apply the rate limiting middleware to all request
 // app.use(
 //   ratelimit({
@@ -85,7 +77,7 @@ origin: [
 //     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
 //     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 //   })
-// );
+// );*/
 // Add routing for / path
 app.use('/api', routes_1.default);
 app.use('/api/v1/sp-shop', shop_1.default);
@@ -96,7 +88,7 @@ const server = app.listen(process.env.PORT || 8080, () => __awaiter(void 0, void
 }));
 const io = new socket_io_1.Server(server, {
     cors: {
-        origin: '*',
+        origin: ['http://localhost:3001', 'http://localhost:3000'],
         methods: ['GET', 'POST'],
     },
 });
@@ -112,6 +104,7 @@ io.use((socket, next) => {
                     next(new Error(' Please try again'));
                 }
                 else {
+                    console.log('LOG : ', decoded);
                     if (decoded) {
                         socket.data.auth_isLogin = true;
                         socket.data.auth_data = decoded;
@@ -131,6 +124,7 @@ io.on('connection', socket => {
         socket.join(socket.data.auth_data.code_user.trim());
     }
     if (socket.data.auth_data.code_role.trim() === 'ROLE-WIXX-SHOP') {
+        console.log('CONNECT : ', socket.data.auth_data);
         socket.join(socket.data.auth_data.code_shop.trim());
     }
     socket.on('notification_order', data => {

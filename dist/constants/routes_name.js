@@ -8,6 +8,7 @@ exports.ROUTES_NAME = {
         CHECK_CODE: '/check-code',
         REGISTER: '/register',
         REST_PASSWORD: '/rest-password',
+        UPDATE_PASSWORD: '/update-password',
         VERIFY_USER: '/verify-user',
         VERIFY_CODE: '/verify-code',
         AUTHENTICATE: '/authenticate',
@@ -37,6 +38,8 @@ exports.ROUTES_NAME = {
     },
     SEARCH: {
         SEARCH: '/search',
+        LIST_TEXT_SEARCH: '/text-search-product',
+        LIST_SHOP_NAME_OR_CODE: '/shop-by-name-or-code',
     },
     CART: {
         GET_CART: '/get-cart',
@@ -54,6 +57,8 @@ exports.ROUTES_NAME = {
         HOME: '/address',
         GET_ADDRESS: '/get-address',
         ADD_ADDRESS: '/add-address',
+        DETAIL_ADDRESS: '/detail-address',
+        UPDATE_ADDRESS_USER_BY_CODE: '/update-address-user-by-code',
     },
     CHECKOUT: '/checkout',
     PAYMENT: {
@@ -69,10 +74,13 @@ exports.ROUTES_NAME = {
         DETAIL_SHOP: '/detail-shop',
         PRODUCT_SHOP: '/all-product',
         FOLLOW_SHOP: '/follow-shop',
+        DISABLE_FOLLOW_SHOP: '/disable-follow-shop',
+        CATEGORY_SHOP: '/all-category-shop',
     },
     NOTIFY: {
         HOME: '/notify',
         ADD_NOTIFY_NEW_SHOP: '/add-new-notify-shop',
+        GET_ALL_NOTIFY_USER: '/get-all-notify-user',
     },
     CHAT: {
         HOME: '/messenger',
@@ -85,6 +93,11 @@ exports.ROUTES_NAME = {
         REMOVE_EVALUATE: '/remove',
         GET_ALL_EVALUATE: '/get-all',
         CHECK_EVALUATE: '/check-evaluate',
+        GET_EVALUATE: '/get-evaluate',
+    },
+    VOUCHER: {
+        HOME: '/voucher',
+        CHECK_VOUCHER: '/check-voucher',
     },
 };
 exports.ROUTES_NAME_SHOP = {
@@ -93,11 +106,25 @@ exports.ROUTES_NAME_SHOP = {
         GET_ME: '/getMe',
         GET_ME_SHOP: '/getMeShop',
         REGISTER: '/register',
+        VERIFICATION_ACCOUNT: '/verification-active',
+        UPDATE_USER: '/update-user',
+        LOGOUT: '/logout',
+        CHECK_PASSWORD: '/check-password',
+    },
+    GET_INDEX_DATA: {
+        DATA: '/get-data',
+    },
+    VERIFICATION: {
+        HOME: '/verification',
+        GET_VERIFICATION: '/get-code-verification',
     },
     CATEGORY: {
         HOME: '/category',
-        CATEGORY_ALL: '/get-by-product-shop',
+        CATEGORY_BY_PRODUCT_SHOP: '/get-by-product-shop',
         CATEGORY_ALL_BY_SHOP: '/get-all-category-by-shop',
+        ADD_NEW_CATEGORY: '/add-new-category',
+        REMOVE_CATEGORY: '/remove-category',
+        UPDATE_CATEGORY: '/update-category',
     },
     PRODUCT: {
         HOME: '/product',
@@ -130,12 +157,21 @@ exports.ROUTES_NAME_SHOP = {
     NOTIFY: {
         HOME: '/notify',
         GET_ALL_NOTIFY_SHOP: '/get-all-notify-shop',
+        GET_DETAIL_NOTIFY: '/notify-detail',
     },
     CHAT: {
         HOME: '/messenger',
         SEND_CHAT: '/send-messenger',
         GET_ALL_CHAT: '/get-all-messenger',
         GET_ALL_USER_CHAT_BY_SHOP: '/get-all-user-messenger-by-shop',
+    },
+    VOUCHER: {
+        HOME: '/voucher',
+        GET_ALL_VOUCHER: '/get-all-voucher',
+        GET_DETAIL_VOUCHER: '/get-detail-voucher',
+        ADD_NEW_VOUCHER: '/add-new-voucher',
+        UPDATE_VOUCHER: '/update-voucher',
+        REMOVE_VOUCHER: '/remove-voucher',
     },
 };
 exports.SOCKET_ROUTE = {

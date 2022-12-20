@@ -12,12 +12,12 @@ import shopRoutes from './routes/shop';
 import cookieParser from 'cookie-parser';
 import config from './config/config';
 import bodyParser from 'body-parser';
-  import { Server } from 'socket.io';
+import { Server } from 'socket.io';
 import { ClientToServerEvents, InterServerEvents, ServerToClientEvents, SocketData } from './types/socketio/socketio';
 dotenv.config();
 
 // Create instance server
-const  app: Application = express();
+const app: Application = express();
 //set time vietname
 process.env.TZ = 'Asia/Ho_Chi_Minh';
 app.use(

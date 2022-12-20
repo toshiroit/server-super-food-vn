@@ -5,8 +5,17 @@ import Model from '../../Model';
 import SqlRoot from '../../sql';
 
 export class AuthModel extends Model {
-  public static async authCheckUser(data: { user_name: string; phone: string }) {
-    return pool.query(SqlRoot.SQL_CHECK_USER_REGISTER(), [data.user_name, data.phone]);
+  public static async authRemoveShop(data: { code_shop: string; code_user: string }, callback: CallbackHandler) {
+    pool.query(SqlRoot.SQL_REMOVE_SHOP(), [data.code_shop, data.code_user], callback);
+  }
+  public static async authCheckUser(data: { user_name: string; phone: string; email: string }) {
+    return pool.query(SqlRoot.SQL_CHECK_USER_REGISTER(), [data.user_name, data.phone, data.email]);
+  }
+  public static async authCheckUserShop(data: { user_name: string; email: string }) {
+    return pool.query(SqlRoot.SQL_CHECK_USER_SHOP(), [data.user_name, data.email]);
+  }
+  public static async authCheckUserShop2(data: { user_name: string; email: string }) {
+    return pool.query(SqlRoot.SQL_CHECK_USER_DATA_SHOP(), [data.user_name, data.email]);
   }
   public static async authRegisterModel(data: any, callback: CallbackHandler) {
     pool.query(SqlRoot.SQL_REGISTER_SHOP(), data, callback);
@@ -44,7 +53,10 @@ export class AuthModel extends Model {
       data.description,
       data.youtube,
     ];
-    console.log(dataSQL);
     pool.query(SqlRoot.SQL_AUTH_UPDATE_USER_SHOP_BY_CODE(), dataSQL, callback);
+  }
+
+  public static authConfirmRestPasswordModel(data: { password: string; email: string }, callback: CallbackHandler) {
+    pool.query(SqlRoot.SQL_AUTH_CONFIRM_PASSWORD_BY_EMAIL(), [data.email, data.password], callback);
   }
 }

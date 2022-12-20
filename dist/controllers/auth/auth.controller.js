@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkCodeOTP = exports.verifyAccountByCode = exports.verifyCodeAuth = exports.checkPhoneAuth = exports.SendCodePhone = exports.VerifyTokenUser = exports.getMe = exports.loginAuthAdmin = exports.getAllUsers = exports.registerUser = exports.refreshToken = exports.loginPhone = exports.loginUser = exports.getMeShop = exports.logoutUser = void 0;
+exports.authUpdatePassword = exports.checkCodeOTP = exports.verifyAccountByCode = exports.verifyCodeAuth = exports.checkPhoneAuth = exports.SendCodePhone = exports.VerifyTokenUser = exports.getMe = exports.loginAuthAdmin = exports.getAllUsers = exports.registerUser = exports.refreshToken = exports.loginPhone = exports.loginUser = exports.getMeShop = exports.authRestPassword = exports.logoutUser = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const auth_model_1 = require("./../../models/auth/auth.model");
 const config_1 = __importDefault(require("../../config/config"));
@@ -24,6 +24,7 @@ const getUserToken_1 = require("../../libs/getUserToken");
 const mail_1 = require("../../helpers/mail");
 const theme_mailer_1 = require("../../libs/theme_mailer");
 const timeVietNam_1 = require("../../libs/timeVietNam");
+const data_user_1 = require("../../libs/data_user");
 const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const valueQuery = {
@@ -209,7 +210,7 @@ const loginUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 phone: req.body.phone,
                 hashPassword: (0, hash_password_1.hasPassword)(req.body.password),
                 createdAt: new Date(Date.now()).toISOString(),
-                status: false,
+                status: 0,
                 full_name: req.body.fullName || '',
                 sex: false,
                 code_restpass: (0, make_id_1.makeId)(14),
@@ -452,26 +453,35 @@ const loginAuthAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function*
             password: password,
         };
         const dataUserModel = yield auth_model_1.AuthModel.getUserAdminModel(dataSQL);
+        const isCheckVerification = yield auth_model_1.AuthModel.checkLoginVerificationCode(dataSQL);
         if (dataUserModel.rows.length > 0) {
             const isPassword = (0, hash_password_1.comparePassword)(password, dataUserModel.rows[0].password.trim());
             if (isPassword) {
-                delete dataUserModel.rows[0].password;
-                delete dataUserModel.rows[0].passwordResetCode;
-                delete dataUserModel.rows[0].refresh_token;
-                delete dataUserModel.rows[0].verification_code;
-                const tokens = (0, jwt_token_1.jwtTokens)(dataUserModel.rows[0]);
-                res.cookie('jwt', tokens.refreshToken, {
-                    expires: new Date(Date.now() + 900000),
-                    httpOnly: true,
-                    path: '/',
-                    maxAge: 24 * 60 * 60 * 1000,
-                    sameSite: 'strict',
-                });
-                res.json({
-                    token: tokens.accessToken,
-                    message: 'Đăng nhập thành công ',
-                    data: dataUserModel.rows,
-                });
+                if (isCheckVerification.rows.length === 0) {
+                    delete dataUserModel.rows[0].password;
+                    delete dataUserModel.rows[0].passwordResetCode;
+                    delete dataUserModel.rows[0].refresh_token;
+                    delete dataUserModel.rows[0].verification_code;
+                    const tokens = (0, jwt_token_1.jwtTokens)(dataUserModel.rows[0]);
+                    res.cookie('jwt', tokens.refreshToken, {
+                        expires: new Date(Date.now() + 900000),
+                        httpOnly: true,
+                        path: '/',
+                        maxAge: 24 * 60 * 60 * 1000,
+                        sameSite: 'strict',
+                    });
+                    res.json({
+                        token: tokens.accessToken,
+                        message: 'Đăng nhập thành công ',
+                        data: dataUserModel.rows,
+                    });
+                }
+                else {
+                    res.status(400).json({
+                        type: -1,
+                        message: 'Tải khoản của bạn chưa được kích hoạt',
+                    });
+                }
             }
             else {
                 res.status(400).json({
@@ -530,3 +540,95 @@ const getMeShop = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.getMeShop = getMeShop;
+const authUpdatePassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c;
+    try {
+        const { phone, password, new_password } = req.body;
+        const data_user = yield (0, data_user_1.dataUserTK)(req);
+        const dataSQL_get = {
+            code_user: data_user === null || data_user === void 0 ? void 0 : data_user.payload.code_user,
+        };
+        const dataUserModel = yield auth_model_1.AuthModel.getUserWModel(dataSQL_get);
+        if (dataUserModel.rows && dataUserModel.rows.length > 0) {
+            const isPassword = (0, hash_password_1.comparePassword)(password, (_c = dataUserModel.rows[0].password) === null || _c === void 0 ? void 0 : _c.trim());
+            if (isPassword) {
+                const dataSQLUpdate = {
+                    password: (0, hash_password_1.hasPassword)(new_password),
+                    code_user: dataSQL_get.code_user,
+                };
+                auth_model_1.AuthModel.authUpdatePassword(dataSQLUpdate, (err, result) => {
+                    if (err) {
+                        res.json({
+                            error: err,
+                        });
+                    }
+                    else {
+                        if (result) {
+                            if (result.rowCount > 0) {
+                                res.json({
+                                    message: 'Thay đổi thành công',
+                                });
+                            }
+                            else {
+                                res.status(400).json({
+                                    message: 'Lỗi',
+                                });
+                            }
+                        }
+                    }
+                });
+            }
+            else {
+                res.status(400).json({
+                    message: 'Mật khẩu gốc không chính xác',
+                });
+            }
+        }
+    }
+    catch (error) {
+        res.json({ error });
+    }
+});
+exports.authUpdatePassword = authUpdatePassword;
+const authRestPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { phone } = req.body;
+        const password = (0, make_id_1.makeId)(12);
+        auth_model_1.AuthModel.authRestPassword({ phone: phone || '', password: (0, hash_password_1.hasPassword)(password) || '' }, (err, result) => {
+            if (err) {
+                res.json({
+                    error: err,
+                });
+            }
+            else {
+                if (result) {
+                    if (result.rowCount > 0) {
+                        auth_model_1.AuthModel.sendNewPassModel({ new_password: password, phone: phone }, (err, result) => {
+                            if (err) {
+                                res.json({
+                                    error_new: err,
+                                });
+                            }
+                            else {
+                                res.json({
+                                    message: 'Thay đổi mật khẩu thành công',
+                                });
+                            }
+                        });
+                    }
+                    else {
+                        res.status(400).json({
+                            message: 'Thay đổi mật khẩu không thành công',
+                        });
+                    }
+                }
+            }
+        });
+    }
+    catch (error) {
+        res.json({
+            error,
+        });
+    }
+});
+exports.authRestPassword = authRestPassword;

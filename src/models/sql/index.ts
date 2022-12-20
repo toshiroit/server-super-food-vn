@@ -268,7 +268,7 @@ class SqlRoot {
         left join user_detail_sp ud  on ud.code_user_detail = u.code_user_detail
         join order_detail_sp od on od.code_order_detail = o.code_order_detail
         left join shop_sp s on s.code_shop = od.code_shop   
-        where u.code_user = ($1) ORDER BY o.date_order DESC
+        where u.code_user = ($1) 
     `;
   };
   public static SQL_GET_COUNT_ORDER_BY_USER = () => {
@@ -353,6 +353,53 @@ class SqlRoot {
     `;
   };
 
+  public static SQL_CONFIRM_ORDER_SUCCESS_USER = () => {
+    return `
+    with codeOrderDetail as (
+      SELECT code_order_detail from order_sp o where o.code_order=($1) and o.code_user=($2)
+    ),confirmOrderUser as (
+      UPDATE order_detail_sp SET progress='6' WHERE code_order_detail in (select code_order_detail from codeOrderDetail )
+    ),updatePurchase as (
+      UPDATE product_detail_sp AS pd
+      SET 
+        purchase=(b.purchase+1)
+      FROM
+        (
+        select 
+          pd.*
+        from 
+          order_sp o
+          join order_detail_sp od on od.code_order_detail=o.code_order_detail
+          cross join jsonb_to_recordset(o.code_product) as al(code varchar)
+          inner join product_sp p on p.code_product=al.code
+          inner join product_detail_sp pd on pd.code_product_detail = p.code_product_detail
+        where 
+          o.code_order=($1) and o.code_user=($2) and od.progress='5'
+
+      ) as b
+      where pd.code_product_detail=b.code_product_detail
+    )
+    UPDATE product_sp AS p
+      SET 
+      quality=(b.quality-1)
+    FROM
+        (
+        select 
+          p.*
+        from 
+          order_sp o
+          cross join jsonb_to_recordset(o.code_product) as al(code varchar)
+          inner join product_sp p on p.code_product=al.code
+        where 
+          o.code_order='zkqpm6R2nnspPOl'
+
+      ) as b
+      where p.code_product=b.code_product
+
+
+    `;
+  };
+
   public static SQL_GET_ORDER_DETAIL_BY_USER = () => {
     //join product_sp p on p.code_product = ANY (o.code_product)
 
@@ -423,6 +470,18 @@ class SqlRoot {
 
     `;
   };
+
+  public static SQL_GET_SECURITY_LOGIN = () => {
+    return `
+    SELECT s.security_login FROM user_sp u 
+      left 
+      join user_detail_sp ud 
+      on u.code_user_detail=ud.code_user_detail 
+      join role_sp r on r.code_role = u.code_role
+      left join setting_shop_sp s on s.code_shop = u.code_shop
+      where u.user_name =($1) AND r.code_role='ROLE-WIXX-SHOP' 
+    `;
+  };
   public static SQL_GET_ME_SHOP = () => {
     return `
     SELECT s.*,sd.* FROM user_sp u
@@ -444,14 +503,21 @@ class SqlRoot {
 
   public static SQL_GET_ALL_CATEGORY_PRODUCT_BY_SHOP = () => {
     return ` 
-    select 
-      json_agg(row_to_json(pt.*)) as category_product
-    from 
-      product_type_sp pt  
-    join 
-      product_sp p on p.code_product_type=pt.code_product_type
-    and  
-      p.code_shop=($1)
+    with prdType as (
+      select 
+        DISTINCT pt.*
+       from 
+           product_type_sp pt  
+         join 
+           product_sp p on p.code_product_type=pt.code_product_type
+         and  
+           p.code_shop=($1)
+         
+     )
+      select 
+           json_agg(row_to_json(pw.*)) as category_product
+         from 
+           prdType pw     
     `;
   };
 
@@ -646,10 +712,20 @@ class SqlRoot {
 
   public static SQL_REMOVE_ORDER_SHOP = () => {
     return `
-
+          with orderDel_sp as (
+            DELETE FROM order_sp where code_order=($1)  RETURNING code_order_detail 
+          )
+          DELETE FROM order_detail_sp WHERE code_order_detail in (select code_order_detail from orderDel_sp) AND code_shop=($2)
       `;
   };
-
+  public static SQL_REMOVE_ORDER_ARR_SHOP = (value: string) => {
+    return `
+          with orderDel_sp as (
+            DELETE FROM order_sp where code_order IN (${value})  RETURNING code_order_detail 
+          )
+          DELETE FROM order_detail_sp WHERE code_order_detail IN (select code_order_detail from orderDel_sp) AND code_shop=($1)
+      `;
+  };
   public static SQL_GET_ALL_PRODUCT_TYPE = () => {
     return `
       select * from product_type_sp pt where pt.code_shop=($1)
@@ -733,7 +809,18 @@ class SqlRoot {
 
   public static SQL_CHECK_USER_REGISTER = () => {
     return `
-        select count(*) from user_sp where user_name=($1) or phone=($2)
+    select count(*) from user_sp u join user_detail_sp ud on ud.code_user_detail=u.code_user_detail  where u.user_name=($1) or u.phone=($2) or ud.email=($3)
+
+      `;
+  };
+  public static SQL_CHECK_USER_SHOP = () => {
+    return `
+    select count(*) from user_sp u join user_detail_sp ud on ud.code_user_detail=u.code_user_detail  where user_name=($1) or ud.email=($2)
+      `;
+  };
+  public static SQL_CHECK_USER_DATA_SHOP = () => {
+    return `
+    select ud.email from user_sp u join user_detail_sp ud on ud.code_user_detail=u.code_user_detail  where user_name=($1) or ud.email=($2) and u.code_role='ROLE-WIXX-SHOP' 
       `;
   };
 
@@ -761,6 +848,10 @@ class SqlRoot {
 		          (code_address_detail, phone_w, email, street, village, district, city)
 	          VALUES 
 		          ((select code_address_detail from ins_addressSP),$23,$24,$25,$26,$27,$28)
+          ),ins_SettingShop as (
+            INSERT INTO setting_shop_sp(
+              code_setting, code_shop, info_mail, info_phone, security_login, security_password_v2, auto_backup)
+              VALUES ($33, $29,false,false,false,false,false)
           ),ins_shopSP as (
 	          INSERT INTO shop_sp 
 	            (code_shop, image_shop, name_shop, evaluate, follow_shop, code_shop_detail, type_shop)
@@ -1149,7 +1240,7 @@ class SqlRoot {
           join 
             order_sp o on o.code_order_detail = od.code_order_detail
         where 
-          s.code_shop=($1) and od.progress =3
+          s.code_shop=($1) and od.progress = 4 
       ),count_order_notShip as (
         select 
           count(od.*) as count_order_not_ship
@@ -1160,7 +1251,18 @@ class SqlRoot {
           join 
             order_sp o on o.code_order_detail = od.code_order_detail
         where 
-          s.code_shop=($1) and od.progress = 8 
+          s.code_shop=($1) and od.progress = -3 
+      ),count_order_cancel as (
+        select 
+          count(od.*) as count_order_cancel
+        from 
+          shop_sp s 
+          join 
+            order_detail_sp od on od.code_shop = s.code_shop
+          join 
+            order_sp o on o.code_order_detail = od.code_order_detail
+        where 
+          s.code_shop=($1) and od.progress = -2
       ),count_order_successShip as (
         select 
           count(od.*) as count_order_success_ship
@@ -1191,7 +1293,7 @@ class SqlRoot {
         where 
           s.code_shop=($1) and p.evaluate  > 6
       )
-        select * from count_product,count_order,count_order_ship,count_order_notShip,count_order_successShip,count_product_evaluateTop,count_product_evaluateLeast
+        select * from count_product,count_order,count_order_ship,count_order_notShip,count_order_successShip,count_product_evaluateTop,count_product_evaluateLeast,count_order_cancel
     `;
   };
 
@@ -1345,6 +1447,894 @@ class SqlRoot {
   public static SQL_GET_ALL_NOTIFY_USER = () => {
     return `
         select * from notify_sp where code_user=($1)
+    `;
+  };
+
+  public static SQL_GET_STATISTICAL_VALUE_SHOP = () => {
+    return `
+        with statisticalPrice_day as (
+          SELECT 
+            SUM(od.total_order) as statisticalPrice_day,(
+              SELECT 
+                case when coalesce(SUM(od2.total_order),0) > coalesce(SUM(od.total_order),0) then true else false end as progress_priceDay
+              FROM  
+                order_sp o2 		
+              JOIN 
+                order_detail_sp od2 on od2.code_order_detail = o2.code_order_detail 
+              WHERE 
+                od2.progress=6 and od2.code_shop=($1) and o2.date_order::date=($3)
+              
+            ),(
+              SELECT 
+                (((coalesce(SUM(od.total_order),0)-coalesce(SUM(od2.total_order),0))/coalesce(SUM(od2.total_order),1))*100) as turnover_day
+              FROM  
+                order_sp o2 		
+              JOIN 
+                order_detail_sp od2 on od2.code_order_detail = o2.code_order_detail 
+              
+              WHERE 
+                od2.progress=6 	
+                and od2.code_shop=($1)
+                and o2.date_order::date >= ($3)
+            )
+          FROM  
+              order_sp o 		
+            JOIN 
+              order_detail_sp od on od.code_order_detail = o.code_order_detail 
+            WHERE 
+              od.progress=6 and od.code_shop=($1) and o.date_order::date=($2)
+        ), statisticalPrice_month as (
+          SELECT 
+            SUM(od.total_order) as statisticalPrice_month,(
+              SELECT 
+                case when coalesce(SUM(od2.total_order),0) > coalesce(SUM(od.total_order),0) then true else false end as progress_priceMonth
+              FROM  
+                order_sp o2 		
+              JOIN 
+                order_detail_sp od2 on od2.code_order_detail = o2.code_order_detail 
+              WHERE 
+                od2.progress=6 and od2.code_shop=($1) and o2.date_order::date >= ($7) and o2.date_order::date<=($6)
+              
+            ),(
+              SELECT 
+                (((coalesce(SUM(od.total_order),0)-coalesce(SUM(od2.total_order),0))/coalesce(SUM(od2.total_order),1))*100) as turnover_month
+              FROM  
+                order_sp o2 		
+              JOIN 
+                order_detail_sp od2 on od2.code_order_detail = o2.code_order_detail 
+              
+              WHERE 
+                od2.progress=6 	
+                and od2.code_shop=($1)
+                and o2.date_order::date >= ($7) 
+                and o2.date_order::date<= ($6)
+            )
+          FROM  
+            order_sp o 		
+          JOIN 
+            order_detail_sp od on od.code_order_detail = o.code_order_detail 
+          WHERE 
+            od.progress=6 and od.code_shop=($1) and o.date_order::date >= ($5) and o.date_order::date<=($4)
+        ), statisticalPrice_total as (
+          SELECT 
+            SUM(od.total_order) as statisticalPrice_total
+          FROM  
+            order_sp o 		
+          JOIN 
+            order_detail_sp od on od.code_order_detail = o.code_order_detail 
+          WHERE 
+            od.progress=6 and od.code_shop=($1) 
+        )
+        select * from statisticalPrice_day,statisticalPrice_month,statisticalPrice_total
+    `;
+  };
+
+  public static SQL_GET_STATISTICAL_FULL_W = () => {
+    return `
+    with  jan as (
+      select 
+      json_agg(json_build_object(
+        'quality',t.row_count,
+        'total_price',t.total_price,
+        'order_full',t3.row_count_full,
+        'order_success',t.row_count,
+        'order_cancel',t2.row_count_2,
+        'order_notShip',t4.row_count
+      )) as jan
+      FROM (
+        SELECT
+          COUNT(*) AS row_count,SUM(od.total_order) as total_price
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=6
+        AND 
+          od.code_shop=($1)
+        AND EXTRACT('month' from  o.date_order) = 1 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t,(
+        SELECT
+          COUNT(*) AS row_count_2
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-2
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 1 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t2,(
+        SELECT
+          COUNT(*) AS row_count_full
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 1 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t3,(
+        SELECT
+          COUNT(*) AS row_count
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-3
+        AND  od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 1 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+      )t4
+    ),feb as (
+      select 
+      json_agg(json_build_object(
+        'quality',t.row_count,
+        'total_price',t.total_price,
+        'order_full',t3.row_count_full,
+        'order_success',t.row_count,
+        'order_cancel',t2.row_count_2,
+        'order_notShip',t4.row_count
+      )) as feb
+      FROM (
+        SELECT
+          COUNT(*) AS row_count,SUM(od.total_order) as total_price
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=6
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 2 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t,(
+        SELECT
+          COUNT(*) AS row_count_2
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-2
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 2
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t2,(
+        SELECT
+          COUNT(*) AS row_count_full
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 2 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t3,(
+        SELECT
+          COUNT(*) AS row_count
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-3
+        AND  od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 2 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+      )t4
+    ),mar as (
+      select 
+      json_agg(json_build_object(
+        'quality',t.row_count,
+        'total_price',t.total_price,
+        'order_full',t3.row_count_full,
+        'order_success',t.row_count,
+        'order_cancel',t2.row_count_2,
+        'order_notShip',t4.row_count
+      )) as mar
+      FROM (
+        SELECT
+          COUNT(*) AS row_count,SUM(od.total_order) as total_price
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=6
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 3 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t,(
+        SELECT
+          COUNT(*) AS row_count_2
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-2
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 3 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t2,(
+        SELECT
+          COUNT(*) AS row_count_full
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 3 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t3,(
+        SELECT
+          COUNT(*) AS row_count
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-3
+        AND  od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 3
+        AND EXTRACT('year' from  o.date_order) = ($2)
+      )t4
+    ),apr as (
+      select 
+      json_agg(json_build_object(
+        'quality',t.row_count,
+        'total_price',t.total_price,
+        'order_full',t3.row_count_full,
+        'order_success',t.row_count,
+        'order_cancel',t2.row_count_2,
+        'order_notShip',t4.row_count
+        
+      )) as apr
+      FROM (
+        SELECT
+          COUNT(*) AS row_count,SUM(od.total_order) as total_price
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=6
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 4 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t,(
+        SELECT
+          COUNT(*) AS row_count_2
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-2
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 4 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t2,(
+        SELECT
+          COUNT(*) AS row_count_full
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 4 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t3,(
+        SELECT
+          COUNT(*) AS row_count
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-3
+        AND  od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 4
+        AND EXTRACT('year' from  o.date_order) = ($2)
+      )t4
+    ),may as (
+      select 
+      json_agg(json_build_object(
+        'quality',t.row_count,
+        'total_price',t.total_price,
+        'order_full',t3.row_count_full,
+        'order_success',t.row_count,
+        'order_cancel',t2.row_count_2,
+        'order_notShip',t4.row_count
+      )) as may
+      FROM (
+        SELECT
+          COUNT(*) AS row_count,SUM(od.total_order) as total_price
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=6
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 5 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t,(
+        SELECT
+          COUNT(*) AS row_count_2
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-2
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 5 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t2,(
+        SELECT
+          COUNT(*) AS row_count_full
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 5 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t3,(
+        SELECT
+          COUNT(*) AS row_count
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-3
+        AND  od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 5
+        AND EXTRACT('year' from  o.date_order) = ($2)
+      )t4
+    ),jun as (
+      select 
+      json_agg(json_build_object(
+        'quality',t.row_count,
+        'total_price',t.total_price,
+        'order_full',t3.row_count_full,
+        'order_success',t.row_count,
+        'order_cancel',t2.row_count_2,
+        'order_notShip',t4.row_count
+      )) as jun
+      FROM (
+        SELECT
+          COUNT(*) AS row_count,SUM(od.total_order) as total_price
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=6
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 6 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t,(
+        SELECT
+          COUNT(*) AS row_count_2
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-2
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 6 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t2,(
+        SELECT
+          COUNT(*) AS row_count_full
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 6 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t3,(
+        SELECT
+          COUNT(*) AS row_count
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-3
+        AND  od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 6
+        AND EXTRACT('year' from  o.date_order) = ($2)
+      )t4
+    ),jul as (
+      select 
+      json_agg(json_build_object(
+        'quality',t.row_count,
+        'total_price',t.total_price,
+        'order_full',t3.row_count_full,
+        'order_success',t.row_count,
+        'order_cancel',t2.row_count_2,
+        'order_notShip',t4.row_count
+      )) as jul
+      FROM (
+        SELECT
+          COUNT(*) AS row_count,SUM(od.total_order) as total_price
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=6
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 7 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t,(
+        SELECT
+          COUNT(*) AS row_count_2
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-2
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 7 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t2,(
+        SELECT
+          COUNT(*) AS row_count_full
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 7 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t3,(
+        SELECT
+          COUNT(*) AS row_count
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-3
+        AND  od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 7
+        AND EXTRACT('year' from  o.date_order) = ($2)
+      )t4
+    ),aug as (
+      select 
+      json_agg(json_build_object(
+        'quality',t.row_count,
+        'total_price',t.total_price,
+        'order_full',t3.row_count_full,
+        'order_success',t.row_count,
+        'order_cancel',t2.row_count_2,
+        'order_notShip',t4.row_count
+      )) as aug
+      FROM (
+        SELECT
+          COUNT(*) AS row_count,SUM(od.total_order) as total_price
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=6
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 8 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t,(
+        SELECT
+          COUNT(*) AS row_count_2
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-2
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 8 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t2,(
+        SELECT
+          COUNT(*) AS row_count_full
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 8 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t3,(
+        SELECT
+          COUNT(*) AS row_count
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-3
+        AND  od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 8
+        AND EXTRACT('year' from  o.date_order) = ($2)
+      )t4
+    ),sep as (
+      select 
+      json_agg(json_build_object(
+        'quality',t.row_count,
+        'total_price',t.total_price,
+        'order_full',t3.row_count_full,
+        'order_success',t.row_count,
+        'order_cancel',t2.row_count_2,
+        'order_notShip',t4.row_count
+
+      )) as sep
+      FROM (
+        SELECT
+          COUNT(*) AS row_count,SUM(od.total_order) as total_price
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=6
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 9 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t,(
+        SELECT
+          COUNT(*) AS row_count_2
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-2
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 9 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t2,(
+        SELECT
+          COUNT(*) AS row_count_full
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 9 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t3,(
+        SELECT
+          COUNT(*) AS row_count
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-3
+        AND  od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 9
+        AND EXTRACT('year' from  o.date_order) = ($2)
+      )t4
+    ),oct as (
+      select 
+      json_agg(json_build_object(
+        'quality',t.row_count,
+        'total_price',t.total_price,
+        'order_full',t3.row_count_full,
+        'order_success',t.row_count,
+        'order_cancel',t2.row_count_2,
+        'order_notShip',t4.row_count
+      )) as oct
+      FROM (
+        SELECT
+          COUNT(*) AS row_count,SUM(od.total_order) as total_price
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=6
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 10
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t,(
+        SELECT
+          COUNT(*) AS row_count_2
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-2
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 10
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t2,(
+        SELECT
+          COUNT(*) AS row_count_full
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 10
+        AND EXTRACT('year' from  o.date_order) = ($2)
+      )t3,(
+        SELECT
+          COUNT(*) AS row_count
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-3
+        AND  od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 10
+        AND EXTRACT('year' from  o.date_order) = ($2)
+      )t4
+    ),nov as (
+      select 
+      json_agg(json_build_object(
+        'quality',t.row_count,
+        'total_price',t.total_price,
+        'order_full',t3.row_count_full,
+        'order_success',t.row_count,
+        'order_cancel',t2.row_count_2,
+        'order_notShip',t4.row_count
+      )) as nov
+      FROM (
+        SELECT
+          COUNT(*) AS row_count,SUM(od.total_order) as total_price
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=6
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 11
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t,(
+        SELECT
+          COUNT(*) AS row_count_2
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-2
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 11
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t2,(
+        SELECT
+          COUNT(*) AS row_count_full
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 11
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t3,(
+        SELECT
+          COUNT(*) AS row_count
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-3
+        AND  od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 11
+        AND EXTRACT('year' from  o.date_order) = ($2)
+      )t4
+    ),dec as (
+      select 
+      json_agg(json_build_object(
+        'quality',t.row_count,
+        'total_price',t.total_price,
+        'order_full',t3.row_count_full,
+        'order_success',t.row_count,
+        'order_cancel',t2.row_count_2,
+        'order_notShip',t4.row_count
+      )) as dec
+      FROM (
+        SELECT
+          COUNT(*) AS row_count,SUM(od.total_order) as total_price
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=6
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 12 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t,(
+        SELECT
+          COUNT(*) AS row_count_2
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-2
+        AND 
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 12 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t2,(
+        SELECT
+          COUNT(*) AS row_count_full
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 12 
+        AND EXTRACT('year' from  o.date_order) = ($2)
+        
+      )t3,(
+        SELECT
+          COUNT(*) AS row_count
+        FROM
+          order_sp o 
+        join 
+          order_detail_sp od ON od.code_order_detail = o.code_order_detail
+        WHERE
+          od.progress=-3
+        AND  od.code_shop=($1) 
+        AND EXTRACT('month' from  o.date_order) = 12
+        AND EXTRACT('year' from  o.date_order) = ($2)
+      )t4
+    )
+    select * from jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
+    `;
+  };
+
+  public static SQL_GET_SETTING_BY_SHOP = () => {
+    return `
+      SELECT * FROM setting_shop_sp where code_shop=($1)
+    `;
+  };
+
+  public static SQL_UPDATE_SETTING_BY_SHOP = () => {
+    return `
+    UPDATE setting_shop_sp
+    SET  info_mail=($2), info_phone=($3), security_login=($4), security_password_v2=($5), auto_backup=($6)
+    WHERE code_shop=($1);
+    `;
+  };
+
+  public static SQL_REMOVE_SHOP = () => {
+    return `
+    with del_shopSp as (
+      DELETE FROM shop_sp where code_shop=($1) RETURNING code_shop_detail
+    ),del_shopDetailSp as (
+      DELETE FROM shop_detail_sp where code_shop_detail = (SELECT code_shop_detail FROM del_shopSp)
+    ),del_productShopSp as (
+      DELETE FROM product_sp where code_shop = ($1) RETURNING code_product_detail 
+    ),del_productShopDetailSp as (
+      DELETE FROM product_detail_sp where code_product_detail = (SELECT code_product_detail FROM del_productShopSp ) RETURNING code_product_guide
+    ),del_productGuideSp as (
+      DELETE FROM product_guide_sp where code_product_guide = (SELECT code_product_guide FROM del_productShopDetailSp )
+    ),del_productType as (
+      DELETE FROM product_type_sp where code_shop=($1)
+    ),del_userShop as (
+      DELETE FROM user_sp where code_shop=($1) and code_user=($2) RETURNING code_user_detail
+    )
+    DELETE FROM user_detail_sp where code_user_detail = (SELECT code_user_detail FROM del_userShop)
+    
+    `;
+  };
+
+  public static SQL_AUTH_CONFIRM_PASSWORD_BY_EMAIL = () => {
+    return `
+      with codeUserDetail_sp as (
+        SELECT code_user_detail from user_detail_sp ud where ud.email=($1)
+      )
+      UPDATE user_sp SET password=($2) where code_user_detail=(SELECT code_user_detail from codeUserDetail_sp ) and code_role='ROLE-WIXX-SHOP'
     `;
   };
 }

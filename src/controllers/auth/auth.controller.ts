@@ -408,6 +408,68 @@ const loginAuthAdmin = async (req: Request, res: Response) => {
     };
     const dataUserModel = await AuthModel.getUserAdminModel(dataSQL);
     const isCheckVerification = await AuthModel.checkLoginVerificationCode(dataSQL);
+    const isCheckSecurity = await AuthModel.checkLoginSecuritySetting(dataSQL);
+    if (dataUserModel.rows.length > 0) {
+      const isPassword = comparePassword(password, dataUserModel.rows[0].password.trim());
+      if (isPassword) {
+        if (isCheckVerification.rows.length === 0) {
+          if (!isCheckSecurity.rows[0].security_login) {
+            delete dataUserModel.rows[0].password;
+            delete dataUserModel.rows[0].passwordResetCode;
+            delete dataUserModel.rows[0].refresh_token;
+            delete dataUserModel.rows[0].verification_code;
+            const tokens = jwtTokens(dataUserModel.rows[0]);
+            res.cookie('jwt', tokens.refreshToken, {
+              expires: new Date(Date.now() + 900000),
+              httpOnly: true,
+              path: '/',
+              maxAge: 24 * 60 * 60 * 1000,
+              sameSite: 'strict',
+            });
+            res.json({
+              token: tokens.accessToken,
+              message: 'Đăng nhập thành công ',
+              data: dataUserModel.rows,
+            });
+          } else {
+            res.status(400).json({
+              type: -2,
+              message: 'Xác thực tài khoản của bạn',
+            });
+          }
+        } else {
+          res.status(400).json({
+            type: -1,
+            message: 'Tải khoản của bạn chưa được kích hoạt',
+          });
+        }
+      } else {
+        res.status(400).json({
+          message: 'Tên tài khoản hoặc mật khẩu không đúng',
+        });
+      }
+    } else {
+      res.status(400).json({
+        message: 'Tên tài khoản hoặc mật khẩu không đúng',
+      });
+    }
+  } catch (err) {
+    res.json({
+      error: 'Error',
+    });
+  }
+};
+
+const loginAuthAdmin2 = async (req: Request, res: Response) => {
+  try {
+    const { user_name, password } = req.body;
+    const dataSQL: AuthLoginAdmin = {
+      user_name: user_name,
+      password: password,
+    };
+    const dataUserModel = await AuthModel.getUserAdminModel(dataSQL);
+    const isCheckVerification = await AuthModel.checkLoginVerificationCode(dataSQL);
+    const isCheckSecurity = await AuthModel.checkLoginSecuritySetting(dataSQL);
     if (dataUserModel.rows.length > 0) {
       const isPassword = comparePassword(password, dataUserModel.rows[0].password.trim());
       if (isPassword) {
@@ -451,6 +513,7 @@ const loginAuthAdmin = async (req: Request, res: Response) => {
     });
   }
 };
+
 const getMeShop = async (req: Request, res: Response) => {
   try {
     const { cookie } = req.headers;
@@ -584,4 +647,5 @@ export {
   verifyAccountByCode,
   checkCodeOTP,
   authUpdatePassword,
+  loginAuthAdmin2,
 };

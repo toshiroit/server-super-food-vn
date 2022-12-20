@@ -12,12 +12,14 @@ export class InfoShopModel extends Model {
     pool.query(SqlRoot.SQL_GET_DETAIL_SHOP(), [data.code_shop.trim(), data.code_user ? data.code_user.trim() : null], callback);
   }
 
-  public static async getCountAllProductShopModel(data: { code_shop: string; q?: string }) {
+  public static async getCountAllProductShopModel(data: { code_shop: string; q?: string; code_type?: string }) {
     const dataResult = [data.code_shop];
     let querySearch = '';
     if (data.q) {
-      querySearch += ` AND converttvkdau(p.name) ilike '%${toLowerCaseNonAccentVietnamese(data.q)}%' `;
-      querySearch += ` OR p.code_product='${data.q}' `;
+      querySearch += ` AND (converttvkdau(p.name) ilike '%${toLowerCaseNonAccentVietnamese(data.q)}%' OR p.code_product='${data.q}')`;
+    }
+    if (data.code_type && data.code_type.length > 0 && data.code_type !== 'null' && data.code_type !== 'undefined') {
+      querySearch += ` OR p.code_product_type=${data.code_type}`;
     }
     const queryResult = SqlRoot.SQL_GET_COUNT_PRODUCT_BY_SHOP() + querySearch;
     return pool.query(queryResult, dataResult);
@@ -41,7 +43,10 @@ export class InfoShopModel extends Model {
     const queryResult = SqlRoot.SQL_GET_ALL_CATEGORY_BY_PRODUCT_SHOP() + querySearch;
     return pool.query(queryResult, [data.code_shop]);
   }
-  public static async getAllProductShopModel(data: { code_shop: string; page: number; type?: string; q?: string }, callback: CallbackHandler) {
+  public static async getAllProductShopModel(
+    data: { code_shop: string; page: number; type?: string; q?: string; code_type?: string },
+    callback: CallbackHandler
+  ) {
     let querySearch = '';
     const { offset, limit } = getPagination(data.page, 20);
     if (data.q) {

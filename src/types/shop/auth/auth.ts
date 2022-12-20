@@ -28,4 +28,5 @@ export type AuthRegisterShopTP = {
   district: string;
   city: string;
   description: string;
+  code_setting: string;
 };

@@ -30,4 +30,6 @@ const auth_middleware_1 = require("../../../middlewares/auth/auth.middleware");
 const router = (0, express_1.Router)();
 router.get(routes_name_1.ROUTES_NAME.ADDRESS.GET_ADDRESS, auth_middleware_1.validateTokenMiddleware, addressController.getAddressByUser);
 router.post(routes_name_1.ROUTES_NAME.ADDRESS.ADD_ADDRESS, auth_middleware_1.validateTokenMiddleware, addressController.addAddressByUser);
+router.get(routes_name_1.ROUTES_NAME.ADDRESS.DETAIL_ADDRESS, auth_middleware_1.validateTokenMiddleware, addressController.getDetailAddressUserByCode);
+router.put(routes_name_1.ROUTES_NAME.ADDRESS.UPDATE_ADDRESS_USER_BY_CODE, auth_middleware_1.validateTokenMiddleware, addressController.updateAddressUserByCode);
 exports.default = router;

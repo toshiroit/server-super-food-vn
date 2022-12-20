@@ -29,19 +29,24 @@ const dataUserTK = (req) => {
 exports.dataUserTK = dataUserTK;
 const getAllProductShop = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { page, type, q } = req.query;
+        const { page, type, q, code_category, code_product_type, price_min, price_max, type_filter } = req.query;
         const { cookie } = req.headers;
         const bearer = cookie === null || cookie === void 0 ? void 0 : cookie.split('=')[0].toLowerCase();
         const token = cookie === null || cookie === void 0 ? void 0 : cookie.split('=')[1];
         const data_user = (0, getUserToken_1.getDataUser)(token, bearer);
         const code_shop = (data_user === null || data_user === void 0 ? void 0 : data_user.payload.code_shop) || '';
-        const dataCountProductShop = yield product_model_2.ProductShopModel.getCountAllProductShopModel({ code_shop: code_shop, q: q || '' });
-        yield product_model_2.ProductShopModel.getAllProductShopModel({
-            code_shop: code_shop,
-            page: Number(page) || 1,
-            type: type || '',
+        const dataSQL = {
+            code_shop,
             q: q || '',
-        }, (err, result) => {
+            code_category: code_category || '',
+            code_product_type: code_product_type || '',
+            page: Number(page) || 1,
+            price_min: Number(price_min) || 0,
+            price_max: Number(price_max) || 1,
+            type_filter: type_filter,
+        };
+        const dataCountProductShop = yield product_model_2.ProductShopModel.getCountAllProductShopModel(dataSQL);
+        yield product_model_2.ProductShopModel.getAllProductShopModel(dataSQL, (err, result) => {
             if (err) {
                 res.json({
                     err: err,
@@ -93,7 +98,7 @@ const addProductShop = (req, res) => __awaiter(void 0, void 0, void 0, function*
             (0, make_id_1.makeId)(15),
             new Date(Date.now()).toISOString(),
             JSON.stringify(req.body.type_product),
-            null,
+            JSON.stringify(req.body.category),
             req.body.date_start || null,
             req.body.date_end || null,
             req.body.isShow,
@@ -205,18 +210,10 @@ const removeProductByShop = (req, res) => __awaiter(void 0, void 0, void 0, func
                 }
                 else {
                     if (result) {
-                        if (result.rowCount === 1) {
-                            res.json({
-                                success: true,
-                                message: 'Xóa dữ liệu thành công ',
-                            });
-                        }
-                        else {
-                            res.json({
-                                success: false,
-                                message: 'Xóa dữ liệu không thành công ',
-                            });
-                        }
+                        res.json({
+                            success: true,
+                            message: 'Xóa dữ liệu thành công ',
+                        });
                     }
                 }
             });
@@ -233,7 +230,6 @@ const addTypeProductByShop = (req, res) => __awaiter(void 0, void 0, void 0, fun
     try {
         const data = req.body;
         const dataUser = (0, exports.dataUserTK)(req);
-        console.log(dataUser);
         const dataSQL = {
             code_product_type: (0, make_id_1.makeId)(15),
             name_product_type: data.name_product_type,

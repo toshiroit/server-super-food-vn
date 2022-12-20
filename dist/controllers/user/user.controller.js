@@ -12,32 +12,34 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateUser = void 0;
-const config_1 = __importDefault(require("../../config/config"));
+exports.updateUser = exports.updatePassword = void 0;
+const data_user_1 = require("../../libs/data_user");
 const user_model_1 = __importDefault(require("../../models/user/user.model"));
-const jwt_token_1 = require("../../utils/jwt/jwt-token");
+const updatePassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // eslint-disable-next-line no-empty
+    try {
+    }
+    catch (error) {
+        res.json({
+            error,
+        });
+    }
+});
+exports.updatePassword = updatePassword;
 const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { cookie } = req.headers;
-        const bearer = cookie === null || cookie === void 0 ? void 0 : cookie.split('=')[0].toLowerCase();
-        const token = cookie === null || cookie === void 0 ? void 0 : cookie.split('=')[1];
-        let dataUser = null;
-        if (token && bearer === 'jwt') {
-            dataUser = (0, jwt_token_1.verifyJWT)(token, config_1.default.refresh_token_secret);
-            delete dataUser.payload.password;
-            delete dataUser.payload.verification_code;
-            delete dataUser.payload.passwordResetCode;
-        }
+        const data_user = yield (0, data_user_1.dataUserTK)(req);
         const data = {
-            fullName: req.body.fullName,
-            sex: req.body.sex,
+            full_name: req.body.full_name,
             date: req.body.date,
-            dataUserLogin: dataUser
+            avatar: req.body.avatar,
+            sex: req.body.sex,
+            code_user: data_user === null || data_user === void 0 ? void 0 : data_user.payload.code_user,
         };
         yield user_model_1.default.updateUserW1(data, (err, result) => {
             if (err) {
                 res.json({
-                    error: err
+                    error: err,
                 });
             }
             else {
@@ -45,13 +47,13 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                     if (result.rowCount === 1) {
                         res.json({
                             command: result.command,
-                            message: "Cập nhật thành công"
+                            message: 'Cập nhật thành công',
                         });
                     }
                     else {
                         res.json({
                             command: result.command,
-                            message: "Cập nhật không thành công"
+                            message: 'Cập nhật không thành công',
                         });
                     }
                 }
@@ -60,7 +62,7 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
     catch (err) {
         res.json({
-            error: "Error"
+            error: 'Error',
         });
     }
 });

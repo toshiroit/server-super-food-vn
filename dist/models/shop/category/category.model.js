@@ -14,9 +14,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CategoryModel = void 0;
 const database_1 = __importDefault(require("../../../database"));
+const nonAccentVietnamese_1 = require("../../../libs/nonAccentVietnamese");
 const Model_1 = __importDefault(require("../../Model"));
 const sql_1 = __importDefault(require("../../sql"));
 class CategoryModel extends Model_1.default {
+    static checkNameCategoryShopModel(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.default.query(sql_1.default.SQL_CHECK_NAME_CATEGORY_BY_SHOP(), [(0, nonAccentVietnamese_1.toLowerCaseNonAccentVietnamese)(data.name_category), data.code_shop]);
+        });
+    }
+    static removeCategoryShopModel(data, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            database_1.default.query(sql_1.default.SQL_REMOVE_CATEGORY_BY_SHOP(), [data.category_code, data.code_shop], callback);
+        });
+    }
     static getCategoryProductShopModel(data, callback) {
         return __awaiter(this, void 0, void 0, function* () {
             const dataSQL = [data.code_shop];
@@ -25,8 +36,19 @@ class CategoryModel extends Model_1.default {
     }
     static getAllCategoryByShopModel(data, callback) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("CODE SHOP : ", data.code_shop);
             database_1.default.query(sql_1.default.SQL_GET_ALL_CATEGORY_BY_SHOP(), [data.code_shop.trim()], callback);
+        });
+    }
+    static addNewCategoryByShopModel(data, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const dataSQL = [data.category_code, data.name_category, data.image, data.info_category, data.status_category, data.code_shop];
+            database_1.default.query(sql_1.default.SQL_ADD_CATEGORY_BY_SHOP(), dataSQL, callback);
+        });
+    }
+    static updateCategoryByShopModel(data, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const dataSQL = [data.category_code, data.code_shop, data.name_category, data.image, data.info_category, data.status_category];
+            database_1.default.query(sql_1.default.SQL_UPDATE_CATEGORY_BY_SHOP(), dataSQL, callback);
         });
     }
 }

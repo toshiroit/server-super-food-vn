@@ -27,5 +27,48 @@ class AuthModel extends Model_1.default {
             database_1.default.query(sql_1.default.SQL_REGISTER_SHOP(), data, callback);
         });
     }
+    static authCheckVerificationCode(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.default.query(sql_1.default.SQL_AUTH_CHECK_VERIFICATION_BY_USER(), [data.user_name, data.verification_code]);
+        });
+    }
+    static authIsCheckVerification(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.default.query(sql_1.default.SQL_AUTH_IS_VERIFICATION_BY_USER(), [data.user_name, data.verification_code]);
+        });
+    }
+    static authActiveAccountShopByUser(data, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            database_1.default.query(sql_1.default.SQL_ACTIVE_ACCOUNT_SHOP_BY_USER(), [data.user_name], callback);
+        });
+    }
+    static authGetVerificationCodeByUserName(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.default.query(sql_1.default.SQL_AUTH_GET_VERIFICATION_ACCOUNT_BY_USER_NAME(), [data.user_name]);
+        });
+    }
+    static authCheckPasswordByShop(data, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            database_1.default.query(sql_1.default.SQL_GET_DATA_USER_BY_CODE_USER_SHOP(), [data.code_shop, data.user_name], callback);
+        });
+    }
+    static authUpdateUserByShopModel(data, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const dataSQL = [
+                data.code_shop,
+                data.avatar,
+                data.name_shop,
+                data.full_name,
+                data.email,
+                data.phone,
+                data.facebook,
+                data.background_shop,
+                data.description,
+                data.youtube,
+            ];
+            console.log(dataSQL);
+            database_1.default.query(sql_1.default.SQL_AUTH_UPDATE_USER_SHOP_BY_CODE(), dataSQL, callback);
+        });
+    }
 }
 exports.AuthModel = AuthModel;

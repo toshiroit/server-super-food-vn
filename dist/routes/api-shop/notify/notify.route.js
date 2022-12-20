@@ -29,4 +29,5 @@ const notifyShopController = __importStar(require("../../../controllers/shop/not
 const routes_name_1 = require("../../../constants/routes_name");
 const router = (0, express_1.Router)();
 router.get(routes_name_1.ROUTES_NAME_SHOP.NOTIFY.GET_ALL_NOTIFY_SHOP, auth_middleware_1.validateTokenAdminShopMiddleware, notifyShopController.getAllNotifyByShop);
+router.get(routes_name_1.ROUTES_NAME_SHOP.NOTIFY.GET_DETAIL_NOTIFY, auth_middleware_1.validateTokenAdminShopMiddleware, notifyShopController.getDetailNotifyByShop);
 exports.default = router;

@@ -12,9 +12,9 @@ const pool = new pg_1.Pool({
     password: config_1.default.pass_db,
     port: config_1.default.port_DB,
     // ssl: {
-    //   rejectUnauthorized: false,
+    //   rejectUnauthorized: false, //  rejectUnauthorized SSL
     // },
-    max: 4,
+    max: 4, // Tối đa kết nối
 });
 pool.on('error', (error) => {
     console.error(error.message);

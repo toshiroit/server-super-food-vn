@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addAddressByUser = exports.getAddressByUser = void 0;
+exports.updateAddressUserByCode = exports.getDetailAddressUserByCode = exports.addAddressByUser = exports.getAddressByUser = void 0;
 const getUserToken_1 = require("../../libs/getUserToken");
 const address_model_1 = require("../../models/address/address.model");
 const dataUserTK = (req) => {
@@ -157,3 +157,83 @@ const addAddressByUser = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.addAddressByUser = addAddressByUser;
+const getDetailAddressUserByCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const data_user = dataUserTK(req);
+        const dataSQL = {
+            code_user: data_user === null || data_user === void 0 ? void 0 : data_user.payload.code_user,
+            code_address: req.query.code_address || '',
+        };
+        yield address_model_1.AddressModel.getDetailAddressUserByCode(dataSQL, (err, result) => {
+            if (err) {
+                res.json({
+                    error: err,
+                });
+            }
+            else {
+                if (result) {
+                    if (result.rows.length > 0) {
+                        res.json({
+                            data: result.rows[0],
+                        });
+                    }
+                    else {
+                        res.status(400).json({
+                            message: 'Không tồn tại địa chỉ',
+                        });
+                    }
+                }
+            }
+        });
+    }
+    catch (err) {
+        res.json({
+            error: err,
+        });
+    }
+});
+exports.getDetailAddressUserByCode = getDetailAddressUserByCode;
+const updateAddressUserByCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const data_user = dataUserTK(req);
+        const dataSQL = req.body;
+        dataSQL.data.code_user = data_user === null || data_user === void 0 ? void 0 : data_user.payload.code_user;
+        if (dataSQL.data.status) {
+            const dataUpdateStatus = {
+                code_user: dataSQL.data.code_user,
+                status: false,
+                code_address: dataSQL.data.code_address,
+            };
+            yield address_model_1.AddressModel.updateStatusAddressByUserModel(dataUpdateStatus);
+        }
+        yield address_model_1.AddressModel.updateAddressUserByCodeModel(dataSQL, (err, result) => {
+            if (err) {
+                res.json({
+                    error: err,
+                });
+            }
+            else {
+                if (result) {
+                    if (result.rowCount > 0) {
+                        res.json({
+                            code_address: dataSQL.data.code_address,
+                            message: 'Cập nhật địa chỉ thành công ',
+                        });
+                    }
+                    else {
+                        res.status(400).json({
+                            code_address: dataSQL.data.code_address,
+                            message: 'Không thể cập nhật đỉa chỉ',
+                        });
+                    }
+                }
+            }
+        });
+    }
+    catch (err) {
+        res.json({
+            error: err,
+        });
+    }
+});
+exports.updateAddressUserByCode = updateAddressUserByCode;

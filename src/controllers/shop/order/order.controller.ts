@@ -209,13 +209,11 @@ export const getOrderDetailByOrderAndShop = async (req: Request, res: Response) 
 };
 export const removeOrderByShop = async (req: Request, res: Response) => {
   try {
-    const { cookie } = req.headers;
-    const bearer = cookie?.split('=')[0].toLowerCase();
-    const token = cookie?.split('=')[1];
-    const data_user = getDataUser(token, bearer);
+    const data_user = await dataUserTK(req);
     const dataSQL: RemoveOrderByShopTp = {
       code_order: req.query.code_order as string,
       code_shop: data_user?.payload.code_shop,
+      code_order_arr: req.query.code_order_arr as any,
     };
     await OrderModel.removeOrderByShopModel(dataSQL, (err, result) => {
       if (err) {

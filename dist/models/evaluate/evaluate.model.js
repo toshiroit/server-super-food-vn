@@ -39,5 +39,45 @@ class EvaluateModel extends Model_1.default {
             return database_1.default.query(sql_1.default.SQL_CHECK_EVALUATE_BY_PRODUCT_USER_ORDER(), [data.code_user, data.code_product, data.code_order]);
         });
     }
+    static getCountEvaluateByProduct(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.default.query(sql_1.default.SQL_GET_COUNT_EVALUATE_BY_PRODUCT(), [data.code_product]);
+        });
+    }
+    static getEvaluateByProduct(data, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            database_1.default.query(sql_1.default.SQL_GET_EVALUATE_BY_PRODUCT(), [data.code_product, data.limit], callback);
+        });
+    }
+    static getCountEvaluate5Model(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.default.query(sql_1.default.SQL_GET_EVALUATE_PRODUCT_5(), [data.code_product]);
+        });
+    }
+    static getCountEvaluate4Model(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.default.query(sql_1.default.SQL_GET_EVALUATE_PRODUCT_4(), [data.code_product]);
+        });
+    }
+    static getCountEvaluate3Model(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.default.query(sql_1.default.SQL_GET_EVALUATE_PRODUCT_3(), [data.code_product]);
+        });
+    }
+    static getCountEvaluate2Model(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.default.query(sql_1.default.SQL_GET_EVALUATE_PRODUCT_2(), [data.code_product]);
+        });
+    }
+    static getCountEvaluate1Model(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.default.query(sql_1.default.SQL_GET_EVALUATE_PRODUCT_1(), [data.code_product]);
+        });
+    }
+    static getCountAllEvaluateModel(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.default.query(sql_1.default.SQL_GET_COUNT_ALL_EVALUATE_PRODUCT(), [data.code_product]);
+        });
+    }
 }
 exports.EvaluateModel = EvaluateModel;

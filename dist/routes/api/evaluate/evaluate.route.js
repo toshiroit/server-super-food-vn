@@ -32,4 +32,5 @@ const evaluate_schema_1 = require("../../../schemas/evaluate/evaluate.schema");
 const router = (0, express_1.Router)();
 router.post(routes_name_1.ROUTES_NAME.EVALUATE.ADD_EVALUATE, auth_middleware_1.validateTokenMiddleware, (0, validateResource_1.validateResource)(evaluate_schema_1.addEvaluateByProductSchema), evaluateController.addEvaluateByProduct);
 router.get(routes_name_1.ROUTES_NAME.EVALUATE.CHECK_EVALUATE, auth_middleware_1.validateTokenMiddleware, evaluateController.checkEvaluateByProductUserOrder);
+router.get(routes_name_1.ROUTES_NAME.EVALUATE.GET_EVALUATE, evaluateController.getEvaluateByProduct);
 exports.default = router;

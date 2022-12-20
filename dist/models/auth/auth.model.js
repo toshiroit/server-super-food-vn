@@ -83,6 +83,17 @@ class AuthModel extends Model_1.default {
             return database_1.default.query(sql_1.default.SQL_GET_USER_ADMIN(), dataResult);
         });
     }
+    static getUserWModel(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.default.query(sql_1.default.SQL_GET_USER_W(), [data.code_user]);
+        });
+    }
+    static checkLoginVerificationCode(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const dataSQL = [data.user_name];
+            return database_1.default.query(sql_1.default.SQL_GET_CHECK_VERIFICATION_LOGIN_ADMIN(), dataSQL);
+        });
+    }
     static getMeShopModel(data, callback) {
         return __awaiter(this, void 0, void 0, function* () {
             const dataResult = [data.code_user];
@@ -91,8 +102,35 @@ class AuthModel extends Model_1.default {
     }
     static getMeUser(data, callback) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('CODE USER : ', data.code_user);
             database_1.default.query(sql_1.default.SQL_GET_ME_USER(), [data.code_user], callback);
+        });
+    }
+    static authUpdatePassword(data, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            database_1.default.query(sql_1.default.SQL_UPDATE_USER_PASSWORD(), [data.password, data.code_user], callback);
+        });
+    }
+    static authRestPassword(data, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            database_1.default.query(sql_1.default.SQL_UPDATE_USER_NEW_PASSWORD(), [data.password, data.phone], callback);
+        });
+    }
+    static sendNewPassModel(data, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            (0, twilio_1.default)(config_1.default.twilio_account_sid, config_1.default.twilio_auth_token, {
+                lazyLoading: true,
+            })
+                .messages.create({
+                from: config_1.default.twilio_phone,
+                to: `+84${data.phone}`,
+                body: `Mật khẩu mới của bạn là : ${data.new_password}`,
+            })
+                .then(res => {
+                return callback(null, res);
+            })
+                .catch(err => {
+                return callback(err, null);
+            });
         });
     }
 }
@@ -135,7 +173,7 @@ AuthModel.loginUserModel = (valueQuery, callback) => __awaiter(void 0, void 0, v
             'ROLE-WIXO-USER',
             valueQuery.value.phone,
             new Date(Date.now()).toISOString(),
-            false,
+            1,
             valueQuery.value.verification_code,
             valueQuery.value.full_name,
             valueQuery.value.sex,

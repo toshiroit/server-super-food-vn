@@ -9,7 +9,7 @@ import { AuthModel } from '../../../models/shop/auth/auth.model';
 import { AuthRegisterShop } from '../../../schemas/shop/auth/auth.schema';
 import { UserDataUpdate } from '../../../types/auth/auth.type';
 import { AuthRegisterShopTP } from '../../../types/shop/auth/auth';
-
+import { loginAuthAdmin2 } from '../../auth/auth.controller';
 const dataUserTK = (req: Request) => {
   const { cookie } = req.headers;
   const bearer = cookie?.split('=')[0].toLowerCase();
@@ -68,6 +68,35 @@ export const getCodeVerificationAccount = async (req: Request, res: Response) =>
   }
 };
 
+export const authSecurityLogin = async (req: Request, res: Response) => {
+  try {
+    const { verification_code, user_name, password } = req.body;
+    const dataSQLActive = {
+      user_name,
+      verification_code,
+    };
+    const data_check = await AuthModel.authCheckVerificationCode(dataSQLActive);
+    if (data_check.rows[0] && data_check.rows[0].count > 0) {
+      const data_isCheck = await AuthModel.authIsCheckVerification(dataSQLActive);
+      if (data_isCheck.rows[0] && data_isCheck.rows[0].count === '0') {
+        res.json({
+          error: 'Error login',
+        });
+      } else {
+        loginAuthAdmin2(req, res);
+      }
+    } else {
+      res.status(400).json({
+        message: 'Tải khoản không tồn tại hoặc mã kích hoạt không tòn tại ',
+      });
+    }
+  } catch (error) {
+    res.json({
+      error,
+    });
+  }
+};
+
 export const activeAccountRegister = async (req: Request, res: Response) => {
   const { verification_code, user_name } = req.body;
   try {
@@ -78,7 +107,6 @@ export const activeAccountRegister = async (req: Request, res: Response) => {
     const data_check = await AuthModel.authCheckVerificationCode(dataSQLActive);
     if (data_check.rows[0] && data_check.rows[0].count > 0) {
       const data_isCheck = await AuthModel.authIsCheckVerification(dataSQLActive);
-      console.log('CHECK ', data_isCheck.rows);
       if (data_isCheck.rows[0] && data_isCheck.rows[0].count === '0') {
         await AuthModel.authActiveAccountShopByUser({ user_name: dataSQLActive.user_name }, (err, result) => {
           if (err) {
@@ -105,6 +133,7 @@ export const activeAccountRegister = async (req: Request, res: Response) => {
       }
     } else {
       res.status(400).json({
+        type: -2,
         message: 'Tải khoản không tồn tại hoặc mã kích hoạt không tòn tại ',
       });
     }
@@ -147,10 +176,12 @@ export const authRegister = async (req: Request<unknown, unknown, AuthRegisterSh
       district: req.body.district,
       city: req.body.city,
       description: req.body.description,
+      code_setting: makeId(15),
     };
     const dataCheckRegister = {
       user_name: req.body.username,
       phone: req.body.phone,
+      email: req.body.email,
     };
     const dataRegisterShopSQL = [
       dataRegister.code_user, //1
@@ -185,6 +216,7 @@ export const authRegister = async (req: Request<unknown, unknown, AuthRegisterSh
       dataRegister.name_shop, //30
       dataRegister.code_shop_detail, //31
       dataRegister.description, // 32
+      dataRegister.code_setting, //33
     ];
     const dataUser = await AuthModel.authCheckUser(dataCheckRegister);
     if (dataUser.rows) {
@@ -216,7 +248,7 @@ export const authRegister = async (req: Request<unknown, unknown, AuthRegisterSh
           res.status(400).json({
             status: 400,
             error_type: 1,
-            message: 'Tài khoản hoặc số điện thoại đã được đăng kí',
+            message: 'Tài khoản hoặc số điện thoại hoặc Email đã được đăng kí',
           });
         }
       }
@@ -257,6 +289,110 @@ export const authCheckPasswordByUserShop = async (req: Request, res: Response) =
         }
       }
     });
+  } catch (error) {
+    res.json({
+      error,
+    });
+  }
+};
+
+export const authRemoveShop = async (req: Request, res: Response) => {
+  try {
+    const data_user = await dataUserTK(req);
+    const dataSQL = {
+      code_shop: data_user?.payload.code_shop,
+      code_user: data_user?.payload.code_user,
+    };
+    await AuthModel.authRemoveShop(dataSQL, (err, result) => {
+      if (err) {
+        res.json({
+          error: err,
+        });
+      } else {
+        if (result) {
+          res.json({
+            data: result,
+          });
+        }
+      }
+    });
+  } catch (error) {
+    res.json({
+      error,
+    });
+  }
+};
+
+export const authRestNewPassword = async (req: Request, res: Response) => {
+  try {
+    const { data } = req.query;
+    const dataSQL = {
+      user_name: data as string,
+      email: data as string,
+    };
+    const is_check = await AuthModel.authCheckUserShop2(dataSQL);
+    const capChaRestPass = makeId(45);
+    if (is_check.rows.length > 0 && is_check.rows[0]) {
+      const data = await sendMail({
+        from: config.node_mailer_user,
+        to: is_check.rows[0].email,
+        subject: `Xác nhận thay đổi mật khẩu tài khoản`,
+        html: `Nếu bạn là người muốn đổi mật khẩu tài khoản này hãy nhấn vào đây  <a href="${config.domain_web_client_shop}/rest-pass?token=${capChaRestPass}&email=${dataSQL.email}">Đổi mật khẩu ngay</a>`,
+      });
+      res.cookie('cap-cha', capChaRestPass, {
+        expires: new Date(Date.now() + 6000 * 3000),
+        httpOnly: true,
+        path: '/',
+        maxAge: 60 * 3000,
+        sameSite: 'strict',
+      });
+      res.json({
+        message: 'Kiểm tra hộp thư của bạn',
+      });
+    } else {
+      res.status(400).json({
+        message: 'Tài khoản hoặc Email không tồn tại trên hệ thống',
+      });
+    }
+  } catch (error) {
+    res.json({
+      error,
+    });
+  }
+};
+
+export const authConfirmRestPassword = async (req: Request, res: Response) => {
+  try {
+    const { token, email } = req.query;
+    const { password } = req.body;
+    const { cookie } = req.headers;
+    const bearer = cookie?.split('=')[0].toLowerCase();
+    const token2 = cookie?.split('=')[1];
+    console.log(bearer, '===', token2);
+    if (cookie && token2 && bearer === 'cap-cha' && token2 === token) {
+      const dataSQL = {
+        email: email as string,
+        password: hasPassword(password as string),
+      };
+      await AuthModel.authConfirmRestPasswordModel(dataSQL, (err, result) => {
+        if (err) {
+          res.json({
+            error: err,
+          });
+        } else {
+          if (result) {
+            res.clearCookie('cap-cha');
+            res.json({
+              message: 'Thay đổi mật khẩu thành công ',
+            });
+          }
+        }
+      });
+    } else {
+      res.status(400).json({
+        message: 'Cap cha không tồn tại hoặc bị lỗi',
+      });
+    }
   } catch (error) {
     res.json({
       error,

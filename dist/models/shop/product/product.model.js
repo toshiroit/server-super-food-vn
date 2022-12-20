@@ -24,8 +24,29 @@ class ProductShopModel extends Model_1.default {
         return __awaiter(this, void 0, void 0, function* () {
             const dataResult = [data.code_shop];
             let sql_result = sql_1.default.SQL_GET_COUNT_PRODUCT_BY_SHOP();
-            if (data.q) {
+            if (data.q && data.q.length > 0) {
                 sql_result += ` AND converttvkdau(p.name) ilike '%${(0, nonAccentVietnamese_1.toLowerCaseNonAccentVietnamese)(data.q)}%'  OR p.code_product='${data.q}' `;
+            }
+            if (data.code_category) {
+                // sql_result += ` and jsonb_array_elements.value ->>'code' IN ('${data.code_category}')`;
+            }
+            if (data.price_min && data.price_min >= 1000 && data.price_max) {
+                sql_result += ` and p.price BETWEEN ${data.price_min} AND ${data.price_max} `;
+            }
+            if (data.code_product_type) {
+                sql_result += ` AND p.code_product_type='${data.code_product_type}' `;
+            }
+            if (data.type_filter === 'ALL') {
+                sql_result += ` `;
+            }
+            else if (data.type_filter === 'SELL') {
+                sql_result += ` `;
+            }
+            else if (data.type_filter === 'BLOCK') {
+                sql_result += ` AND pd.is_show=-2 `;
+            }
+            else if (data.type_filter === 'HIDE') {
+                sql_result += ` AND pd.is_show=-1 `;
             }
             return database_1.default.query(sql_result, dataResult);
         });
@@ -33,11 +54,31 @@ class ProductShopModel extends Model_1.default {
     static getAllProductShopModel(data, callback) {
         return __awaiter(this, void 0, void 0, function* () {
             let querySearch = '';
-            const { offset, limit } = (0, getPagination_1.getPagination)(data.page, Number(config_1.default.table_product_shop_limit_show));
+            const { offset, limit } = (0, getPagination_1.getPagination)(data.page || 1, Number(config_1.default.table_product_shop_limit_show));
             if (data.q) {
-                console.log(data.q);
                 querySearch += ` AND converttvkdau(p.name) ilike '%${(0, nonAccentVietnamese_1.toLowerCaseNonAccentVietnamese)(data.q)}%' `;
                 querySearch += ` OR p.code_product='${data.q}' `;
+            }
+            if (data.code_product_type) {
+                querySearch += `  AND p.code_product_type='${data.code_product_type}' `;
+            }
+            if (data.code_category) {
+                // querySearch += ` and jsonb_array_elements.value ->>'code' IN ('${data.code_category}')`;
+            }
+            if (data.type_filter === 'ALL') {
+                querySearch += ` `;
+            }
+            else if (data.type_filter === 'SELL') {
+                querySearch += ` `;
+            }
+            else if (data.type_filter === 'BLOCK') {
+                querySearch += ` AND pd.is_show=-2 `;
+            }
+            else if (data.type_filter === 'HIDE') {
+                querySearch += ` AND pd.is_show=-1 `;
+            }
+            if (data.price_min && data.price_min >= 0 && data.price_max && data.price_max !== 0) {
+                querySearch += ` and p.price BETWEEN ${data.price_min} AND ${data.price_max} `;
             }
             if (data.type) {
                 if (data.type === 'top-pay') {

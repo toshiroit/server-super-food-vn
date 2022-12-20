@@ -23,10 +23,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const auth_middleware_1 = require("./../../../middlewares/auth/auth.middleware");
 const express_1 = require("express");
 const routes_name_1 = require("../../../constants/routes_name");
-const auth_middleware_1 = require("../../../middlewares/auth/auth.middleware");
 const notifyController = __importStar(require("../../../controllers/notify/notify.controller"));
 const router = (0, express_1.Router)();
 router.post(routes_name_1.ROUTES_NAME.NOTIFY.ADD_NOTIFY_NEW_SHOP, auth_middleware_1.validateTokenMiddleware, notifyController.addNewNotifyShop);
+router.get(routes_name_1.ROUTES_NAME.NOTIFY.GET_ALL_NOTIFY_USER, auth_middleware_1.validateTokenMiddleware, notifyController.getAllNotifyUser);
 exports.default = router;

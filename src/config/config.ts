@@ -45,6 +45,7 @@ const {
   NODE_MAILER_HOST,
   NODE_MAILER_PORT,
   NODE_MAILER_ENCRYPTION,
+  DOMAIN_WEB_ADMIN,
 } = process.env;
 export default {
   port: PORT,

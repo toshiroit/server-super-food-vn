@@ -50,6 +50,7 @@ export const ROUTES_NAME = {
     GET_ORDER_DETAIL_BY_CODE: '/get-order',
     GET_ORDER_BY_USER: '/get-order-user',
     GET_ORDER_BY_ALL_ADMIN: '/get-order-all',
+    CONFIRM_ORDER_SUCCESS: '/confirm-order-success',
   },
   ADDRESS: {
     HOME: '/address',
@@ -109,6 +110,10 @@ export const ROUTES_NAME_SHOP = {
     UPDATE_USER: '/update-user',
     LOGOUT: '/logout',
     CHECK_PASSWORD: '/check-password',
+    REMOVE_SHOP: '/remove-shop',
+    LOGIN_SECURITY: '/security-login',
+    REST_PASSWORD: '/rest-pass',
+    CONFIRM_REST_PASSWORD: '/confirm-rest-password',
   },
   GET_INDEX_DATA: {
     DATA: '/get-data',
@@ -171,6 +176,16 @@ export const ROUTES_NAME_SHOP = {
     ADD_NEW_VOUCHER: '/add-new-voucher',
     UPDATE_VOUCHER: '/update-voucher',
     REMOVE_VOUCHER: '/remove-voucher',
+  },
+  STATISTICAL: {
+    HOME: '/statistical',
+    GET_STATISTICAL: '/get-statistical',
+    GET_STATISTICAL_FULL: '/get-statistical-full',
+  },
+  SETTING: {
+    HOME: '/setting',
+    GET_SETTING: '/get-setting-by-shop',
+    UPDATE_SETTING: '/update-setting-by-shop',
   },
 };
 export const SOCKET_ROUTE = {

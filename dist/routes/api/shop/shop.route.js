@@ -31,4 +31,6 @@ const router = (0, express_1.Router)();
 router.get(routes_name_1.ROUTES_NAME.SHOP.DETAIL_SHOP, shopController.shopInfoDetailByCodeShop);
 router.get(routes_name_1.ROUTES_NAME.SHOP.PRODUCT_SHOP, shopController.getAllProductByShop);
 router.post(routes_name_1.ROUTES_NAME.SHOP.FOLLOW_SHOP, auth_middleware_1.validateTokenMiddleware, shopController.followShopByUser);
+router.delete(routes_name_1.ROUTES_NAME.SHOP.DISABLE_FOLLOW_SHOP, auth_middleware_1.validateTokenMiddleware, shopController.disableFollowShopByUser);
+router.get(routes_name_1.ROUTES_NAME.SHOP.CATEGORY_SHOP, shopController.getAllCategoryShop);
 exports.default = router;

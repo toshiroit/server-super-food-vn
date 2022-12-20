@@ -19,7 +19,20 @@ const sql_1 = __importDefault(require("../../sql"));
 class NotifyShopModel extends Model_1.default {
     static getAllNotifyByShopModel(data, callback) {
         return __awaiter(this, void 0, void 0, function* () {
-            database_1.default.query(sql_1.default.SQL_GET_ALL_NOTIFY_SHOP(), [data.code_shop, data.limit], callback);
+            let sql_result = sql_1.default.SQL_GET_ALL_NOTIFY_SHOP();
+            if (data.type === 1) {
+                sql_result += ` AND type=${data.type} `;
+            }
+            else if (data.type === 2) {
+                sql_result += ` AND type=${data.type} `;
+            }
+            sql_result += ` LIMIT ($2) `;
+            database_1.default.query(sql_result, [data.code_shop, data.limit], callback);
+        });
+    }
+    static getDetailNotifyByShopModel(data, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            database_1.default.query(sql_1.default.SQL_GET_DETAIL_NOTIFY_SHOP(), [data.code_shop, data.code_notify], callback);
         });
     }
 }

@@ -35,9 +35,9 @@ class UserModel extends Model_1.default {
     }
     static updateUserW1(data, callback) {
         return __awaiter(this, void 0, void 0, function* () {
-            const code_user_detail_ds = data.dataUserLogin.payload.code_user_detail;
-            const resultData = [data.fullName, data.sex, data.date, code_user_detail_ds];
-            database_1.default.query(sql_1.default.SQL_UPDATE_USER_W1(), resultData, callback);
+            //const resultData = [data.fullName, data.sex, data.date, code_user_detail_ds];
+            const dataSQL = [data.avatar, data.code_user, data.full_name, data.sex, data.date];
+            database_1.default.query(sql_1.default.SQL_UPDATE_USER_W1(), dataSQL, callback);
         });
     }
 }
