@@ -176,13 +176,16 @@ class SqlRoot {
       `;
   };
   public static SQL_GET_CART_BY_CODE_USER = () => {
-    return ` select c.*,p.*,s.*,pd.discount,v.code_w_voucher,v.price_voucher,
-                v.name_voucher,v.quality as quality_voucher,v.time_start,v.time_end,v.description
+    return `select c.*,p.*,s.*,pd.discount,
+                  (
+                    select json_agg(v.*) from voucher_sp v 
+                    cross join jsonb_to_recordset(v.code_product) as al(code_product varchar)
+                    where al.code_product=p.code_product
+                  ) as voucher_product
                 from cart_sp c 
 	              join user_sp u on u.code_user = c.code_user 
 		            join product_sp p on p.code_product = c.code_product 
                 join product_detail_sp pd on pd.code_product_detail = p.code_product_detail
-                left join voucher_sp v on v.code_product = p.code_product
                 left join shop_sp s on s.code_shop = p.code_shop
 		            where u.code_user=($1)`;
   };
@@ -753,15 +756,8 @@ class SqlRoot {
       ),
       rmProductGuide_sp as (
 	      DELETE FROM product_guide_sp where code_product_guide in (select code_product_guide from rmProductDetail_sp)
-      ),
-      rmVoucher_sp as (
-	      DELETE FROM voucher_sp where code_product in (select code_product from rmProduct_sp)
-	      RETURNING code_type_voucher
-      ),
-      rmVoucherType as (
-	      DELETE FROM voucher_type_sp where code_type_voucher in (select code_type_voucher from rmVoucher_sp)
       )
-        DELETE FROM cart_sp where cart_sp.code_product in (select code_product from rmProduct_sp)
+      DELETE FROM cart_sp where cart_sp.code_product in (select code_product from rmProduct_sp)
     `;
   };
 

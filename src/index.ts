@@ -45,20 +45,12 @@ app.use(cookieParser());
 app.use(express.static(__dirname));
 
 // Change domain cors
+const ip_connect = config.domain_web_connect_list as string;
+
 app.use(
   cors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3001', 'http://localhost:4005'],
-    // origin: [
-    //   '*',
-    //   config.domain_admin,
-    //   config.domain_web_client,
-    //   config.domain_web_client_shop,
-    //   'https://super-food-vn.vercel.app',
-    //   'http://localhost:3001',
-    //   'http://localhost:4005',
-    //   'https://admin-super-food.vercel.app',
-    // ],
-    //   methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH', 'OPTIONS'],
+    origin: ip_connect.split(','),
+    methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH', 'OPTIONS'],
     credentials: true,
     preflightContinue: false,
   })
@@ -90,7 +82,7 @@ const server = app.listen(process.env.PORT || 8080, async () => {
 });
 const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(server, {
   cors: {
-    origin: ['http://localhost:3001', 'http://localhost:3000'],
+    origin: '*',
     methods: ['GET', 'POST'],
   },
 });

@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 const {
   PORT,
+  DOMAIN_WEB_CONNECT_LIST,
   POSTGRES_TEST_HOST,
   POSTGRES_TEST_USER,
   POSTGRES_TEST_PASS,
@@ -92,4 +93,5 @@ export default {
   node_mail_host: NODE_MAILER_HOST,
   node_mail_encryption: NODE_MAILER_ENCRYPTION,
   node_mail_port: NODE_MAILER_PORT,
+  domain_web_connect_list: DOMAIN_WEB_CONNECT_LIST,
 };

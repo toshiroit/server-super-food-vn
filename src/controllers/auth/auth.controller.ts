@@ -582,9 +582,8 @@ const authUpdatePassword = async (req: Request, res: Response) => {
 };
 const authRestPassword = async (req: Request, res: Response) => {
   try {
-    const { phone } = req.body;
-    const password = makeId(12);
-    AuthModel.authRestPassword({ phone: (phone as string) || '', password: hasPassword(password) || '' }, (err, result) => {
+    const { phone, password } = req.body;
+    AuthModel.authRestPassword({ phone: (phone as string) || '', password: hasPassword(password as string) || '' }, (err, result) => {
       if (err) {
         res.json({
           error: err,
@@ -592,16 +591,8 @@ const authRestPassword = async (req: Request, res: Response) => {
       } else {
         if (result) {
           if (result.rowCount > 0) {
-            AuthModel.sendNewPassModel({ new_password: password as string, phone: phone as string }, (err, result) => {
-              if (err) {
-                res.json({
-                  error_new: err,
-                });
-              } else {
-                res.json({
-                  message: 'Thay đổi mật khẩu thành công',
-                });
-              }
+            res.status(200).json({
+              message: 'Thay đổi mật khẩu thành công',
             });
           } else {
             res.status(400).json({

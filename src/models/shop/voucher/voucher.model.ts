@@ -44,7 +44,9 @@ export class VoucherModel extends Model {
       data.createdat,
       data.quality,
       data.code_shop,
-      JSON.stringify(data.code_product),
+      data.code_product.length > 0 && JSON.stringify(data.code_product) !== 'null' && JSON.stringify(data.code_product) !== 'undefined'
+        ? JSON.stringify(data.code_product)
+        : null,
       data.type_price === 'price' ? 1 : 2,
     ];
     pool.query(SqlRoot.SQL_ADD_NEW_VOUCHER_BY_SHOP(), dataSQL, callback);
