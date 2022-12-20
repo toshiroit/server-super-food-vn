@@ -23,6 +23,9 @@ export class OrderModel extends Model {
     ) {
       sql_result += ` AND o.date_order BETWEEN '${data.date_start}' and '${data.date_end}' `;
     }
+    if (data.status_order === 'all') {
+      sql_result += ` `;
+    }
     if (data.status_order === '-1') {
       sql_result += ` AND od.progress=-1 `;
     }
@@ -46,6 +49,9 @@ export class OrderModel extends Model {
     }
     if (data.status_order === '45') {
       sql_result += ` AND (od.progress=4 OR od.progress=5) `;
+    }
+    if (data.status_order === '56') {
+      sql_result += ` AND (od.progress=5 OR od.progress=6) `;
     }
     if (data.status_order === '5') {
       sql_result += ` AND od.progress=5 `;
@@ -91,6 +97,9 @@ export class OrderModel extends Model {
     ) {
       sql_result += ` AND o.date_order BETWEEN '${data.date_start}' and '${data.date_end}' `;
     }
+    if (data.status_order === 'all') {
+      sql_result += ` `;
+    }
     if (data.status_order === '-1') {
       sql_result += ` AND od.progress=-1 `;
     }
@@ -111,6 +120,9 @@ export class OrderModel extends Model {
     }
     if (data.status_order === '5') {
       sql_result += ` AND od.progress=5 `;
+    }
+    if (data.status_order === '56') {
+      sql_result += ` AND (od.progress=5 OR od.progress=6) `;
     }
     if (data.status_order === '6') {
       sql_result += ` AND od.progress=6 `;
