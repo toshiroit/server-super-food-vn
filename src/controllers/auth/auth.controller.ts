@@ -206,7 +206,7 @@ const loginUser = async (req: Request, res: Response) => {
             path: '/',
             maxAge: 24 * 60 * 60 * 1000,
             sameSite: 'none',
-            secure: false,
+            secure: true,
           });
           res.json({
             token: tokens.accessToken,
