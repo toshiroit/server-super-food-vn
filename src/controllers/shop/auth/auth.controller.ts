@@ -338,6 +338,7 @@ export const authRestNewPassword = async (req: Request, res: Response) => {
         path: '/',
         maxAge: 60 * 3000,
         sameSite: 'none',
+        secure: true,
       });
       res.json({
         message: 'Kiểm tra hộp thư của bạn',

@@ -415,6 +415,7 @@ const loginAuthAdmin = async (req: Request, res: Response) => {
               path: '/',
               maxAge: 24 * 60 * 60 * 1000,
               sameSite: 'none',
+              secure: true,
             });
             res.json({
               token: tokens.accessToken,
@@ -475,6 +476,7 @@ const loginAuthAdmin2 = async (req: Request, res: Response) => {
             path: '/',
             maxAge: 24 * 60 * 60 * 1000,
             sameSite: 'none',
+            secure: true,
           });
           res.json({
             token: tokens.accessToken,
