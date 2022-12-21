@@ -451,7 +451,7 @@ class SqlRoot {
           join user_detail_sp ud 
           on u.code_user_detail=ud.code_user_detail 
           join role_sp r on r.code_role = u.code_role
-          where u.user_name = ($1) AND r.code_role='ROLE-WIXX-SHOP'
+          where (u.user_name = ($1) or ud.email = ($1)) AND r.code_role='ROLE-WIXX-SHOP'
 
     `;
   };
@@ -469,7 +469,7 @@ class SqlRoot {
           join user_detail_sp ud 
           on u.code_user_detail=ud.code_user_detail 
           join role_sp r on r.code_role = u.code_role
-          where u.user_name = ($1) AND r.code_role='ROLE-WIXX-SHOP' and u.status=-1
+          where  (u.user_name = ($1) or ud.email = ($1)) AND r.code_role='ROLE-WIXX-SHOP' and u.status=-1
 
     `;
   };
@@ -482,7 +482,7 @@ class SqlRoot {
       on u.code_user_detail=ud.code_user_detail 
       join role_sp r on r.code_role = u.code_role
       left join setting_shop_sp s on s.code_shop = u.code_shop
-      where u.user_name =($1) AND r.code_role='ROLE-WIXX-SHOP' 
+      where  (u.user_name = ($1) or ud.email = ($1)) AND r.code_role='ROLE-WIXX-SHOP' 
     `;
   };
   public static SQL_GET_ME_SHOP = () => {
@@ -531,6 +531,7 @@ class SqlRoot {
       p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
       on pg.code_product_guide=pd.code_product_guide
       left join shop_sp s on s.code_shop = p.code_shop
+      LEFT OUTER JOIN   jsonb_array_elements(pd.category_code )  as ctc  ON TRUE
       where p.code_shop=($1) 
     `;
   };
@@ -540,6 +541,7 @@ class SqlRoot {
       p.code_product_detail=pd.code_product_detail join product_guide_sp pg 
       on pg.code_product_guide=pd.code_product_guide
       left join shop_sp s on s.code_shop = p.code_shop 
+      LEFT OUTER JOIN   jsonb_array_elements(pd.category_code )  as ctc  ON TRUE
       where p.code_shop=($1) 
     `;
   };
@@ -1458,7 +1460,7 @@ class SqlRoot {
               JOIN 
                 order_detail_sp od2 on od2.code_order_detail = o2.code_order_detail 
               WHERE 
-                od2.progress=5 or od2.progress=6 and od2.code_shop=($1) and o2.date_order::date=($3)
+                od2.progress=5 or od2.progress=6 and od2.code_shop=($1) and o2.date_order::date=($2)
               
             ),(
               SELECT 
@@ -1478,7 +1480,7 @@ class SqlRoot {
             JOIN 
               order_detail_sp od on od.code_order_detail = o.code_order_detail 
             WHERE 
-              od.progress=5 or od.progress=6 and od.code_shop=($1) and o.date_order::date=($2)
+              (od.progress=5 or od.progress=6) and od.code_shop=($1) and o.date_order::date=($2)
         ), statisticalPrice_month as (
           SELECT 
             SUM(od.total_order) as statisticalPrice_month,(

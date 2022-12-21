@@ -445,7 +445,7 @@ const loginAuthAdmin = async (req: Request, res: Response) => {
     }
   } catch (err) {
     res.json({
-      error: 'Error',
+      error: err,
     });
   }
 };
@@ -499,7 +499,7 @@ const loginAuthAdmin2 = async (req: Request, res: Response) => {
     }
   } catch (err) {
     res.json({
-      error: 'Error',
+      error: err,
     });
   }
 };

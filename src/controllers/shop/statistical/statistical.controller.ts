@@ -34,7 +34,7 @@ export const getStatisticalFull = async (req: Request, res: Response) => {
 export const getStatisticalValue = async (req: Request, res: Response) => {
   try {
     const yourDate = new Date();
-    const { date_max, date_min } = req.query;
+    const { date_max, date_min, date_today } = req.query;
     let date_max_w: any = date_max;
     let date_min_w: any = date_min;
     if (!date_max) {
@@ -60,7 +60,7 @@ export const getStatisticalValue = async (req: Request, res: Response) => {
     const data_user = await dataUserTK(req);
     const dataSQL: StatisticalPrice = {
       code_shop: data_user?.payload.code_shop,
-      date_today: new Date(date_max_w).toISOString().split('T')[0] || yourDate.toISOString().split('T')[0],
+      date_today: date_today as string,
       date_yesterday: dateTodayToYesterDay.toISOString().split('T')[0],
       date_lastMonth: dateTodayToLastMonth.toISOString().split('T')[0],
       date_lastMonth2: dateTodayToLastMonth2.toISOString().split('T')[0],

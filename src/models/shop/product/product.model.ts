@@ -16,7 +16,8 @@ export class ProductShopModel extends Model {
       sql_result += ` AND converttvkdau(p.name) ilike '%${toLowerCaseNonAccentVietnamese(data.q)}%'  OR p.code_product='${data.q}' `;
     }
     if (data.code_category) {
-      // sql_result += ` and jsonb_array_elements.value ->>'code' IN ('${data.code_category}')`;
+      sql_result += ` and ctc->>'code'='${data.code_category}' `;
+      // querySearch += ` and jsonb_array_elements.value ->>'code' IN ('${data.code_category}')`;
     }
     if (data.price_min && data.price_min >= 1000 && data.price_max) {
       sql_result += ` and p.price BETWEEN ${data.price_min} AND ${data.price_max} `;
@@ -33,6 +34,9 @@ export class ProductShopModel extends Model {
     } else if (data.type_filter === 'HIDE') {
       sql_result += ` AND pd.is_show=-1 `;
     }
+    if (data.price_min >= 0 && data.price_max > data.price_min && data.price_max >= 0) {
+      sql_result += ` and p.price BETWEEN ${data.price_min} AND ${data.price_max === 0 ? 1000000 : data.price_max} `;
+    }
     return pool.query(sql_result, dataResult);
   }
   public static async getAllProductShopModel(data: GetALlProductTp, callback: CallbackHandler) {
@@ -47,6 +51,7 @@ export class ProductShopModel extends Model {
     }
 
     if (data.code_category) {
+      querySearch += ` and ctc->>'code'='${data.code_category}' `;
       // querySearch += ` and jsonb_array_elements.value ->>'code' IN ('${data.code_category}')`;
     }
     if (data.type_filter === 'ALL') {
@@ -58,8 +63,8 @@ export class ProductShopModel extends Model {
     } else if (data.type_filter === 'HIDE') {
       querySearch += ` AND pd.is_show=-1 `;
     }
-    if (data.price_min && data.price_min >= 0 && data.price_max && data.price_max !== 0) {
-      querySearch += ` and p.price BETWEEN ${data.price_min} AND ${data.price_max} `;
+    if (data.price_min >= 0 && data.price_max > data.price_min && data.price_max >= 0) {
+      querySearch += ` and p.price BETWEEN ${data.price_min} AND ${data.price_max === 0 ? 1000000 : data.price_max} `;
     }
 
     if (data.type) {
@@ -71,9 +76,22 @@ export class ProductShopModel extends Model {
         querySearch += ' ';
       }
     }
+
+    if (data.sort) {
+      if (data.sort === 1) {
+        querySearch += ' ORDER BY p.price DESC ';
+      } else if (data.sort === 2) {
+        querySearch += ' ORDER BY p.price ASC ';
+      } else if (data.sort === 3) {
+        querySearch += ' ORDER BY pd."createdAt" DESC ';
+      } else if (data.sort === 4) {
+        querySearch += ' ORDER BY pd.purchase DESC ';
+      }
+    }
     const dataResult = [data.code_shop];
     querySearch += ` LIMIT ${Number(config.table_product_shop_limit_show) || 10} OFFSET ${offset} `;
     const queryResult = SqlRoot.SQL_GET_PRODUCT_BY_SHOP() + querySearch;
+    console.log(queryResult);
     pool.query(queryResult, dataResult, callback);
   }
 

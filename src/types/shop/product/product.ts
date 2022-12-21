@@ -19,5 +19,6 @@ export type GetALlProductTp = {
   price_max: number;
   type?: 'top' | 'new' | 'top-pay';
   type_filter: 'ALL' | 'SELL' | 'BLOCK' | 'HIDE' | null;
+  sort: number;
 };
 export type DataTypeShow = 'ALL' | 'SELL' | 'BLOCK' | 'HIDE' | null;

@@ -12,7 +12,7 @@ import * as TypeProduct from '../../../types/shop/product/product';
 
 export const getAllProductShop = async (req: Request, res: Response) => {
   try {
-    const { page, type, q, code_category, code_product_type, price_min, price_max, type_filter } = req.query;
+    const { page, type, sort, q, code_category, code_product_type, price_min, price_max, type_filter } = req.query;
     const data_user = await dataUserTK(req);
     const code_shop = (data_user?.payload.code_shop as string) || '';
     const dataSQL: TypeProduct.GetALlProductTp = {
@@ -24,6 +24,7 @@ export const getAllProductShop = async (req: Request, res: Response) => {
       price_min: Number(price_min) || 0,
       price_max: Number(price_max) || 1,
       type_filter: type_filter as TypeProduct.DataTypeShow,
+      sort: Number(sort),
     };
     const dataCountProductShop = await ProductShopModel.getCountAllProductShopModel(dataSQL);
     await ProductShopModel.getAllProductShopModel(dataSQL, (err, result) => {
