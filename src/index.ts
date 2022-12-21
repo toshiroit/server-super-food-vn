@@ -82,7 +82,7 @@ const server = app.listen(process.env.PORT || 8080, async () => {
 });
 const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(server, {
   cors: {
-    origin: '*',
+    origin: ['http://superfoodvn.tk', 'http://admin.superfoodvn.tk'],
     methods: ['GET', 'POST'],
   },
 });
