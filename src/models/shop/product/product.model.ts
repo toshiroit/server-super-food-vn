@@ -12,17 +12,18 @@ export class ProductShopModel extends Model {
   public static async getCountAllProductShopModel(data: GetALlProductTp) {
     const dataResult = [data.code_shop];
     let sql_result = SqlRoot.SQL_GET_COUNT_PRODUCT_BY_SHOP();
+    console.log(data.q, '---', data.q?.length);
     if (data.q && data.q.length > 0) {
       sql_result += ` AND converttvkdau(p.name) ilike '%${toLowerCaseNonAccentVietnamese(data.q)}%'  OR p.code_product='${data.q}' `;
     }
-    if (data.code_category) {
+    if (data.code_category && data.code_category !== 'undefined') {
       sql_result += ` and ctc->>'code'='${data.code_category}' `;
       // querySearch += ` and jsonb_array_elements.value ->>'code' IN ('${data.code_category}')`;
     }
     if (data.price_min && data.price_min >= 1000 && data.price_max) {
       sql_result += ` and p.price BETWEEN ${data.price_min} AND ${data.price_max} `;
     }
-    if (data.code_product_type) {
+    if (data.code_product_type && data.code_product_type !== 'undefined') {
       sql_result += ` AND p.code_product_type='${data.code_product_type}' `;
     }
     if (data.type_filter === 'ALL') {
@@ -37,6 +38,7 @@ export class ProductShopModel extends Model {
     if (data.price_min >= 0 && data.price_max > data.price_min && data.price_max >= 0) {
       sql_result += ` and p.price BETWEEN ${data.price_min} AND ${data.price_max === 0 ? 1000000 : data.price_max} `;
     }
+    console.log('=> ', sql_result);
     return pool.query(sql_result, dataResult);
   }
   public static async getAllProductShopModel(data: GetALlProductTp, callback: CallbackHandler) {
@@ -46,11 +48,11 @@ export class ProductShopModel extends Model {
       querySearch += ` AND converttvkdau(p.name) ilike '%${toLowerCaseNonAccentVietnamese(data.q)}%' `;
       querySearch += ` OR p.code_product='${data.q}' `;
     }
-    if (data.code_product_type) {
+    if (data.code_product_type && data.code_product_type !== 'undefined') {
       querySearch += `  AND p.code_product_type='${data.code_product_type}' `;
     }
 
-    if (data.code_category) {
+    if (data.code_category && data.code_product_type !== 'undefined') {
       querySearch += ` and ctc->>'code'='${data.code_category}' `;
       // querySearch += ` and jsonb_array_elements.value ->>'code' IN ('${data.code_category}')`;
     }
@@ -91,7 +93,6 @@ export class ProductShopModel extends Model {
     const dataResult = [data.code_shop];
     querySearch += ` LIMIT ${Number(config.table_product_shop_limit_show) || 10} OFFSET ${offset} `;
     const queryResult = SqlRoot.SQL_GET_PRODUCT_BY_SHOP() + querySearch;
-    console.log(queryResult);
     pool.query(queryResult, dataResult, callback);
   }
 

@@ -58,6 +58,7 @@ export const ROUTES_NAME = {
     ADD_ADDRESS: '/add-address',
     DETAIL_ADDRESS: '/detail-address',
     UPDATE_ADDRESS_USER_BY_CODE: '/update-address-user-by-code',
+    REMOVE_ADDRESS_USER_BY_CODE: '/remove-address-user-by-code',
   },
   CHECKOUT: '/checkout',
   PAYMENT: {
@@ -186,6 +187,10 @@ export const ROUTES_NAME_SHOP = {
     HOME: '/setting',
     GET_SETTING: '/get-setting-by-shop',
     UPDATE_SETTING: '/update-setting-by-shop',
+  },
+  FOLLOW: {
+    HOME: '/follow',
+    GET_USER_FOLLOW_BY_SHOP: '/get-all-user-follow-by-shop',
   },
 };
 export const SOCKET_ROUTE = {

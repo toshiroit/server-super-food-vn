@@ -348,6 +348,16 @@ class SqlRoot {
     `;
   };
 
+  public static SQL_REMOVE_ADDRESS_USER_BY_CODE = () => {
+    return `
+      with deleteAddressSp as (
+        DELETE FROM address_sp WHERE code_address=($1) AND code_user=($2) RETURNING code_address_detail
+      )
+      DELETE FROM address_detail_sp where code_address_detail = (select code_address_detail from deleteAddressSp)
+      
+    `;
+  };
+
   public static SQL_UPDATE_STATUS_ADDRESS_BY_USER = () => {
     return `
       UPDATE address_sp
@@ -2333,6 +2343,12 @@ class SqlRoot {
         SELECT code_user_detail from user_detail_sp ud where ud.email=($1)
       )
       UPDATE user_sp SET password=($2) where code_user_detail=(SELECT code_user_detail from codeUserDetail_sp ) and code_role='ROLE-WIXX-SHOP'
+    `;
+  };
+
+  public static SQL_GET_ALL_USER_FOLLOW_BY_SHOP = () => {
+    return `
+      select * from follow_shop_sp where code_shop =($1)
     `;
   };
 }

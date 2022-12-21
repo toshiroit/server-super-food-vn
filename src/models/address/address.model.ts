@@ -28,6 +28,10 @@ export class AddressModel extends Model {
     pool.query(SqlRoot.SQL_INSERT_ADDRESS_BY_USER(), dataSQL, callback);
   }
 
+  public static async removeAddressUserByCodeModel(data: { code_user: string; code_address: string }, callback: CallbackHandler) {
+    pool.query(SqlRoot.SQL_REMOVE_ADDRESS_USER_BY_CODE(), [data.code_address, data.code_user], callback);
+  }
+
   public static updateStatusAddressByUserModel(data: { code_user: string; status: boolean; code_address: string }) {
     return pool.query(SqlRoot.SQL_UPDATE_STATUS_ADDRESS_BY_USER(), [data.status, data.code_user, data.code_address]);
   }

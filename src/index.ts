@@ -171,6 +171,14 @@ io.on('connection', socket => {
     });
   });
 
+  socket.on('notification_send_new_product_to_user', data => {
+    io.to(data.code_user.trim()).emit('notification_new_product_to_user', {
+      name_shop: data.name_shop,
+      message: `Vừa đăng sản phẩm mới`,
+      code_product: '',
+    });
+  });
+
   socket.on('messenger_send_to_shop', data => {
     io.to(data.code_shop.trim()).emit('notification_messenger_shop', {
       code_shop: data.code_user,

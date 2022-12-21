@@ -11,6 +11,7 @@ export interface ServerToClientEvents {
   notification_follow: (data: { message: string; code_user: string }) => void;
   notification_messenger_shop: (data: { message: string; code_shop: string }) => void;
   notification_messenger_user: (data: { message: string; code_shop: string }) => void;
+  notification_new_product_to_user: (data: { message: string; name_shop: string; code_product: string }) => void;
   unauthorized: () => void;
 }
 
@@ -27,6 +28,7 @@ export interface ClientToServerEvents {
   notification_follow: (data: { message: string; code_shop: string }) => void;
   messenger_send_to_shop: (data: { message: string; code_shop: string; code_user: string }) => void;
   messenger_send_to_user: (data: { message: string; code_user: string; code_shop: string }) => void;
+  notification_send_new_product_to_user: (data: { message: string; code_user: string; name_shop: string }) => void;
   unauthorized: () => void;
 }
 

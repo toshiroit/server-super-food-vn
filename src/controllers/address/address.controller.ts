@@ -158,6 +158,35 @@ export const getDetailAddressUserByCode = async (req: Request, res: Response) =>
     });
   }
 };
+
+export const removeAddressUserByCode = async (req: Request, res: Response) => {
+  try {
+    const { code_address } = req.query;
+    const data_user = await dataUserTK(req);
+    const dataSQL = {
+      code_address: code_address as string,
+      code_user: data_user?.payload.code_user,
+    };
+    await AddressModel.removeAddressUserByCodeModel(dataSQL, (err, result) => {
+      if (err) {
+        res.json({
+          error: err,
+        });
+      } else {
+        if (result) {
+          res.json({
+            message: 'SUCCESS REMOVE ADDRESS',
+          });
+        }
+      }
+    });
+  } catch (error) {
+    res.json({
+      error,
+    });
+  }
+};
+
 export const updateAddressUserByCode = async (req: Request, res: Response) => {
   try {
     const data_user = dataUserTK(req);
