@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { dataUserTK } from '../../../libs/data_user';
 import { getDataUser } from '../../../libs/getUserToken';
+import { makeId } from '../../../libs/make_id';
+import { timeVietNameFullTime } from '../../../libs/timeVietNam';
 import { NotifyShopModel } from '../../../models/shop/notify/notify.model';
 import { NotifyType } from '../../../types/notify/notify';
 
@@ -21,6 +23,39 @@ export const getDetailNotifyByShop = async (req: Request, res: Response) => {
           res.json({
             data: result.rows,
           });
+        }
+      }
+    });
+  } catch (error) {
+    res.json({
+      error,
+    });
+  }
+};
+
+export const addNewNotifyByUser = async (req: Request, res: Response) => {
+  try {
+    const dataSQL: NotifyType = {
+      code_notify_shop: makeId(15),
+      code_shop: '',
+      code_type_notify: '',
+      createdAt: timeVietNameFullTime(),
+      info: req.body.info,
+      title: req.body.title,
+      code_user: req.body.code_user,
+    };
+    await NotifyShopModel.addNewNotifyByUserModel(dataSQL, (err, result) => {
+      if (err) {
+        res.json({
+          error: err,
+        });
+      } else {
+        if (result) {
+          if (result.rowCount > 0) {
+            res.json({ message: 'Success' });
+          } else {
+            res.json({ message: 'Error' });
+          }
         }
       }
     });

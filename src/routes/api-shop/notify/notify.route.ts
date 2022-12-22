@@ -6,4 +6,5 @@ const router = Router();
 
 router.get(ROUTES_NAME_SHOP.NOTIFY.GET_ALL_NOTIFY_SHOP, validateTokenAdminShopMiddleware, notifyShopController.getAllNotifyByShop);
 router.get(ROUTES_NAME_SHOP.NOTIFY.GET_DETAIL_NOTIFY, validateTokenAdminShopMiddleware, notifyShopController.getDetailNotifyByShop);
+router.post(ROUTES_NAME_SHOP.NOTIFY.ADD_NEW_NOTIFY_USER, validateTokenAdminShopMiddleware, notifyShopController.addNewNotifyByUser);
 export default router;

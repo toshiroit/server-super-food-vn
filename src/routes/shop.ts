@@ -25,4 +25,5 @@ router.use(ROUTES_NAME_SHOP.VOUCHER.HOME, voucherRoute);
 router.use(ROUTES_NAME_SHOP.STATISTICAL.HOME, statisticalRoute);
 router.use(ROUTES_NAME_SHOP.SETTING.HOME, settingRoute);
 router.use(ROUTES_NAME_SHOP.FOLLOW.HOME, followRoute);
+
 export default router;

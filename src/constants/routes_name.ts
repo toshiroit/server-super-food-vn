@@ -163,6 +163,7 @@ export const ROUTES_NAME_SHOP = {
     HOME: '/notify',
     GET_ALL_NOTIFY_SHOP: '/get-all-notify-shop',
     GET_DETAIL_NOTIFY: '/notify-detail',
+    ADD_NEW_NOTIFY_USER: '/add-new-notify-user',
   },
   CHAT: {
     HOME: '/messenger',

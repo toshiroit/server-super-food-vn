@@ -2351,5 +2351,12 @@ class SqlRoot {
       select * from follow_shop_sp where code_shop =($1)
     `;
   };
+
+  public static SQL_INSERT_NOTIFY_BY_USER = () => {
+    return `
+      INSERT INTO notify_sp (code_notify,code_user,title_send,text_send,status,date_send) 
+      VALUES ($1,$2,$3,$4,true,$5)
+    `;
+  };
 }
 export default SqlRoot;

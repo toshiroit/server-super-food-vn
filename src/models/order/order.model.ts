@@ -71,7 +71,7 @@ export class OrderModel extends Model {
     if (data.sort_order === '4') {
       sql_result += ' ORDER BY od.total_order DESC ';
     }
-
+    sql_result += ' ORDER BY o.date_order DESC ';
     // sql_result += ` ORDER BY o.date_order DESC `;
     const { limit, offset } = getPagination(Number(data.page || 0) === 0 ? 1 : Number(data.page), Number(config.order_user_limit_show));
     if (limit !== null && offset !== null) {

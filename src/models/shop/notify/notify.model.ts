@@ -1,6 +1,7 @@
 import pool from '../../../database';
 import { CallbackHandler } from '../../../interfaces/model_query/modelQuery';
-import { NotifyTypeGet } from '../../../types/notify/notify';
+import { timeVietNameFullTime } from '../../../libs/timeVietNam';
+import { NotifyType, NotifyTypeGet } from '../../../types/notify/notify';
 import Model from '../../Model';
 import SqlRoot from '../../sql';
 
@@ -17,5 +18,9 @@ export class NotifyShopModel extends Model {
   }
   public static async getDetailNotifyByShopModel(data: { code_notify: string; code_shop: string }, callback: CallbackHandler) {
     pool.query(SqlRoot.SQL_GET_DETAIL_NOTIFY_SHOP(), [data.code_shop, data.code_notify], callback);
+  }
+  public static async addNewNotifyByUserModel(data: NotifyType, callback: CallbackHandler) {
+    const dataSQL = [data.code_notify_shop, data.code_user, data.title, data.info, data.createdAt];
+    pool.query(SqlRoot.SQL_INSERT_NOTIFY_BY_USER(), dataSQL, callback);
   }
 }
