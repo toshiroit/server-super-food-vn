@@ -202,11 +202,11 @@ const loginUser = async (req: Request, res: Response) => {
           const tokens = jwtTokens(result.rows[0]);
           res.cookie('jwt', tokens.refreshToken, {
             expires: new Date(Date.now() + 12000),
-            httpOnly: false,
+            httpOnly: true,
             path: '/',
             maxAge: 24 * 60 * 60 * 1000,
             sameSite: 'none',
-            secure: true,
+            secure: false,
           });
           res.json({
             token: tokens.accessToken,
@@ -418,11 +418,11 @@ const loginAuthAdmin = async (req: Request, res: Response) => {
             const tokens = jwtTokens(dataUserModel.rows[0]);
             res.cookie('jwt', tokens.refreshToken, {
               expires: new Date(Date.now() + 900000),
-              httpOnly: false,
+              httpOnly: true,
               path: '/',
               maxAge: 24 * 60 * 60 * 1000,
               sameSite: 'none',
-              secure: true,
+              secure: false,
             });
             res.json({
               token: tokens.accessToken,
