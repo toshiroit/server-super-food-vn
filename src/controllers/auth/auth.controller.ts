@@ -269,6 +269,8 @@ const loginUser = async (req: Request, res: Response) => {
  */
 export const logoutUser = (req: Request, res: Response) => {
   try {
+    console.log('res : ', res);
+    console.log('REQ : ', req);
     res.cookie('jwt', '', {
       httpOnly: true,
       secure: false,

@@ -1,4 +1,5 @@
 import express, { Application, Request, Response } from 'express';
+import session from 'express-session';
 import cookie from 'cookie';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
