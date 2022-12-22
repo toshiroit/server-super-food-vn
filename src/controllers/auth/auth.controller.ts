@@ -206,7 +206,7 @@ const loginUser = async (req: Request, res: Response) => {
             path: '/',
             maxAge: 24 * 60 * 60 * 1000,
             sameSite: 'none',
-            secure: false,
+            secure: true,
           });
           res.json({
             token: tokens.accessToken,
@@ -269,8 +269,8 @@ const loginUser = async (req: Request, res: Response) => {
  */
 export const logoutUser = (req: Request, res: Response) => {
   try {
-    console.log('res : ', res);
-    console.log('REQ : ', req);
+    console.log('res cookie', res.cookie);
+    console.log('Req : ', req.cookies);
     res.cookie('jwt', '', {
       httpOnly: true,
       secure: false,
@@ -422,7 +422,7 @@ const loginAuthAdmin = async (req: Request, res: Response) => {
               path: '/',
               maxAge: 24 * 60 * 60 * 1000,
               sameSite: 'none',
-              secure: false,
+              secure: true,
             });
             res.json({
               token: tokens.accessToken,
