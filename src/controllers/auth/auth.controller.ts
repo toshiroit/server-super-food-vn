@@ -269,8 +269,11 @@ const loginUser = async (req: Request, res: Response) => {
  */
 export const logoutUser = (req: Request, res: Response) => {
   try {
-    console.log('DATA : ', res);
-    res.clearCookie('jwt');
+    res.cookie('jwt', '', {
+      httpOnly: true,
+      secure: false,
+      maxAge: -1,
+    });
     res.json({
       message: 'Đăng xuất thành công ',
     });
