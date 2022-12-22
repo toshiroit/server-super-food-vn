@@ -147,14 +147,35 @@ io.on('connection', socket => {
     io.to(data.item.code_user.trim()).emit('notification_progress', {
       status: 3,
       code_order: data.item.code_order,
-      message: `Đơn hàng đã được chế biên xong - đang chờ shipper giao hàng : ${data.item.code_order}`,
+      message: `Đơn hàng đang được chuẩn bị giao hàng : ${data.item.code_order}`,
     });
   });
   socket.on('notification_progress_4', data => {
     io.to(data.item.code_user.trim()).emit('notification_progress', {
       status: 3,
       code_order: data.item.code_order,
+      message: `Đơn hàng đang được giao hàng: ${data.item.code_order}`,
+    });
+  });
+  socket.on('notification_progress_5', data => {
+    io.to(data.item.code_user.trim()).emit('notification_progress', {
+      status: 3,
+      code_order: data.item.code_order,
+      message: `Đơn hàng bạn đã giao thành công: ${data.item.code_order}`,
+    });
+  });
+  socket.on('notification_progress_6', data => {
+    io.to(data.item.code_user.trim()).emit('notification_progress', {
+      status: 3,
+      code_order: data.item.code_order,
       message: `Đơn hàng bạn đã được giao cho shipper: ${data.item.code_order}`,
+    });
+  });
+  socket.on('notification_progress_not_ship', data => {
+    io.to(data.item.code_user.trim()).emit('notification_progress', {
+      status: -1,
+      code_order: data.item.code_order,
+      message: 'Đơn của bạn giao không thành công',
     });
   });
   socket.on('notification_progress_cancel', data => {

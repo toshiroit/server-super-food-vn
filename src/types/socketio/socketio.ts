@@ -24,6 +24,9 @@ export interface ClientToServerEvents {
   notification_progress_2: (data: { message: string; item: any }) => void;
   notification_progress_3: (data: { message: string; item: any }) => void;
   notification_progress_4: (data: { message: string; item: any }) => void;
+  notification_progress_5: (data: { message: string; item: any }) => void;
+  notification_progress_6: (data: { message: string; item: any }) => void;
+  notification_progress_not_ship: (data: { message: string; item: any }) => void;
   notification_progress_cancel: (data: { message: string; item: any }) => void;
   notification_follow: (data: { message: string; code_shop: string }) => void;
   messenger_send_to_shop: (data: { message: string; code_shop: string; code_user: string }) => void;
