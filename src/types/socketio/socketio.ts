@@ -9,7 +9,7 @@ export interface ServerToClientEvents {
   notification_order_all: (message: any) => void;
   notification_progress: (data: { message: string; status: number; code_order: string }) => void;
   notification_follow: (data: { message: string; code_user: string }) => void;
-  notification_messenger_shop: (data: { message: string; code_shop: string }) => void;
+  notification_messenger_shop: (data: { message: string; code_shop: string; code_user?: string }) => void;
   notification_messenger_user: (data: { message: string; code_shop: string }) => void;
   notification_new_product_to_user: (data: { message: string; name_shop: string; code_product: string }) => void;
   unauthorized: () => void;

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import config from '../../../config/config';
 import { checkTextBadWord } from '../../../helpers/check-name';
+import { sendMail } from '../../../helpers/mail';
 import { dataUserTK } from '../../../libs/data_user';
 import { getPagination, getPagingData } from '../../../libs/getPagination';
 import { getDataUser } from '../../../libs/getUserToken';

@@ -203,6 +203,7 @@ io.on('connection', socket => {
   socket.on('messenger_send_to_shop', data => {
     io.to(data.code_shop.trim()).emit('notification_messenger_shop', {
       code_shop: data.code_user,
+      code_user: data.code_user,
       message: 'Bạn có 1 tin nhắn mới từ khách hàng',
     });
   });
